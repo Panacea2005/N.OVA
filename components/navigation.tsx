@@ -57,6 +57,7 @@ export default function Navigation() {
     { name: "Home", href: "/" },
     { name: "About", href: "/about" },
     { name: "AI", href: "/ai" },
+    { name: "NFT", href: "/nft" },
     { name: "Profile", href: "/profile" },
   ];
 
