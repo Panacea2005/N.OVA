@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Canvas } from "@react-three/fiber";
 import { Environment, SpotLight } from "@react-three/drei";
 import dynamic from "next/dynamic";
+import { ConnectWalletButton } from "@/components/ui/connect-wallet-button";
 
 const HolographicSphere = dynamic(
   () => import("@/components/3d/holographic-sphere"),
@@ -64,11 +65,10 @@ export default function Navigation() {
     <>
       {/* Always visible navigation bar */}
       <motion.nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled
-            ? "backdrop-blur-lg bg-black/30 border-b border-purple-900/30"
-            : ""
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
+          ? "backdrop-blur-lg bg-black/30 border-b border-purple-900/30"
+          : ""
+          }`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ delay: 0.5, duration: 0.5 }}
@@ -81,59 +81,62 @@ export default function Navigation() {
             </span>
           </Link>
 
-          <button
-            ref={menuButtonRef}
-            className="text-white p-2 z-50 hover:bg-gradient-to-br hover:from-purple-900/20 hover:to-purple-600/20 rounded-full transition-all duration-300 border border-purple-900/30"
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
-          >
-            {menuOpen ? (
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-purple-500"
-              >
-                <path
-                  d="M18 6L6 18M6 6L18 18"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            ) : (
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-purple-500"
-              >
-                <path
-                  d="M4 8H13"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M6 12H18"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M11 16H20"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            )}
-          </button>
+          <div className="flex items-center gap-4">
+            <ConnectWalletButton />
+            <button
+              ref={menuButtonRef}
+              className="text-white p-2 z-50 hover:bg-gradient-to-br hover:from-purple-900/20 hover:to-purple-600/20 rounded-full transition-all duration-300 border border-purple-900/30"
+              onClick={toggleMenu}
+              aria-label="Toggle menu"
+            >
+              {menuOpen ? (
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="text-purple-500"
+                >
+                  <path
+                    d="M18 6L6 18M6 6L18 18"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="text-purple-500"
+                >
+                  <path
+                    d="M4 8H13"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M6 12H18"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M11 16H20"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
       </motion.nav>
 
@@ -192,9 +195,8 @@ export default function Navigation() {
                   >
                     <div className="absolute -left-6 w-1 h-0 bg-gradient-to-b from-purple-800 to-purple-600 group-hover:h-full transition-all duration-500 ease-out"></div>
                     <div
-                      className={`absolute -left-12 w-3 h-3 rounded-full ${
-                        activeItem === i ? "bg-purple-600" : "bg-white/20"
-                      } transition-all duration-300`}
+                      className={`absolute -left-12 w-3 h-3 rounded-full ${activeItem === i ? "bg-purple-600" : "bg-white/20"
+                        } transition-all duration-300`}
                     ></div>
 
                     <Link
