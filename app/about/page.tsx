@@ -142,8 +142,9 @@ export default function AboutPage() {
 
               <div className="h-[60vh]">
                 <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
+                  <ambientLight intensity={0.5} />
+                  <pointLight position={[10, 10, 10]} />
                   <HolographicSphere />
-                  <Environment preset="night" />
                 </Canvas>
               </div>
             </div>

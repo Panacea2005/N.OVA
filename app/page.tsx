@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState, useRef, Suspense } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import dynamic from "next/dynamic";
-import LoadingScreen from "@/components/loading-screen";
-import { Canvas } from "@react-three/fiber";
-import { Environment } from "@react-three/drei";
-import Link from "next/link";
+import { useEffect, useState, useRef, Suspense } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import dynamic from "next/dynamic"
+import LoadingScreen from "@/components/loading-screen"
+import { Canvas } from "@react-three/fiber"
+import { Environment } from "@react-three/drei"
+import Link from "next/link"
+import { usePhantom } from "@/hooks/use-phantom"
+import { ConnectWalletButton } from "@/components/ui/connect-wallet-button"
 
 // Dynamically import components to reduce initial load time
 const Navigation = dynamic(() => import("@/components/navigation"), {
@@ -53,9 +55,10 @@ const TechnologySection = dynamic(
 );
 
 export default function Home() {
-  const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const { isConnected } = usePhantom()
 
   useEffect(() => {
     // Simulate loading assets
@@ -69,6 +72,19 @@ export default function Home() {
   }, []);
 
   if (!mounted) return null;
+
+  if (!isConnected) {
+    return (
+      <main className="relative min-h-screen bg-black text-white font-mono">
+        <div className="fixed inset-0 bg-gradient-to-br from-black via-black to-purple-950 opacity-80 z-0" />
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4">
+          <h1 className="text-4xl font-bold mb-8">Welcome to NOVA</h1>
+          <p className="text-xl text-gray-400 mb-8">Connect your Phantom wallet to get started</p>
+          <ConnectWalletButton />
+        </div>
+      </main>
+    )
+  }
 
   const partners = [
     { name: "Stanford", logo: "/placeholder.svg?height=80&width=80" },

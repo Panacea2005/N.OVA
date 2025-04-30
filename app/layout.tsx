@@ -1,13 +1,15 @@
-import type React from "react";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
+import { ThemeProvider } from "@/components/theme-provider"
+import { ClientLayout } from "@/components/client-layout"
 
-export const metadata = {
+const inter = Inter({ subsets: ["latin"] })
+
+export const metadata: Metadata = {
   title: "NOVA",
-  description:
-    "Pushing the boundaries of digital experiences through innovative design and sovereign intelligence technology.",
-  generator: "v0.dev",
-};
+  description: "A modern web3 application",
+}
 
 export default function RootLayout({
   children,
