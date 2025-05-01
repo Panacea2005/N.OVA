@@ -41,6 +41,7 @@
     "@react-three/drei": "^10.0.7",
     "@react-three/fiber": "^9.1.2",
     "@solana/web3.js": "^1.98.2",
+    "@supabase/supabase-js": "^2.49.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",

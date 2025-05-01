@@ -251,7 +251,7 @@ export default function Footer() {
               href="mailto:contact@o.xyz" 
               className="group text-sm text-white/80 hover:text-white relative inline-block"
             >
-              <span>contact@o.xyz</span>
+              <span>contact@n.ova</span>
               <span className="absolute left-0 right-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-purple-400 to-transparent transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
             </Link>
           </div>
@@ -361,7 +361,7 @@ export default function Footer() {
                       letterSpacing: "-0.02em",
                     }}
                   >
-                    O.XYZ
+                    N.OVA
                   </text>
                 </mask>
               </defs>
@@ -382,7 +382,7 @@ export default function Footer() {
                 }}
                 filter="blur(10px)"
               >
-                O.XYZ
+                N.OVA
               </text>
               
               {/* Medium shadow layer for enhanced depth */}
@@ -401,7 +401,7 @@ export default function Footer() {
                 }}
                 filter="blur(5px)"
               >
-                O.XYZ
+                N.OVA
               </text>
               
               {/* Main text with gradient fill */}
@@ -419,7 +419,7 @@ export default function Footer() {
                 }}
                 filter="url(#outlineGlow)"
               >
-                O.XYZ
+                N.OVA
               </text>
               
               {/* Animated shimmer overlay */}

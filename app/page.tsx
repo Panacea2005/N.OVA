@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState, useRef, Suspense } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import dynamic from "next/dynamic"
-import LoadingScreen from "@/components/loading-screen"
-import { Canvas } from "@react-three/fiber"
-import { Environment } from "@react-three/drei"
-import Link from "next/link"
-import { usePhantom } from "@/hooks/use-phantom"
-import { ConnectWalletButton } from "@/components/ui/connect-wallet-button"
+import { useEffect, useState, useRef, Suspense } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import dynamic from "next/dynamic";
+import LoadingScreen from "@/components/loading-screen";
+import { Canvas } from "@react-three/fiber";
+import { Environment } from "@react-three/drei";
+import Link from "next/link";
+import { usePhantom } from "@/hooks/use-phantom";
+import { ConnectWalletButton } from "@/components/ui/connect-wallet-button";
 
 // Dynamically import components to reduce initial load time
 const Navigation = dynamic(() => import("@/components/navigation"), {
@@ -55,10 +55,10 @@ const TechnologySection = dynamic(
 );
 
 export default function Home() {
-  const [loading, setLoading] = useState(true)
-  const [mounted, setMounted] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const { isConnected } = usePhantom()
+  const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { isConnected } = usePhantom();
 
   useEffect(() => {
     // Simulate loading assets
@@ -79,23 +79,14 @@ export default function Home() {
         <div className="fixed inset-0 bg-gradient-to-br from-black via-black to-purple-950 opacity-80 z-0" />
         <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4">
           <h1 className="text-4xl font-bold mb-8">Welcome to NOVA</h1>
-          <p className="text-xl text-gray-400 mb-8">Connect your Phantom wallet to get started</p>
+          <p className="text-xl text-gray-400 mb-8">
+            Connect your Phantom wallet to get started
+          </p>
           <ConnectWalletButton />
         </div>
       </main>
-    )
+    );
   }
-
-  const partners = [
-    { name: "Stanford", logo: "/placeholder.svg?height=80&width=80" },
-    { name: "Neuralink", logo: "/placeholder.svg?height=80&width=80" },
-    { name: "Apple", logo: "/placeholder.svg?height=80&width=80" },
-    { name: "Google", logo: "/placeholder.svg?height=80&width=80" },
-    { name: "Amazon", logo: "/placeholder.svg?height=80&width=80" },
-    { name: "NASA", logo: "/placeholder.svg?height=80&width=80" },
-    { name: "PayPal", logo: "/placeholder.svg?height=80&width=80" },
-    { name: "Ethereum", logo: "/placeholder.svg?height=80&width=80" },
-  ];
 
   return (
     <main className="relative min-h-screen bg-black text-white font-mono">
@@ -350,7 +341,7 @@ export default function Home() {
                   00:1
                 </span>
                 <span className="text-xs text-white/60 mr-3 font-mono">
-                  O.XYZ
+                  N.OVA
                 </span>
                 <div className="w-2 h-2 rounded-full bg-purple-500/40 mr-3 animate-pulse"></div>
                 <span className="text-xs text-white/60 font-mono">
@@ -365,7 +356,7 @@ export default function Home() {
                 transition={{ duration: 0.5, delay: 2.2 }}
               >
                 <div className="flex items-center space-x-3">
-                  <span className="font-mono text-white/60 text-xs">O.XYZ</span>
+                  <span className="font-mono text-white/60 text-xs">N.OVA</span>
                   <motion.div
                     className="w-10 h-[1px] bg-white/20"
                     animate={{
@@ -553,7 +544,7 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-900/10 via-blue-900/10 to-purple-900/10 rounded-lg blur-xl transform scale-110 -z-10"></div>
 
                 <p className="text-xl md:text-2xl text-white/80 text-center px-8 py-6 leading-relaxed">
-                  O.XYZ exists to create a future where super intelligence
+                  N.OVA exists to create a future where super intelligence
                   serves humanity, not controls it. We are building the
                   foundations of a
                   <span className="text-purple-300">
@@ -937,7 +928,7 @@ export default function Home() {
                 <div className="flex items-center space-x-3">
                   <span className="font-mono text-white/60 text-xs flex items-center">
                     <span className="w-1 h-1 rounded-full bg-purple-500 mr-2"></span>
-                    <span>O.XYZ —</span>
+                    <span>N.OVA —</span>
                   </span>
                   <span className="font-mono text-white/60 text-xs uppercase tracking-wider">
                     More Than Just An AI
@@ -1038,7 +1029,7 @@ export default function Home() {
                   INTRODUCING
                 </span>
                 <span className="block bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-white to-purple-300">
-                  THE O.XYZ
+                  THE N.OVA
                 </span>
                 <span className="block bg-clip-text text-transparent bg-gradient-to-b from-white/60 via-white to-white">
                   ECOSYSTEM
@@ -1053,7 +1044,7 @@ export default function Home() {
                 className="text-xl md:text-2xl text-white/80 max-w-3xl text-center leading-relaxed"
               >
                 From fractional ownership of real-world assets to transparent
-                ecosystem analytics, O.XYZ is driving the future of
+                ecosystem analytics, N.OVA is driving the future of
                 decentralized AI through a suite of revolutionary products.
               </motion.p>
 
@@ -1098,7 +1089,7 @@ export default function Home() {
                     </svg>
                   </div>
                   <h3 className="text-2xl font-medium text-purple-300">
-                    O.AGENTS
+                    N.AGENTS
                   </h3>
                 </div>
 
@@ -1148,7 +1139,7 @@ export default function Home() {
                   <div className="flex items-center">
                     <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse mr-2"></div>
                     <span className="text-xs text-white/60 font-mono">
-                      O.XYZ // DASHBOARD
+                      N.OVA // DASHBOARD
                     </span>
                   </div>
                   <div className="flex space-x-2">
@@ -1223,7 +1214,7 @@ export default function Home() {
                     </svg>
                   </div>
                   <h3 className="text-2xl font-medium text-purple-300">
-                    O.INFRASTRUCTURE
+                    N.INFRASTRUCTURE
                   </h3>
                 </div>
 
@@ -1287,7 +1278,7 @@ export default function Home() {
                     </svg>
                   </div>
                   <h3 className="text-2xl font-medium text-purple-300">
-                    O.DAO
+                    N.DAO
                   </h3>
                 </div>
 
@@ -1349,7 +1340,7 @@ export default function Home() {
                 <div className="flex items-center space-x-3">
                   <span className="font-mono text-white/60 text-xs flex items-center">
                     <span className="w-1 h-1 rounded-full bg-purple-500 mr-2"></span>
-                    <span>O.XYZ —</span>
+                    <span>N.OVA —</span>
                   </span>
                   <span className="font-mono text-white/60 text-xs uppercase tracking-wider">
                     Products
@@ -1366,7 +1357,6 @@ export default function Home() {
           <div className="absolute bottom-6 right-6 w-16 h-16 border-r border-b border-white/10 z-10"></div>
         </section>
 
-        {/* Partners Section */}
         {/* Partners Section */}
         <section className="py-24 relative border-t border-white/10 overflow-hidden">
           {/* Enhanced background elements */}
@@ -1482,90 +1472,167 @@ export default function Home() {
               />
             </motion.div>
 
-            {/* Partners grid with enhanced styling */}
+            {/* Partner Showcase Section */}
             <div className="relative max-w-5xl mx-auto">
-              {/* Border frame */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                viewport={{ once: true }}
-                className="absolute -inset-4 border border-white/10 rounded-sm -z-10"
-              />
+  {/* Border frame */}
+  <motion.div
+    initial={{ opacity: 0 }}
+    whileInView={{ opacity: 1 }}
+    transition={{ duration: 0.8, delay: 0.2 }}
+    viewport={{ once: true }}
+    className="absolute -inset-4 border border-white/10 rounded-sm -z-10"
+  />
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-[1px] bg-white/10">
-                {/* Example partners - replace with actual data */}
-                {[
-                  { name: "MIT", logo: "/placeholder.svg" },
-                  { name: "Stanford", logo: "/placeholder.svg" },
-                  { name: "Harvard", logo: "/placeholder.svg" },
-                  { name: "Google Research", logo: "/placeholder.svg" },
-                  { name: "DeepMind", logo: "/placeholder.svg" },
-                  { name: "OpenAI", logo: "/placeholder.svg" },
-                  { name: "Anthropic", logo: "/placeholder.svg" },
-                  { name: "Berkeley", logo: "/placeholder.svg" },
-                ].map((partner, index) => (
-                  <motion.div
-                    key={partner.name}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    whileHover={{
-                      backgroundColor: "rgba(139, 92, 246, 0.1)",
-                      boxShadow: "0 0 15px rgba(139, 92, 246, 0.2)",
-                    }}
-                    transition={{
-                      duration: 0.5,
-                      delay: index * 0.1,
-                      ease: "easeOut",
-                    }}
-                    viewport={{ once: true, margin: "-50px" }}
-                    className="flex items-center justify-center p-6 aspect-square bg-black/60 backdrop-blur-sm relative group"
-                  >
-                    {/* Decorative corner elements */}
-                    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-purple-500/0 group-hover:border-purple-500/50 transition-colors"></div>
-                    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-purple-500/0 group-hover:border-purple-500/50 transition-colors"></div>
-                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-purple-500/0 group-hover:border-purple-500/50 transition-colors"></div>
-                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-purple-500/0 group-hover:border-purple-500/50 transition-colors"></div>
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-[1px] bg-white/10">
+    {[
+      {
+        name: "Solana",
+        logo: "/partners/solana.svg",
+        description: "High-performance blockchain supporting NOVA",
+      },
+      {
+        name: "Phantom",
+        logo: "/partners/phantom.svg",
+        description: "Premier wallet for NOVA integration",
+      },
+      {
+        name: "Magic Eden",
+        logo: "/partners/magic-eden.png",
+        description: "NFT marketplace partner",
+      },
+      {
+        name: "Jupiter",
+        logo: "/partners/jupiter.svg",
+        description: "Liquidity aggregation protocol",
+      },
+      {
+        name: "Orca",
+        logo: "/partners/orca.svg",
+        description: "DEX for token swaps",
+      },
+      {
+        name: "Pyth Network",
+        logo: "/partners/pyth.svg",
+        description: "Oracle data provider",
+      },
+      {
+        name: "Metaplex",
+        logo: "/partners/metaplex.png",
+        description: "NFT standard creator",
+      },
+      {
+        name: "Superteam",
+        logo: "/partners/superteam.jpg",
+        description: "DAO & developer community",
+      },
+    ].map((partner, index) => (
+      <motion.div
+        key={partner.name}
+        initial={{ opacity: 0, scale: 0.95 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        whileHover={{
+          backgroundColor: "rgba(139, 92, 246, 0.1)",
+          boxShadow: "0 0 15px rgba(139, 92, 246, 0.2)",
+        }}
+        transition={{
+          duration: 0.5,
+          delay: index * 0.1,
+          ease: "easeOut",
+        }}
+        viewport={{ once: true, margin: "-50px" }}
+        className="flex items-center justify-center p-6 aspect-square bg-black/60 backdrop-blur-sm relative group"
+      >
+        {/* Decorative corner elements */}
+        <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-purple-500/0 group-hover:border-purple-500/50 transition-colors"></div>
+        <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-purple-500/0 group-hover:border-purple-500/50 transition-colors"></div>
+        <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-purple-500/0 group-hover:border-purple-500/50 transition-colors"></div>
+        <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-purple-500/0 group-hover:border-purple-500/50 transition-colors"></div>
 
-                    <motion.div
-                      className="relative w-full h-full flex items-center justify-center"
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <img
-                        src={partner.logo}
-                        alt={partner.name}
-                        className="object-contain filter invert opacity-70 group-hover:opacity-100 transition-opacity"
-                        style={{ maxWidth: "70%" }}
-                      />
+        <motion.div
+          className="relative w-full h-full flex items-center justify-center"
+          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.3 }}
+        >
+          {/* Partner logo with effects matching the team member styles */}
+          <div className="relative aspect-square w-full h-full overflow-hidden flex items-center justify-center">
+            {/* Base image with futuristic filter effects */}
+            <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-purple-900/30 to-black/80 mix-blend-multiply z-10"></div>
 
-                      {/* Hover effect */}
-                      <motion.div
-                        className="absolute -inset-4 -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"
-                        style={{
-                          background:
-                            "radial-gradient(circle at center, rgba(139, 92, 246, 0.2) 0%, transparent 70%)",
-                        }}
-                      />
-                    </motion.div>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Scanning effect line */}
-              <motion.div
-                className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent"
-                animate={{
-                  top: ["0%", "100%"],
-                  opacity: [0, 0.7, 0],
-                }}
-                transition={{
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: "linear",
+            {/* Logo container with improved centering */}
+            <div className="relative z-5 w-full h-full flex items-center justify-center">
+              <img
+                src={partner.logo}
+                alt={partner.name}
+                className="w-auto h-auto max-w-[70%] max-h-[70%] grayscale group-hover:grayscale-0 transition-all duration-500 object-contain"
+                onError={(e) => {
+                  // Fallback in case the image fails to load
+                  const target = e.target as HTMLImageElement;
+                  target.src = "/placeholder-logo.svg";
                 }}
               />
             </div>
+
+            {/* Futuristic overlay effects */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-20"></div>
+
+            {/* Tech grid overlay */}
+            <div
+              className="absolute inset-0 opacity-20 pointer-events-none z-20"
+              style={{
+                backgroundImage: `linear-gradient(to right, rgba(167, 139, 250, 0.1) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(167, 139, 250, 0.1) 1px, transparent 1px)`,
+                backgroundSize: "20px 20px",
+              }}
+            ></div>
+
+            {/* Digital noise overlay */}
+            <div className="absolute inset-0 opacity-30 mix-blend-overlay z-20 pointer-events-none">
+              <div
+                className="w-full h-full opacity-40"
+                style={{
+                  backgroundImage:
+                    'url(\'data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%" height="100%" filter="url(%23noiseFilter)"/%3E%3C/svg%3E\')',
+                  backgroundSize: "150px",
+                }}
+              ></div>
+            </div>
+
+            {/* Bottom label that appears on hover */}
+            <div className="absolute bottom-0 left-0 right-0 bg-black/70 backdrop-blur-sm py-2 px-3 z-30 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+              <div className="text-xs font-mono text-purple-300">
+                {partner.name}
+              </div>
+              <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mt-1"></div>
+            </div>
+          </div>
+
+          {/* Hover effect */}
+          <motion.div
+            className="absolute -inset-4 -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"
+            style={{
+              background:
+                "radial-gradient(circle at center, rgba(139, 92, 246, 0.2) 0%, transparent 70%)",
+            }}
+          />
+        </motion.div>
+      </motion.div>
+    ))}
+  </div>
+
+  {/* Scanning effect line - matches team member effect */}
+  <motion.div
+    className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent"
+    animate={{
+      top: ["0%", "100%"],
+      opacity: [0, 0.7, 0],
+    }}
+    transition={{
+      duration: 5,
+      repeat: Infinity,
+      ease: "linear",
+    }}
+  />
+</div>
 
             {/* Additional stats with futuristic styling */}
             <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
@@ -1803,7 +1870,7 @@ export default function Home() {
                   },
                   {
                     title: "Exclusive Benefits",
-                    description: "Special access to all O.XYZ products",
+                    description: "Special access to all N.OVA products",
                   },
                 ].map((feature, index) => (
                   <div
