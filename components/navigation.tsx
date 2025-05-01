@@ -56,11 +56,11 @@ export default function Navigation() {
   };
 
   const navItems = [
-    { name: "Home", href: "/" },
-    { name: "About", href: "/about" },
-    { name: "AI", href: "/ai" },
-    { name: "NFT", href: "/nft" },
-    { name: "Profile", href: "/profile" },
+    { name: "N.OVA", href: "/" },
+    { name: "N.ABOUT", href: "/about" },
+    { name: "N.AI", href: "/ai" },
+    { name: "N.IDENTITY", href: "/nft" },
+    { name: "N.DASHBOARD", href: "/profile" },
   ];
 
   return (

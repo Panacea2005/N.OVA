@@ -7,7 +7,7 @@ import { ClientLayout } from "@/components/client-layout"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "NOVA",
+  title: "N.OVA",
   description: "A modern web3 application",
 }
 
