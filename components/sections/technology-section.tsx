@@ -51,7 +51,7 @@ export default function TechnologySection() {
   const phases = [
     {
       number: 1,
-      title: "$O Token Genesis",
+      title: "$N Token Genesis",
       description: "Establishing the fundamental economic layer powering our decentralized AI ecosystem.",
       component: NetworkMesh,
       techSpecs: ["ERC-20 Compatible", "AI Utility Token", "Quantum-Proof"],
@@ -59,7 +59,7 @@ export default function TechnologySection() {
       secondaryItems: [
         { 
           title: "Initial Distribution Protocol", 
-          description: "Our fair distribution model automatically allocates resources based on measured community contribution, ensuring both early adopters and new participants have equitable access to $O tokens." 
+          description: "Our fair distribution model automatically allocates resources based on measured community contribution, ensuring both early adopters and new participants have equitable access to $N tokens." 
         },
         { 
           title: "Algorithmic Treasury Management", 
@@ -542,7 +542,7 @@ export default function TechnologySection() {
               <div className="flex items-center space-x-3">
                 <span className="font-mono text-white/60 text-xs flex items-center">
                   <span className="w-1 h-1 rounded-full bg-purple-500 mr-2"></span>
-                  <span>O.XYZ —</span>
+                  <span>N.OVA —</span>
                 </span>
                 <span className="font-mono text-white/60 text-xs uppercase tracking-wider">PHASE {activePhase} OF {phases.length}</span>
               </div>

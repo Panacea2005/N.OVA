@@ -30,8 +30,10 @@ export const chatService = {
       // Check if the message contains Rust/Solana code
       if (this.detectSolanaCode(userMessage.content)) {
         const analysis = await contractAnalyzer.analyzeContract(userMessage.content, model);
-        // For code analysis we return a formatted string
-        return analysis.rawAnalysis || this.formatDefaultAnalysis(analysis);
+        
+        // Return a compact version of the analysis for chat display
+        // The full analysis data will be available in the analysisResult property
+        return contractAnalyzer.getCompactAnalysis(analysis);
       }
 
       // For regular chat messages
@@ -62,51 +64,16 @@ export const chatService = {
     }
   },
 
-  formatDefaultAnalysis(analysis: any): string {
-    return `# Solana Program Analysis Results
-
-## Overview
-- Security Score: ${analysis.securityScore}/100
-- Scan Duration: ${analysis.scanDuration}
-- Lines of Code: ${analysis.linesOfCode}
-- Total Issues: ${analysis.issuesCount}
-
-${analysis.summary ? `## Summary\n${analysis.summary}\n\n` : ''}
-
-${analysis.critical.length > 0 ? `## Critical Issues\n${this.formatIssues(analysis.critical)}\n\n` : ''}
-${analysis.high.length > 0 ? `## High Severity Issues\n${this.formatIssues(analysis.high)}\n\n` : ''}
-${analysis.medium.length > 0 ? `## Medium Severity Issues\n${this.formatIssues(analysis.medium)}\n\n` : ''}
-${analysis.low.length > 0 ? `## Low Severity Issues\n${this.formatIssues(analysis.low)}\n\n` : ''}
-${analysis.informational.length > 0 ? `## Informational Issues\n${this.formatIssues(analysis.informational)}\n\n` : ''}
-${analysis.optimizations.length > 0 ? `## Optimization Suggestions\n${this.formatOptimizations(analysis.optimizations)}\n\n` : ''}
-
-${analysis.modificationSuggestions ? `## Recommended Modifications\n\`\`\`rust\n${analysis.modificationSuggestions}\n\`\`\`\n` : ''}`;
+  // Format the analysis result for display in the chat
+  formatAnalysisResult(analysis: any): string {
+    // Return just the compact version for chat display
+    return contractAnalyzer.getCompactAnalysis(analysis);
   },
-
-  formatIssues(issues: any[]): string {
-    return issues.map(issue =>
-      `### ${issue.type}\n` +
-      `- **Location**: ${issue.location}\n` +
-      `- **Description**: ${issue.description}\n` +
-      `- **Impact**: ${issue.impact}\n` +
-      `- **Recommendation**: ${issue.recommendation}\n` +
-      (issue.codeExample ? `- **Example Fix**:\n\`\`\`rust\n${issue.codeExample}\n\`\`\`\n` : '')
-    ).join('\n');
-  },
-
-  formatOptimizations(optimizations: any[]): string {
-    return optimizations.map(opt =>
-      `### ${opt.type}\n` +
-      `- **Description**: ${opt.description}\n` +
-      `- **Suggestion**: ${opt.suggestion}\n` +
-      `- **Impact**: ${opt.impact}\n` +
-      (opt.codeExample ? `- **Example**:\n\`\`\`rust\n${opt.codeExample}\n\`\`\`\n` : '')
-    ).join('\n');
-  },
-
-  // Function to detect Rust/Solana code
+  
+  // Detection of Solana code has been enhanced to be more accurate
+  // and detect more Solana-specific patterns
   detectSolanaCode(content: string): boolean {
-    // Check for Rust-specific keywords and Solana imports
+    // Check for Rust-specific keywords
     const rustKeywords = [
       'fn ', 
       'struct ',
@@ -121,6 +88,7 @@ ${analysis.modificationSuggestions ? `## Recommended Modifications\n\`\`\`rust\n
       'trait '
     ];
     
+    // Check for Solana-specific imports and types
     const solanaKeywords = [
       'solana_program',
       'anchor_lang',
@@ -135,6 +103,20 @@ ${analysis.modificationSuggestions ? `## Recommended Modifications\n\`\`\`rust\n
       'entrypoint'
     ];
     
+    // Check for Anchor-specific macros and attributes
+    const anchorPatterns = [
+      '#[program]',
+      '#[account]',
+      '#[derive(Accounts)]',
+      '#[instruction(',
+      '@program_id',
+      'declare_id!',
+      'account(',
+      'init(',
+      'space =',
+      'seeds ='
+    ];
+    
     // Special patterns to check separately
     const hasAttributes = content.includes('#[');
     
@@ -144,9 +126,18 @@ ${analysis.modificationSuggestions ? `## Recommended Modifications\n\`\`\`rust\n
     // Check for Solana-specific code
     const hasSolanaSyntax = solanaKeywords.some(keyword => content.includes(keyword));
     
-    // Also check for uploaded Rust files
-    const isRustFile = content.includes("File: ") && content.toLowerCase().endsWith(".rs");
+    // Check for Anchor patterns
+    const hasAnchorPatterns = anchorPatterns.some(pattern => content.includes(pattern));
     
-    return hasRustSyntax || hasSolanaSyntax || hasAttributes || isRustFile;
+    // Also check for uploaded Rust files
+    const isRustFile = content.includes("File: ") && 
+      (content.toLowerCase().includes(".rs") || content.toLowerCase().includes("rust") || 
+       content.toLowerCase().includes("solana"));
+    
+    // Check if the content is long enough to potentially be code
+    const isLongEnough = content.split('\n').length > 5;
+    
+    // Return true if any of the checks pass
+    return (isLongEnough && (hasRustSyntax || hasSolanaSyntax || hasAttributes || hasAnchorPatterns)) || isRustFile;
   }
 };
