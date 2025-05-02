@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  const apiKey = process.env.STABILITY_API_KEY;
+  const apiKey = process.env.NEXT_STABILITY_API_KEY;
   console.log('Stability API Key:', apiKey ? 'Key is set' : 'Key is missing'); // Debug log
 
   if (!apiKey) {
