@@ -31,13 +31,13 @@ import { Canvas } from "@react-three/fiber";
 import {
   chatService,
   Message as ChatServiceMessage,
-} from "@/lib/services/chatbot/chatService";
-import { contractAnalyzer } from "@/lib/services/chatbot/contractAnalyzer";
+} from "@/lib/services/ai/chatService";
+import { contractAnalyzer } from "@/lib/services/ai/contractAnalyzer";
 import {
   chatStore,
   Message as BaseMessage,
   ChatHistory,
-} from "@/lib/services/chatbot/chatStore"; // Import the new chatStore
+} from "@/lib/services/ai/chatStore"; // Import the new chatStore
 import AnalysisResultDisplay from "./components/analysis-result-display";
 import WalletSummaryDisplay from "./components/wallet-summary-display";
 import { useWalletSummary } from "@/hooks/use-wallet-summary";

@@ -19,9 +19,15 @@ import {
   Settings,
   X,
   Info,
+  AlertTriangle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
+import { usePhantom } from "@/hooks/use-phantom";
+import { SwapService } from "@/lib/services/tokenomics/swapService";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { NovaTokenAnalytics } from "./components/nova-token-analytics";
+import { TransactionHistory } from "./components/transaction-history";
 
 const Navigation = dynamic(() => import("@/components/navigation"), {
   ssr: false,
@@ -51,107 +57,203 @@ interface Badge {
   type: string;
 }
 
+// Token data interface
+interface TokenData {
+  name: string;
+  symbol: string;
+  price: number;
+  marketCap: string;
+  circulatingSupply: string;
+  totalSupply: string;
+  holders: string;
+  volume24h: string;
+  priceChange24h: number;
+  priceChange7d: number;
+}
+
+// Transaction interface
+interface Transaction {
+  id: string;
+  type: "buy" | "sell";
+  amount: string;
+  token: string;
+  value: string;
+  status: "completed" | "pending" | "failed";
+  timestamp: string;
+  txHash: string;
+}
+
 const NovaDex = () => {
+  const {
+    walletAddress,
+    publicKey,
+    isConnected,
+    balance: solBalance,
+    novaBalance,
+    isLoading,
+    signAndSendTransaction,
+    refreshBalances,
+    connection
+  } = usePhantom();
+
   const [mounted, setMounted] = useState(false);
   const [fromAmount, setFromAmount] = useState("1");
-  const [toAmount, setToAmount] = useState("42.5");
-  const [walletConnected, setWalletConnected] = useState(false);
+  const [toAmount, setToAmount] = useState("1000000");
   const [swapMode, setSwapMode] = useState<"market" | "limit">("market");
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [showBadgeDetails, setShowBadgeDetails] = useState(false);
   const [activeBadgeTab, setActiveBadgeTab] = useState("all");
   const [showSwapConfirmation, setShowSwapConfirmation] = useState(false);
   const [swapStatus, setSwapStatus] = useState<"pending" | "success" | "failed" | null>(null);
-
-  // Mock token data
-  const tokenData = {
+  const [swapDirection, setSwapDirection] = useState<"solToNova" | "novaToSol">("solToNova");
+  const [swapError, setSwapError] = useState<string | null>(null);
+  const [localLoading, setLocalLoading] = useState(false);
+  
+  // State for real data
+  const [tokenData, setTokenData] = useState<TokenData>({
     name: "NOVA",
     symbol: "$NOVA",
-    price: 0.0235, // in SOL
+    price: 0.0235,
     marketCap: "12.5M",
     circulatingSupply: "42M",
     totalSupply: "100M",
     holders: "8,742",
+    volume24h: "325K",
+    priceChange24h: 5.8,
+    priceChange7d: 12.3
+  });
+  
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+  // Initialize swap service
+  const swapService = new SwapService(connection);
+
+  // Fetch real token data and transaction history
+  const fetchRealData = async () => {
+    if (!mounted) return;
+    
+    setLocalLoading(true);
+    try {
+      // Fetch real token data
+      const realTokenData = await swapService.fetchTokenData();
+      setTokenData(realTokenData);
+      
+      // Fetch real transaction history if wallet is connected
+      if (isConnected && publicKey) {
+        const txHistory = await swapService.fetchTransactionHistory(publicKey);
+        if (txHistory.length > 0) {
+          setTransactions(txHistory);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching real data:", error);
+    } finally {
+      setLocalLoading(false);
+    }
   };
 
-  // Mock user data
-  const userData = {
-    balance: 125.5, // NOVA tokens
-    solBalance: 2.45, // SOL
+  // Generate badges based on user balances
+  const generateBadges = (): Badge[] => {
+    return [
+      {
+        id: 1,
+        name: "Neural Access",
+        icon: <Cpu className="h-6 w-6" />,
+        requiredAmount: 100,
+        description: "Access to Neural Network API endpoints and advanced AI features",
+        unlocked: novaBalance >= 100,
+        progress: novaBalance < 100 ? novaBalance / 100 : 1,
+        color: "from-blue-500 to-cyan-400",
+        type: "utility"
+      },
+      {
+        id: 2,
+        name: "Identity Shield",
+        icon: <Shield className="h-6 w-6" />,
+        requiredAmount: 250,
+        description: "Enhanced identity protection and privacy features",
+        unlocked: novaBalance >= 250,
+        progress: novaBalance < 250 ? novaBalance / 250 : 1,
+        color: "from-purple-500 to-blue-400",
+        type: "security"
+      },
+      {
+        id: 3,
+        name: "Global Verification",
+        icon: <Globe className="h-6 w-6" />,
+        requiredAmount: 500,
+        description: "Globally recognized identity verification across all partner platforms",
+        unlocked: novaBalance >= 500,
+        progress: novaBalance < 500 ? novaBalance / 500 : 1,
+        color: "from-indigo-500 to-purple-400",
+        type: "verification"
+      },
+      {
+        id: 4,
+        name: "Quantum Boost",
+        icon: <Zap className="h-6 w-6" />,
+        requiredAmount: 1000,
+        description: "Priority processing and enhanced computational resources",
+        unlocked: novaBalance >= 1000,
+        progress: novaBalance < 1000 ? novaBalance / 1000 : 1,
+        color: "from-cyan-500 to-blue-400",
+        type: "utility"
+      },
+      {
+        id: 5,
+        name: "Sovereign Status",
+        icon: <Crown className="h-6 w-6" />,
+        requiredAmount: 2500,
+        description: "Exclusive governance rights and early access to new features",
+        unlocked: novaBalance >= 2500,
+        progress: novaBalance < 2500 ? novaBalance / 2500 : 1,
+        color: "from-pink-500 to-purple-400",
+        type: "governance"
+      },
+      {
+        id: 6,
+        name: "Stellar Identity",
+        icon: <Star className="h-6 w-6" />,
+        requiredAmount: 5000,
+        description: "Highest tier of identity verification with cross-chain compatibility",
+        unlocked: novaBalance >= 5000,
+        progress: novaBalance < 5000 ? novaBalance / 5000 : 1,
+        color: "from-amber-500 to-pink-400",
+        type: "verification"
+      },
+    ];
   };
 
-  // Mock badge data
-  const badges: Badge[] = [
-    {
-      id: 1,
-      name: "Neural Access",
-      icon: <Cpu className="h-6 w-6" />,
-      requiredAmount: 100,
-      description: "Access to Neural Network API endpoints and advanced AI features",
-      unlocked: true,
-      color: "from-blue-500 to-cyan-400",
-      type: "utility"
-    },
-    {
-      id: 2,
-      name: "Identity Shield",
-      icon: <Shield className="h-6 w-6" />,
-      requiredAmount: 250,
-      description: "Enhanced identity protection and privacy features",
-      unlocked: false,
-      progress: 0.5, // 50% progress
-      color: "from-purple-500 to-blue-400",
-      type: "security"
-    },
-    {
-      id: 3,
-      name: "Global Verification",
-      icon: <Globe className="h-6 w-6" />,
-      requiredAmount: 500,
-      description: "Globally recognized identity verification across all partner platforms",
-      unlocked: false,
-      progress: 0.25, // 25% progress
-      color: "from-indigo-500 to-purple-400",
-      type: "verification"
-    },
-    {
-      id: 4,
-      name: "Quantum Boost",
-      icon: <Zap className="h-6 w-6" />,
-      requiredAmount: 1000,
-      description: "Priority processing and enhanced computational resources",
-      unlocked: false,
-      progress: 0.1, // 10% progress
-      color: "from-cyan-500 to-blue-400",
-      type: "utility"
-    },
-    {
-      id: 5,
-      name: "Sovereign Status",
-      icon: <Crown className="h-6 w-6" />,
-      requiredAmount: 2500,
-      description: "Exclusive governance rights and early access to new features",
-      unlocked: false,
-      progress: 0.05, // 5% progress
-      color: "from-pink-500 to-purple-400",
-      type: "governance"
-    },
-    {
-      id: 6,
-      name: "Stellar Identity",
-      icon: <Star className="h-6 w-6" />,
-      requiredAmount: 5000,
-      description: "Highest tier of identity verification with cross-chain compatibility",
-      unlocked: false,
-      progress: 0.02, // 2% progress
-      color: "from-amber-500 to-pink-400",
-      type: "verification"
-    },
-  ];
+  const [badges, setBadges] = useState<Badge[]>(generateBadges());
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Fetch real data once mounted
+  useEffect(() => {
+    if (mounted) {
+      fetchRealData();
+    }
+  }, [mounted, isConnected, publicKey]);
+
+  // Update badges when balances change
+  useEffect(() => {
+    setBadges(generateBadges());
+  }, [novaBalance]);
+
+  // Update transactions after wallet connection changes
+  useEffect(() => {
+    if (isConnected && publicKey) {
+      swapService.fetchTransactionHistory(publicKey)
+        .then(txHistory => {
+          if (txHistory.length > 0) {
+            setTransactions(txHistory);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [isConnected, publicKey]);
 
   const filteredBadges = activeBadgeTab === "all" 
     ? badges 
@@ -159,31 +261,133 @@ const NovaDex = () => {
 
   const handleFromAmountChange = (value: string) => {
     setFromAmount(value);
-    // Mock conversion
+    
+    // Calculate conversion based on swap direction
     const numValue = Number.parseFloat(value) || 0;
-    setToAmount((numValue * 42.5).toFixed(2));
+    
+    if (swapDirection === "solToNova") {
+      // Calculate based on real exchange rate
+      setToAmount(swapService.estimateSolToNova(numValue).toFixed(2));
+    } else {
+      // NOVA to SOL
+      setToAmount(swapService.estimateNovaToSol(numValue).toFixed(6));
+    }
   };
 
   const handleToAmountChange = (value: string) => {
     setToAmount(value);
-    // Mock conversion
+    
+    // Calculate conversion based on swap direction
     const numValue = Number.parseFloat(value) || 0;
-    setFromAmount((numValue / 42.5).toFixed(4));
+    
+    if (swapDirection === "solToNova") {
+      // Convert NOVA to SOL
+      setFromAmount((numValue / 1000000).toFixed(6));
+    } else {
+      // Convert SOL to NOVA
+      setFromAmount((numValue * 1000000).toFixed(2));
+    }
   };
 
-  const handleConnectWallet = () => {
-    setWalletConnected(true);
+  const toggleSwapDirection = () => {
+    // Toggle swap direction
+    const newDirection = swapDirection === "solToNova" ? "novaToSol" : "solToNova";
+    setSwapDirection(newDirection);
+    
+    // Recalculate amounts
+    if (newDirection === "solToNova") {
+      // Now fromAmount is SOL, toAmount is NOVA
+      const solAmount = Number.parseFloat(fromAmount) || 0;
+      setToAmount(swapService.estimateSolToNova(solAmount).toFixed(2));
+    } else {
+      // Now fromAmount is NOVA, toAmount is SOL
+      const novaAmount = Number.parseFloat(fromAmount) || 0;
+      setToAmount(swapService.estimateNovaToSol(novaAmount).toFixed(6));
+    }
+  };
+
+  const getFromTokenInfo = () => {
+    return swapDirection === "solToNova" 
+      ? { symbol: "SOL", gradient: "from-orange-500 to-amber-500" }
+      : { symbol: "NOVA", gradient: "from-purple-500 to-blue-500" };
+  };
+
+  const getToTokenInfo = () => {
+    return swapDirection === "solToNova" 
+      ? { symbol: "NOVA", gradient: "from-purple-500 to-blue-500" }
+      : { symbol: "SOL", gradient: "from-orange-500 to-amber-500" };
+  };
+
+  const getSwapRate = () => {
+    return swapDirection === "solToNova" 
+      ? `1 SOL = ${swapService.estimateSolToNova(1).toLocaleString()} NOVA`
+      : `${swapService.estimateSolToNova(1).toLocaleString()} NOVA = 1 SOL`;
   };
 
   const handleSwap = () => {
+    if (!isConnected) {
+      return;
+    }
+    
+    setSwapError(null);
     setShowSwapConfirmation(true);
   };
 
-  const confirmSwap = () => {
-    setSwapStatus("pending");
+  const confirmSwap = async () => {
+    if (!publicKey) {
+      setSwapError("Wallet not connected");
+      return;
+    }
     
-    // Simulate transaction processing
-    setTimeout(() => {
+    setSwapStatus("pending");
+    setLocalLoading(true);
+    
+    try {
+      const fromAmountNum = Number.parseFloat(fromAmount);
+      
+      // Validate the amount is valid
+      if (isNaN(fromAmountNum) || fromAmountNum <= 0) {
+        throw new Error("Invalid amount");
+      }
+      
+      // Check if there's enough balance
+      if (swapDirection === "solToNova" && fromAmountNum > solBalance) {
+        throw new Error("Insufficient SOL balance");
+      } else if (swapDirection === "novaToSol" && fromAmountNum > novaBalance) {
+        throw new Error("Insufficient NOVA balance");
+      }
+      
+      // Create the appropriate swap transaction
+      const transaction = swapDirection === "solToNova"
+        ? await swapService.createSolToNovaSwapTransaction(publicKey, fromAmountNum)
+        : await swapService.createNovaToSolSwapTransaction(publicKey, fromAmountNum);
+      
+      // Sign and send the transaction
+      const signature = await signAndSendTransaction(transaction);
+      
+      // Refresh balances after successful swap
+      await refreshBalances();
+      
+      // Fetch updated transaction history
+      const updatedTxHistory = await swapService.fetchTransactionHistory(publicKey);
+      if (updatedTxHistory.length > 0) {
+        setTransactions(updatedTxHistory);
+      } else {
+        // If transaction history fetch fails, add a synthetic entry
+        const newTransaction = {
+          id: `tx${Date.now()}`,
+          type: swapDirection === "solToNova" ? "buy" as "buy" : "sell" as "sell",
+          amount: swapDirection === "solToNova" ? `${toAmount} NOVA` : `${fromAmount} NOVA`,
+          token: "NOVA",
+          value: swapDirection === "solToNova" ? fromAmount : toAmount,
+          status: "completed" as "completed",
+          timestamp: "Just now",
+          txHash: signature
+        };
+        
+        setTransactions([newTransaction, ...transactions]);
+      }
+      
       setSwapStatus("success");
       
       // Close modal after showing confirmation
@@ -191,12 +395,52 @@ const NovaDex = () => {
         setShowSwapConfirmation(false);
         setSwapStatus(null);
       }, 2000);
-    }, 2000);
+      
+    } catch (error) {
+      console.error("Swap error:", error);
+      setSwapStatus("failed");
+      setSwapError(error instanceof Error ? error.message : "Unknown error occurred");
+    } finally {
+      setLocalLoading(false);
+    }
   };
 
   const handleBadgeClick = (badge: Badge) => {
     setSelectedBadge(badge);
     setShowBadgeDetails(true);
+  };
+  
+  const handleMaxButtonClick = () => {
+    if (swapDirection === "solToNova") {
+      // Set max SOL amount (leave a little for transaction fees)
+      const maxSol = Math.max(0, solBalance - 0.01);
+      setFromAmount(maxSol.toFixed(6));
+      handleFromAmountChange(maxSol.toFixed(6));
+    } else {
+      // Set max NOVA amount
+      setFromAmount(novaBalance.toString());
+      handleFromAmountChange(novaBalance.toString());
+    }
+  };
+
+  const renderFromTokenBalance = () => {
+    return swapDirection === "solToNova" 
+      ? `Balance: ${solBalance.toFixed(4)} SOL`
+      : `Balance: ${novaBalance.toFixed(2)} NOVA`;
+  };
+
+  const renderToTokenBalance = () => {
+    return swapDirection === "solToNova" 
+      ? `Balance: ${novaBalance.toFixed(2)} NOVA`
+      : `Balance: ${solBalance.toFixed(4)} SOL`;
+  };
+
+  // Handle refresh data
+  const handleRefreshData = async () => {
+    await Promise.all([
+      refreshBalances(),
+      fetchRealData()
+    ]);
   };
 
   if (!mounted) {
@@ -255,6 +499,9 @@ const NovaDex = () => {
               Swap SOL for $NOVA tokens and unlock powerful identity features on the NOVA AI Platform
             </p>
           </div>
+          
+          {/* Token Analytics */}
+          <NovaTokenAnalytics tokenData={tokenData} />
 
           {/* DEX Swap Module */}
           <div className="mb-10 animate-fadeIn">
@@ -281,8 +528,12 @@ const NovaDex = () => {
                     </h2>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors border border-white/10">
-                      <RefreshCw className="h-4 w-4" />
+                    <button 
+                      className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors border border-white/10"
+                      onClick={handleRefreshData}
+                      disabled={isLoading || localLoading}
+                    >
+                      <RefreshCw className={`h-4 w-4 ${(isLoading || localLoading) ? 'animate-spin' : ''}`} />
                     </button>
                     <button className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors border border-white/10">
                       <Settings className="h-4 w-4" />
@@ -318,7 +569,7 @@ const NovaDex = () => {
                 <div className="mb-2">
                   <div className="flex justify-between items-center mb-2">
                     <label className="text-white/60 text-sm">From</label>
-                    <span className="text-xs text-white/60">Balance: {userData.solBalance} SOL</span>
+                    <span className="text-xs text-white/60">{renderFromTokenBalance()}</span>
                   </div>
                   <div className="group flex items-center bg-white/5 rounded-xl p-4 border border-white/10 transition-all duration-300 hover:border-purple-500/50 focus-within:border-purple-500/50 focus-within:bg-white/8">
                     <div className="flex-1">
@@ -331,10 +582,10 @@ const NovaDex = () => {
                       />
                     </div>
                     <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-xl backdrop-blur-sm hover:bg-white/15 transition-colors cursor-pointer">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 flex items-center justify-center text-xs font-bold shadow-lg shadow-orange-900/20">
-                        SOL
+                      <div className={`w-8 h-8 rounded-full bg-gradient-to-r ${getFromTokenInfo().gradient} flex items-center justify-center text-xs font-bold shadow-lg shadow-purple-900/20`}>
+                        {getFromTokenInfo().symbol === "SOL" ? "SOL" : "N"}
                       </div>
-                      <span className="font-bold">SOL</span>
+                      <span className="font-bold">{getFromTokenInfo().symbol}</span>
                       <ChevronDown className="h-4 w-4 text-white/60" />
                     </div>
                   </div>
@@ -343,6 +594,23 @@ const NovaDex = () => {
                       <button
                         key={percent}
                         className="px-2 py-1 text-xs bg-white/5 rounded-lg hover:bg-white/10 transition-colors border border-white/5 hover:border-white/20"
+                        onClick={() => {
+                          if (percent === "MAX") {
+                            handleMaxButtonClick();
+                          } else {
+                            // Calculate percentage of balance
+                            const percentage = parseInt(percent) / 100;
+                            if (swapDirection === "solToNova") {
+                              const amount = (solBalance * percentage).toFixed(6);
+                              setFromAmount(amount);
+                              handleFromAmountChange(amount);
+                            } else {
+                              const amount = (novaBalance * percentage).toFixed(2);
+                              setFromAmount(amount);
+                              handleFromAmountChange(amount);
+                            }
+                          }
+                        }}
                       >
                         {percent}
                       </button>
@@ -353,7 +621,10 @@ const NovaDex = () => {
                 {/* Swap Icon */}
                 <div className="flex justify-center my-3 relative">
                   <div className="absolute left-0 right-0 border-t border-white/5 top-1/2 -translate-y-1/2"></div>
-                  <button className="relative z-10 p-3 bg-white/5 rounded-full hover:bg-white/10 transition-colors border border-white/10 shadow-lg shadow-purple-900/10 group">
+                  <button 
+                    className="relative z-10 p-3 bg-white/5 rounded-full hover:bg-white/10 transition-colors border border-white/10 shadow-lg shadow-purple-900/10 group"
+                    onClick={toggleSwapDirection}
+                  >
                     <ArrowUpDown className="h-5 w-5 group-hover:scale-110 transition-transform" />
                   </button>
                 </div>
@@ -362,7 +633,7 @@ const NovaDex = () => {
                 <div className="mb-5">
                   <div className="flex justify-between items-center mb-2">
                     <label className="text-white/60 text-sm">To</label>
-                    <span className="text-xs text-white/60">Balance: {userData.balance} NOVA</span>
+                    <span className="text-xs text-white/60">{renderToTokenBalance()}</span>
                   </div>
                   <div className="group flex items-center bg-white/5 rounded-xl p-4 border border-white/10 transition-all duration-300 hover:border-purple-500/50 focus-within:border-purple-500/50 focus-within:bg-white/8">
                     <div className="flex-1">
@@ -375,10 +646,10 @@ const NovaDex = () => {
                       />
                     </div>
                     <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-xl backdrop-blur-sm hover:bg-white/15 transition-colors cursor-pointer">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center text-xs font-bold shadow-lg shadow-purple-900/20">
-                        N
+                      <div className={`w-8 h-8 rounded-full bg-gradient-to-r ${getToTokenInfo().gradient} flex items-center justify-center text-xs font-bold shadow-lg shadow-purple-900/20`}>
+                        {getToTokenInfo().symbol === "SOL" ? "SOL" : "N"}
                       </div>
-                      <span className="font-bold">NOVA</span>
+                      <span className="font-bold">{getToTokenInfo().symbol}</span>
                       <ChevronDown className="h-4 w-4 text-white/60" />
                     </div>
                   </div>
@@ -389,7 +660,7 @@ const NovaDex = () => {
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div>
                       <span className="text-white/60 text-xs">Price</span>
-                      <p className="font-medium">1 SOL = 42.5 NOVA</p>
+                      <p className="font-medium">{getSwapRate()}</p>
                     </div>
                     <div>
                       <span className="text-white/60 text-xs">Price Impact</span>
@@ -412,29 +683,25 @@ const NovaDex = () => {
                 </div>
 
                 {/* Action Button */}
-                {walletConnected ? (
-                  <button
-                    onClick={handleSwap}
-                    className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl font-bold text-lg hover:from-purple-500 hover:to-blue-500 transition-all duration-300 relative overflow-hidden group shadow-lg shadow-purple-900/20"
-                  >
-                    <span className="relative z-10 flex items-center justify-center gap-2">
-                      <Sparkles className="h-5 w-5" />
-                      Swap Tokens
-                    </span>
-                    <span className="absolute inset-0 opacity-0 group-hover:opacity-20 bg-gradient-to-r from-white via-white to-transparent -translate-x-full group-hover:translate-x-full transition-all duration-1000 ease-out" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleConnectWallet}
-                    className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl font-bold text-lg hover:from-purple-500 hover:to-blue-500 transition-all duration-300 relative overflow-hidden group shadow-lg shadow-purple-900/20"
-                  >
-                    <span className="relative z-10 flex items-center justify-center gap-2">
-                      <Wallet className="h-5 w-5" />
-                      Connect Wallet
-                    </span>
-                    <span className="absolute inset-0 opacity-0 group-hover:opacity-20 bg-gradient-to-r from-white via-white to-transparent -translate-x-full group-hover:translate-x-full transition-all duration-1000 ease-out" />
-                  </button>
-                )}
+                <button
+                  onClick={handleSwap}
+                  disabled={isLoading || localLoading || !isConnected}
+                  className={`w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl font-bold text-lg hover:from-purple-500 hover:to-blue-500 transition-all duration-300 relative overflow-hidden group shadow-lg shadow-purple-900/20 ${
+                    (isLoading || localLoading || !isConnected) ? "opacity-70 cursor-not-allowed" : ""
+                  }`}
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    {isLoading || localLoading ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <>
+                        <Sparkles className="h-5 w-5" />
+                        {isConnected ? "Swap Tokens" : "Connect Wallet to Swap"}
+                      </>
+                    )}
+                  </span>
+                  <span className="absolute inset-0 opacity-0 group-hover:opacity-20 bg-gradient-to-r from-white via-white to-transparent -translate-x-full group-hover:translate-x-full transition-all duration-1000 ease-out" />
+                </button>
               </div>
 
               {/* Corner accents with animation */}
@@ -444,6 +711,12 @@ const NovaDex = () => {
               <div className="absolute bottom-0 right-0 w-12 h-12 border-r-2 border-b-2 border-blue-500/30 rounded-br-lg" />
             </div>
           </div>
+
+          {/* Transaction History */}
+          <TransactionHistory 
+            transactions={transactions}
+            isConnected={isConnected}
+          />
 
           {/* Badge Unlock Panel */}
           <div className="animate-fadeIn" style={{animationDelay: "0.2s"}}>
@@ -479,7 +752,7 @@ const NovaDex = () => {
                         <div className="w-5 h-5 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center text-[10px] font-bold shadow-sm shadow-purple-900/20">
                           N
                         </div>
-                        <span className="font-bold text-sm">{userData.balance}</span>
+                        <span className="font-bold text-sm">{novaBalance.toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
@@ -681,12 +954,24 @@ const NovaDex = () => {
                     ></div>
                   </div>
                   <div className="flex justify-between mt-2">
-                    <span className="text-xs text-white/60">Current: {userData.balance} NOVA</span>
+                    <span className="text-xs text-white/60">Current: {novaBalance.toFixed(2)} NOVA</span>
                     <span className="text-xs text-white/60">Required: {selectedBadge.requiredAmount} NOVA</span>
                   </div>
                   
                   <div className="mt-4 flex justify-center">
-                    <button className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm rounded-lg hover:from-purple-500 hover:to-blue-500 transition-colors flex items-center gap-2">
+                    <button 
+                      onClick={() => {
+                        setShowBadgeDetails(false);
+                        // Focus on the swap section
+                        window.scrollTo({
+                          top: 0,
+                          behavior: 'smooth'
+                        });
+                        // Set swap direction to SOL to NOVA
+                        setSwapDirection("solToNova");
+                      }}
+                      className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm rounded-lg hover:from-purple-500 hover:to-blue-500 transition-colors flex items-center gap-2"
+                    >
                       <Sparkles className="h-4 w-4" />
                       Get More NOVA
                     </button>
@@ -749,20 +1034,20 @@ const NovaDex = () => {
                       <div>
                         <span className="text-sm text-white/60">From</span>
                         <div className="flex items-center gap-2 mt-1">
-                          <div className="w-6 h-6 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 flex items-center justify-center text-xs font-bold">
-                            S
+                          <div className={`w-6 h-6 rounded-full bg-gradient-to-r ${getFromTokenInfo().gradient} flex items-center justify-center text-xs font-bold`}>
+                            {getFromTokenInfo().symbol === "SOL" ? "S" : "N"}
                           </div>
-                          <span className="text-xl font-bold">{fromAmount} SOL</span>
+                          <span className="text-xl font-bold">{fromAmount} {getFromTokenInfo().symbol}</span>
                         </div>
                       </div>
                       <ArrowUpDown className="h-5 w-5 text-white/40" />
                       <div>
                         <span className="text-sm text-white/60">To</span>
                         <div className="flex items-center gap-2 mt-1">
-                          <div className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center text-xs font-bold">
-                            N
+                          <div className={`w-6 h-6 rounded-full bg-gradient-to-r ${getToTokenInfo().gradient} flex items-center justify-center text-xs font-bold`}>
+                            {getToTokenInfo().symbol === "SOL" ? "S" : "N"}
                           </div>
-                          <span className="text-xl font-bold">{toAmount} NOVA</span>
+                          <span className="text-xl font-bold">{toAmount} {getToTokenInfo().symbol}</span>
                         </div>
                       </div>
                     </div>
@@ -770,7 +1055,7 @@ const NovaDex = () => {
                     <div className="space-y-2 pt-3 border-t border-white/10">
                       <div className="flex justify-between text-sm">
                         <span className="text-white/60">Rate</span>
-                        <span>1 SOL = 42.5 NOVA</span>
+                        <span>{getSwapRate()}</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-white/60">Network Fee</span>
@@ -785,10 +1070,19 @@ const NovaDex = () => {
                   
                   <button
                     onClick={confirmSwap}
-                    className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl font-bold hover:from-purple-500 hover:to-blue-500 transition-all duration-300 flex items-center justify-center gap-2"
+                    disabled={localLoading}
+                    className={`w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl font-bold hover:from-purple-500 hover:to-blue-500 transition-all duration-300 flex items-center justify-center gap-2 ${
+                      localLoading ? "opacity-70 cursor-not-allowed" : ""
+                    }`}
                   >
-                    <Sparkles className="h-4 w-4" />
-                    Confirm Swap
+                    {localLoading ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4" />
+                        Confirm Swap
+                      </>
+                    )}
                   </button>
                 </>
               )}
@@ -807,7 +1101,7 @@ const NovaDex = () => {
                     <CheckCircle2 className="h-10 w-10 text-green-400" />
                   </div>
                   <h3 className="text-xl font-bold mb-2">Swap Successful!</h3>
-                  <p className="text-white/60 text-center mb-5">You've successfully swapped {fromAmount} SOL for {toAmount} NOVA.</p>
+                  <p className="text-white/60 text-center mb-5">You've successfully swapped {fromAmount} {getFromTokenInfo().symbol} for {toAmount} {getToTokenInfo().symbol}.</p>
                   <button
                     onClick={() => {
                       setShowSwapConfirmation(false);
@@ -817,6 +1111,42 @@ const NovaDex = () => {
                   >
                     Close
                   </button>
+                </div>
+              )}
+              
+              {swapStatus === "failed" && (
+                <div className="py-6 flex flex-col items-center">
+                  <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mb-6">
+                    <AlertTriangle className="h-10 w-10 text-red-400" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">Swap Failed</h3>
+                  <p className="text-white/60 text-center mb-2">Sorry, the swap transaction failed.</p>
+                  {swapError && (
+                    <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-5 w-full">
+                      <p className="text-red-400 text-sm">{swapError}</p>
+                    </div>
+                  )}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        setShowSwapConfirmation(false);
+                        setSwapStatus(null);
+                        setSwapError(null);
+                      }}
+                      className="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+                    >
+                      Close
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSwapStatus(null);
+                        setSwapError(null);
+                      }}
+                      className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg hover:from-purple-500 hover:to-blue-500 transition-colors"
+                    >
+                      Try Again
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -871,7 +1201,7 @@ const NovaDex = () => {
         }
       `}</style>
     </main>
-  )
-}
+  );
+};
 
 export default NovaDex;

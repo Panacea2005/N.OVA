@@ -1,9 +1,6 @@
-// This is the updated useWalletSummary hook that needs to be modified to ensure we get 
-// the raw summary object instead of just the text summary
-
 import { useState } from 'react';
 import { usePhantom } from './use-phantom';
-import { walletSummarizer } from '@/lib/services/chatbot/walletSummarizer';
+import { walletSummarizer } from '@/lib/services/ai/walletSummarizer';
 
 export const useWalletSummary = () => {
   const { walletAddress: publicKey, isConnected } = usePhantom();
