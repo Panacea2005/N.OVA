@@ -86,6 +86,13 @@ const Footer = dynamic(() => import("@/components/footer"), {
   ssr: false,
 });
 
+const NProfileBanner = dynamic(
+  () => import("@/components/3d/nprofile-banner"),
+  {
+    ssr: false,
+  }
+);
+
 // Tab enum for better readability
 const TABS = {
   DASHBOARD: "dashboard",
@@ -1892,6 +1899,14 @@ export default function ProfilePage() {
       <div className="container mx-auto px-2 pt-24 pb-16 relative z-10">
         {/* Main Content */}
         <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            className="mb-10"
+          >
+            <NProfileBanner />
+          </motion.div>
           {/* Main Header */}
           <div className="mb-8">
             <h1 className="text-8xl font-light mb-6">PROFILE</h1>

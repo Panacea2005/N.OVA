@@ -927,7 +927,7 @@ const TokenTransfer = () => {
 
           {/* Main Header */}
           <div className="mb-16">
-            <h1 className="text-8xl font-light mb-6">N.TRANSFER</h1>
+            <h1 className="text-8xl font-light mb-6">TRANSFER</h1>
             <p className="text-white/70 uppercase max-w-4xl">
               TRANSFER YOUR TOKENS SECURELY TO ANY SOLANA WALLET ADDRESS.
             </p>
