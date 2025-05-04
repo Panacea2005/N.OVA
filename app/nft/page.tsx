@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import Link from "next/link"
-import Image from "next/image"
-import { LucideProps } from "lucide-react"
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import Image from "next/image";
+import { LucideProps } from "lucide-react";
 import {
   Download,
   Share,
@@ -23,39 +23,48 @@ import {
   Shield,
   Key,
   History,
-} from "lucide-react"
-import Navigation from "@/components/navigation"
-import Footer from "@/components/footer"
-import { CardBackgroundService } from "@/app/nft/cardService"
-import QRCode from "qrcode"
-import html2canvas from 'html2canvas'
+} from "lucide-react";
+import Navigation from "@/components/navigation";
+import Footer from "@/components/footer";
+import { CardBackgroundService } from "@/app/nft/cardService";
+import QRCode from "qrcode";
+import html2canvas from "html2canvas";
+import dynamic from "next/dynamic";
+
+const NIdentityBanner = dynamic(() => import("@/components/3d/nidentity-banner"), {
+  ssr: false,
+});
 
 export default function IdentityCardGenerator() {
-  const [prompt, setPrompt] = useState("")
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [previewImage, setPreviewImage] = useState<string | null>(null)
-  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false)
-  const [selectedStyle, setSelectedStyle] = useState("cyberpunk")
-  const [generationHistory, setGenerationHistory] = useState<string[]>([])
-  const [errorMessage, setErrorMessage] = useState("")
-  const canvasRef = useRef<HTMLDivElement>(null)
+  const [prompt, setPrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
+  const [selectedStyle, setSelectedStyle] = useState("cyberpunk");
+  const [generationHistory, setGenerationHistory] = useState<string[]>([]);
+  const [errorMessage, setErrorMessage] = useState("");
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   // ID Card specific state
-  const [userName, setUserName] = useState("Mai Anh")
-  const [userAddress, setUserAddress] = useState("0x742d35Cc6634C0532925a3b844Bc454e4438f44e")
-  const [userRank, setUserRank] = useState("ARCHITECT")
-  const [userAvatar, setUserAvatar] = useState("/placeholder.svg?height=100&width=100")
-  const [isEditing, setIsEditing] = useState(false)
-  const [isCopied, setIsCopied] = useState(false)
+  const [userName, setUserName] = useState("Mai Anh");
+  const [userAddress, setUserAddress] = useState(
+    "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+  );
+  const [userRank, setUserRank] = useState("ARCHITECT");
+  const [userAvatar, setUserAvatar] = useState(
+    "/placeholder.svg?height=100&width=100"
+  );
+  const [isEditing, setIsEditing] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   // QR Code state
-  const [qrCodeUrl, setQrCodeUrl] = useState<string>("")
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
 
   // Simulated wallet data
   const [walletData, setWalletData] = useState({
     balance: "3427 $O",
     nftCount: 5,
-  })
+  });
 
   // Save user data to local storage whenever it changes
   useEffect(() => {
@@ -69,20 +78,23 @@ export default function IdentityCardGenerator() {
         "DAO VOTING RIGHTS",
         "EARLY ACCESS",
         "TOKEN REWARDS",
-        "AGENT STATUS"
+        "AGENT STATUS",
       ],
       dateVerified: new Date().toLocaleDateString(),
-    }
-    localStorage.setItem("identityCardData", JSON.stringify(userData))
-  }, [userName, userAddress, userRank, userAvatar, walletData])
+    };
+    localStorage.setItem("identityCardData", JSON.stringify(userData));
+  }, [userName, userAddress, userRank, userAvatar, walletData]);
 
   // Generate QR code with a static URL to /nft/scan
   useEffect(() => {
     const generateQrCode = async () => {
       try {
-        const baseUrl = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000"
-        const scanUrl = `${baseUrl}/nft/scan`
-        console.log("QR Code URL:", scanUrl)
+        const baseUrl =
+          typeof window !== "undefined"
+            ? window.location.origin
+            : "http://localhost:3000";
+        const scanUrl = `${baseUrl}/nft/scan`;
+        console.log("QR Code URL:", scanUrl);
 
         const qrCodeImageUrl = await QRCode.toDataURL(scanUrl, {
           width: 80,
@@ -92,39 +104,45 @@ export default function IdentityCardGenerator() {
             dark: "#000000",
             light: "#FFFFFF",
           },
-        })
-        setQrCodeUrl(qrCodeImageUrl)
+        });
+        setQrCodeUrl(qrCodeImageUrl);
       } catch (error) {
-        console.error("Error generating QR code:", error)
-        setQrCodeUrl("")
+        console.error("Error generating QR code:", error);
+        setQrCodeUrl("");
       }
-    }
+    };
 
-    generateQrCode()
-  }, [])
+    generateQrCode();
+  }, []);
 
   const handleGenerate = async () => {
-    if (!prompt.trim()) return
+    if (!prompt.trim()) return;
 
-    setIsGenerating(true)
-    setErrorMessage("")
+    setIsGenerating(true);
+    setErrorMessage("");
 
-    await new Promise(resolve => setTimeout(resolve, 50))
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
     try {
-      console.log('Generating card background with:', { prompt, selectedStyle })
-      const blob = await CardBackgroundService.generateCardBackground(prompt, selectedStyle)
+      console.log("Generating card background with:", {
+        prompt,
+        selectedStyle,
+      });
+      const blob = await CardBackgroundService.generateCardBackground(
+        prompt,
+        selectedStyle
+      );
 
       // Convert blob to Data URL
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = () => {
-        const dataUrl = reader.result as string
-        setPreviewImage(dataUrl)
-        localStorage.setItem("previewImage", dataUrl) // Save Data URL to local storage
-      }
-      reader.readAsDataURL(blob)
+        const dataUrl = reader.result as string;
+        setPreviewImage(dataUrl);
+        localStorage.setItem("previewImage", dataUrl); // Save Data URL to local storage
+      };
+      reader.readAsDataURL(blob);
 
-      setGenerationHistory(prev => [prompt, ...prev].slice(0, 10))
+      setGenerationHistory((prev) => [prompt, ...prev].slice(0, 10));
 
       // Save user data to local storage after generation
       const userData = {
@@ -137,86 +155,92 @@ export default function IdentityCardGenerator() {
           "DAO VOTING RIGHTS",
           "EARLY ACCESS",
           "TOKEN REWARDS",
-          "AGENT STATUS"
+          "AGENT STATUS",
         ],
         dateVerified: new Date().toLocaleDateString(),
-      }
-      localStorage.setItem("identityCardData", JSON.stringify(userData))
+      };
+      localStorage.setItem("identityCardData", JSON.stringify(userData));
     } catch (error: any) {
-      console.error('Error generating card background:', error)
-      const displayError = error.message.includes('Authentication error')
-        ? 'API Error: Invalid API key or permissions'
-        : error.message.includes('Rate limit exceeded')
-        ? 'API Error: Rate limit exceeded, try again later'
-        : error.message.includes('Stability API error')
-        ? `API Error: ${error.message.split(' - ')[1] || 'Invalid request parameters'}`
-        : 'Failed to generate card background'
-      setErrorMessage(displayError)
+      console.error("Error generating card background:", error);
+      const displayError = error.message.includes("Authentication error")
+        ? "API Error: Invalid API key or permissions"
+        : error.message.includes("Rate limit exceeded")
+        ? "API Error: Rate limit exceeded, try again later"
+        : error.message.includes("Stability API error")
+        ? `API Error: ${
+            error.message.split(" - ")[1] || "Invalid request parameters"
+          }`
+        : "Failed to generate card background";
+      setErrorMessage(displayError);
     } finally {
-      setIsGenerating(false)
+      setIsGenerating(false);
     }
-  }
+  };
 
   // Handle avatar upload
   const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+    const file = event.target.files?.[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (e) => {
-        const result = e.target?.result as string
-        setUserAvatar(result)
-      }
-      reader.readAsDataURL(file)
+        const result = e.target?.result as string;
+        setUserAvatar(result);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   // Clean up object URLs to prevent memory leaks
   useEffect(() => {
     return () => {
-      if (previewImage && previewImage.startsWith('blob:')) {
-        URL.revokeObjectURL(previewImage)
+      if (previewImage && previewImage.startsWith("blob:")) {
+        URL.revokeObjectURL(previewImage);
       }
-    }
-  }, [previewImage])
+    };
+  }, [previewImage]);
 
   const savePrompt = () => {
-    if (!prompt.trim()) return
-    alert("Prompt saved to your collection")
-  }
+    if (!prompt.trim()) return;
+    alert("Prompt saved to your collection");
+  };
 
   const copyAddress = () => {
-    navigator.clipboard.writeText(userAddress)
-    setIsCopied(true)
-    setTimeout(() => setIsCopied(false), 2000)
-  }
+    navigator.clipboard.writeText(userAddress);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
 
   const downloadCard = async () => {
     if (!previewImage || !canvasRef.current) {
-      setErrorMessage("No card available to download. Please generate a card first.")
-      return
+      setErrorMessage(
+        "No card available to download. Please generate a card first."
+      );
+      return;
     }
 
     try {
-      const cardElement = canvasRef.current.querySelector('.relative.w-full.max-w-md.mx-auto.my-10')
+      const cardElement = canvasRef.current.querySelector(
+        ".relative.w-full.max-w-md.mx-auto.my-10"
+      );
       if (!cardElement) {
-        throw new Error("Card element not found")
+        throw new Error("Card element not found");
       }
 
       const canvas = await html2canvas(cardElement as HTMLElement, {
         backgroundColor: null,
         scale: 2,
         useCORS: true,
-      })
+      });
 
-      const link = document.createElement('a')
-      link.href = canvas.toDataURL('image/png')
-      link.download = 'O-XYZ-Identity-Card.png'
-      link.click()
+      const link = document.createElement("a");
+      link.href = canvas.toDataURL("image/png");
+      link.download = "O-XYZ-Identity-Card.png";
+      link.click();
     } catch (error) {
-      console.error('Error downloading card:', error)
-      setErrorMessage("Failed to download card. Please try again.")
+      console.error("Error downloading card:", error);
+      setErrorMessage("Failed to download card. Please try again.");
     }
-  }
+  };
 
   // Example styles for the generator
   const styles = [
@@ -225,11 +249,14 @@ export default function IdentityCardGenerator() {
     { id: "neural", name: "Neural Network", description: "AI visualization" },
     { id: "digital", name: "Digital Space", description: "Virtual reality" },
     { id: "cosmic", name: "Cosmic", description: "Space and galaxies" },
-    { id: "matrix", name: "Matrix", description: "Digital code rain" }
-  ]
+    { id: "matrix", name: "Matrix", description: "Digital code rain" },
+  ];
 
   // Truncate wallet address for display
-  const truncatedAddress = `${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}`
+  const truncatedAddress = `${userAddress.substring(
+    0,
+    6
+  )}...${userAddress.substring(userAddress.length - 4)}`;
 
   return (
     <>
@@ -238,43 +265,58 @@ export default function IdentityCardGenerator() {
           <div
             className="absolute inset-0 opacity-10"
             style={{
-              backgroundImage: 'linear-gradient(to right, rgba(139, 92, 246, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(139, 92, 246, 0.1) 1px, transparent 1px)',
-              backgroundSize: '40px 40px'
+              backgroundImage:
+                "linear-gradient(to right, rgba(139, 92, 246, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(139, 92, 246, 0.1) 1px, transparent 1px)",
+              backgroundSize: "40px 40px",
             }}
           />
           <div
             className="absolute inset-0 opacity-30"
             style={{
-              background: 'radial-gradient(circle at center, rgba(139, 92, 246, 0.2) 0%, rgba(0, 0, 0, 0) 70%)'
+              background:
+                "radial-gradient(circle at center, rgba(139, 92, 246, 0.2) 0%, rgba(0, 0, 0, 0) 70%)",
             }}
           />
-          {Array(4).fill(0).map((_, i) => (
-            <motion.div
-              key={`scan-${i}`}
-              className="absolute w-full h-[1px] bg-purple-400/10"
-              style={{ top: `${i * 25}%` }}
-              animate={{
-                opacity: [0.1, 0.2, 0.1],
-                scaleY: [1, 1.5, 1],
-                x: ['-100%', '100%']
-              }}
-              transition={{
-                duration: 15 + i % 3,
-                repeat: Infinity,
-                delay: i * 1.5,
-              }}
-            />
-          ))}
+          {Array(4)
+            .fill(0)
+            .map((_, i) => (
+              <motion.div
+                key={`scan-${i}`}
+                className="absolute w-full h-[1px] bg-purple-400/10"
+                style={{ top: `${i * 25}%` }}
+                animate={{
+                  opacity: [0.1, 0.2, 0.1],
+                  scaleY: [1, 1.5, 1],
+                  x: ["-100%", "100%"],
+                }}
+                transition={{
+                  duration: 15 + (i % 3),
+                  repeat: Infinity,
+                  delay: i * 1.5,
+                }}
+              />
+            ))}
         </div>
 
         <Navigation />
 
         <main className="container mx-auto px-4 pt-20 pb-32 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            className="mb-10"
+          >
+            <NIdentityBanner />
+          </motion.div>
+
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-purple-300">
-              O.IDENTITY
+              N.IDENTITY
             </h1>
-            <p className="text-white/70">Generate your unique AI-powered Sovereign Identity Card</p>
+            <p className="text-white/70">
+              Generate your unique AI-powered Sovereign Identity Card
+            </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -340,7 +382,9 @@ export default function IdentityCardGenerator() {
                       onClick={() => setSelectedStyle(style.id)}
                     >
                       <span className="font-medium">{style.name}</span>
-                      <span className="text-[10px] mt-1 opacity-70">{style.description}</span>
+                      <span className="text-[10px] mt-1 opacity-70">
+                        {style.description}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -369,7 +413,9 @@ export default function IdentityCardGenerator() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="text-xs text-white/60 block mb-1">Display Name</label>
+                    <label className="text-xs text-white/60 block mb-1">
+                      Display Name
+                    </label>
                     {isEditing ? (
                       <input
                         type="text"
@@ -410,7 +456,9 @@ export default function IdentityCardGenerator() {
                   </div>
 
                   <div>
-                    <label className="text-xs text-white/60 block mb-1">Sovereign Rank</label>
+                    <label className="text-xs text-white/60 block mb-1">
+                      Sovereign Rank
+                    </label>
                     {isEditing ? (
                       <select
                         value={userRank}
@@ -431,10 +479,16 @@ export default function IdentityCardGenerator() {
                   </div>
 
                   <div>
-                    <label className="text-xs text-white/60 block mb-1">Profile Image</label>
+                    <label className="text-xs text-white/60 block mb-1">
+                      Profile Image
+                    </label>
                     <div className="flex items-center space-x-4">
                       <div className="w-16 h-16 bg-black/50 border border-white/10 rounded-sm overflow-hidden">
-                        <img src={userAvatar} alt="User avatar" className="w-full h-full object-cover" />
+                        <img
+                          src={userAvatar}
+                          alt="User avatar"
+                          className="w-full h-full object-cover"
+                        />
                       </div>
 
                       {isEditing && (
@@ -466,10 +520,14 @@ export default function IdentityCardGenerator() {
                 >
                   <div className="flex items-center">
                     <Sliders className="w-4 h-4 mr-2 text-purple-400" />
-                    <span className="text-sm font-medium">Advanced Settings</span>
+                    <span className="text-sm font-medium">
+                      Advanced Settings
+                    </span>
                   </div>
                   <ChevronDown
-                    className={`w-4 h-4 text-white/60 transition-transform ${showAdvancedSettings ? 'rotate-180' : ''}`}
+                    className={`w-4 h-4 text-white/60 transition-transform ${
+                      showAdvancedSettings ? "rotate-180" : ""
+                    }`}
                   />
                 </button>
 
@@ -485,7 +543,9 @@ export default function IdentityCardGenerator() {
                       <div className="pt-4 space-y-4">
                         <div className="grid grid-cols-2 gap-2">
                           <div className="bg-black/30 border border-white/10 rounded-sm p-2">
-                            <label className="text-xs text-white/60 block mb-1">Card Design</label>
+                            <label className="text-xs text-white/60 block mb-1">
+                              Card Design
+                            </label>
                             <select className="w-full bg-black/50 border border-white/10 rounded-sm p-1 text-sm focus:outline-none focus:border-purple-500/50">
                               <option value="standard">Standard</option>
                               <option value="premium">Premium</option>
@@ -493,7 +553,9 @@ export default function IdentityCardGenerator() {
                             </select>
                           </div>
                           <div className="bg-black/30 border border-white/10 rounded-sm p-2">
-                            <label className="text-xs text-white/60 block mb-1">Encryption Level</label>
+                            <label className="text-xs text-white/60 block mb-1">
+                              Encryption Level
+                            </label>
                             <select className="w-full bg-black/50 border border-white/10 rounded-sm p-1 text-sm focus:outline-none focus:border-purple-500/50">
                               <option value="standard">Standard</option>
                               <option value="advanced">Advanced</option>
@@ -526,9 +588,25 @@ export default function IdentityCardGenerator() {
                   <span className="relative z-10 flex items-center justify-center">
                     {isGenerating ? (
                       <span className="flex items-center">
-                        <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
                         </svg>
                         Generating Card...
                       </span>
@@ -539,18 +617,16 @@ export default function IdentityCardGenerator() {
                       </span>
                     )}
                   </span>
-                  <motion.div
-                    className="absolute top-0 -right-40 w-32 h-full bg-white transform rotate-12 translate-x-0 -translate-y-0 opacity-20 group-hover:translate-x-80 transition-transform duration-1000"
-                  />
+                  <motion.div className="absolute top-0 -right-40 w-32 h-full bg-white transform rotate-12 translate-x-0 -translate-y-0 opacity-20 group-hover:translate-x-80 transition-transform duration-1000" />
                 </button>
-                <motion.div
-                  className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-sm blur-lg opacity-30 group-hover:opacity-100 transition-opacity duration-500 -z-10"
-                />
+                <motion.div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-sm blur-lg opacity-30 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
               </div>
 
               {errorMessage && (
                 <div className="relative bg-red-900/30 border border-red-500/50 rounded-sm p-4">
-                  <p className="text-xs text-red-400 text-center">{errorMessage}</p>
+                  <p className="text-xs text-red-400 text-center">
+                    {errorMessage}
+                  </p>
                 </div>
               )}
 
@@ -575,12 +651,16 @@ export default function IdentityCardGenerator() {
                           className="text-xs p-2 bg-black/30 border border-white/10 rounded-sm hover:border-purple-500/30 cursor-pointer transition-colors"
                           onClick={() => setPrompt(historyPrompt)}
                         >
-                          {historyPrompt.length > 60 ? historyPrompt.substring(0, 60) + "..." : historyPrompt}
+                          {historyPrompt.length > 60
+                            ? historyPrompt.substring(0, 60) + "..."
+                            : historyPrompt}
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center text-white/40 text-xs py-4">No generation history yet</div>
+                    <div className="text-center text-white/40 text-xs py-4">
+                      No generation history yet
+                    </div>
                   )}
                 </div>
               </div>
@@ -597,13 +677,19 @@ export default function IdentityCardGenerator() {
                   <div className="flex items-center">
                     <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse mr-2" />
                     <span className="text-sm font-mono text-white/70">
-                      {previewImage ? "IDENTITY CARD PREVIEW" : "IDENTITY CARD PREVIEW"}
+                      {previewImage
+                        ? "IDENTITY CARD PREVIEW"
+                        : "IDENTITY CARD PREVIEW"}
                     </span>
                   </div>
 
                   <div className="flex space-x-3">
                     <button
-                      className={`p-1.5 rounded-sm ${previewImage ? 'text-white/80 hover:bg-white/5' : 'text-white/20'} transition-colors flex items-center text-xs`}
+                      className={`p-1.5 rounded-sm ${
+                        previewImage
+                          ? "text-white/80 hover:bg-white/5"
+                          : "text-white/20"
+                      } transition-colors flex items-center text-xs`}
                       onClick={downloadCard}
                       disabled={previewImage === null}
                     >
@@ -611,7 +697,11 @@ export default function IdentityCardGenerator() {
                       <span>SAVE</span>
                     </button>
                     <button
-                      className={`p-1.5 rounded-sm ${previewImage ? 'text-white/80 hover:bg-white/5' : 'text-white/20'} transition-colors flex items-center text-xs`}
+                      className={`p-1.5 rounded-sm ${
+                        previewImage
+                          ? "text-white/80 hover:bg-white/5"
+                          : "text-white/20"
+                      } transition-colors flex items-center text-xs`}
                       disabled={previewImage === null}
                     >
                       <Share className="w-3 h-3 mr-1" />
@@ -628,13 +718,19 @@ export default function IdentityCardGenerator() {
                   {isGenerating ? (
                     <div className="text-center">
                       <div className="w-16 h-16 border-t-2 border-b-2 border-purple-500 rounded-full animate-spin mb-4 mx-auto" />
-                      <div className="text-white/70 animate-pulse">Generating your identity card...</div>
-                      <div className="text-xs text-white/40 mt-2">Creating sovereign credentials</div>
+                      <div className="text-white/70 animate-pulse">
+                        Generating your identity card...
+                      </div>
+                      <div className="text-xs text-white/40 mt-2">
+                        Creating sovereign credentials
+                      </div>
                     </div>
                   ) : errorMessage ? (
                     <div className="text-center">
                       <div className="text-white/70">Error generating card</div>
-                      <div className="text-xs text-red-400 mt-2">{errorMessage}</div>
+                      <div className="text-xs text-red-400 mt-2">
+                        {errorMessage}
+                      </div>
                     </div>
                   ) : (
                     <div className="relative w-full max-w-md mx-auto my-10">
@@ -652,20 +748,21 @@ export default function IdentityCardGenerator() {
                           <div
                             className="absolute inset-0 pointer-events-none opacity-10"
                             style={{
-                              backgroundImage: 'linear-gradient(to right, rgba(139, 92, 246, 0.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(139, 92, 246, 0.5) 1px, transparent 1px)',
-                              backgroundSize: '20px 20px'
+                              backgroundImage:
+                                "linear-gradient(to right, rgba(139, 92, 246, 0.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(139, 92, 246, 0.5) 1px, transparent 1px)",
+                              backgroundSize: "20px 20px",
                             }}
                           />
                           <motion.div
                             className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent"
                             animate={{
                               top: ["0%", "100%"],
-                              opacity: [0, 0.7, 0]
+                              opacity: [0, 0.7, 0],
                             }}
                             transition={{
                               duration: 3,
                               repeat: Infinity,
-                              ease: "linear"
+                              ease: "linear",
                             }}
                           />
                         </div>
@@ -673,28 +770,46 @@ export default function IdentityCardGenerator() {
                         <div className="absolute inset-0 z-10 p-5 flex flex-col">
                           <div className="flex justify-between items-start mb-3">
                             <div>
-                              <div className="text-xs text-white/80 font-mono mb-1">O.XYZ IDENTITY</div>
-                              <div className="text-xl font-bold text-white">SOVEREIGN CARD</div>
+                              <div className="text-xs text-white/80 font-mono mb-1">
+                                N.IDENTITY
+                              </div>
+                              <div className="text-xl font-bold text-white">
+                                SOVEREIGN CARD
+                              </div>
                             </div>
                             <div className="px-2 py-1 bg-purple-500/20 border border-purple-500/40 rounded-sm">
-                              <div className="text-xs text-white/80 font-mono">{userRank}</div>
+                              <div className="text-xs text-white/80 font-mono">
+                                {userRank}
+                              </div>
                             </div>
                           </div>
 
                           <div className="flex space-x-4 mb-6">
                             <div className="w-16 h-16 rounded-md overflow-hidden border border-white/20">
-                              <img src={userAvatar} alt="User" className="w-full h-full object-cover" />
+                              <img
+                                src={userAvatar}
+                                alt="User"
+                                className="w-full h-full object-cover"
+                              />
                             </div>
                             <div className="flex-1">
-                              <div className="text-sm font-bold text-white mb-1">{userName}</div>
-                              <div className="text-xs text-white/70 font-mono mb-1 truncate">{truncatedAddress}</div>
-                              <div className="text-[9px] text-white/50 font-mono">VERIFIED: {new Date().toLocaleDateString()}</div>
+                              <div className="text-sm font-bold text-white mb-1">
+                                {userName}
+                              </div>
+                              <div className="text-xs text-white/70 font-mono mb-1 truncate">
+                                {truncatedAddress}
+                              </div>
+                              <div className="text-[9px] text-white/50 font-mono">
+                                VERIFIED: {new Date().toLocaleDateString()}
+                              </div>
                             </div>
                           </div>
 
                           <div className="flex-1 flex flex-col">
                             <div className="relative flex-1">
-                              <div className="text-xs text-white/60 font-mono mb-1">PRIVILEGES</div>
+                              <div className="text-xs text-white/60 font-mono mb-1">
+                                PRIVILEGES
+                              </div>
                               <div className="grid grid-cols-2 gap-2 mb-4">
                                 <div className="text-[10px] text-white/80 flex items-center">
                                   <div className="w-1 h-1 rounded-full bg-purple-400 mr-1" />
@@ -730,7 +845,12 @@ export default function IdentityCardGenerator() {
                       </div>
                       <div className="absolute -bottom-4 left-4 right-4 h-4 bg-black blur-xl" />
                       <div className="absolute -bottom-10 left-0 right-0 text-center">
-                        <div className="text-xs text-white/50 font-mono">BLOCKCHAIN ID: #{Math.floor(Math.random() * 10000).toString().padStart(4, '0')}</div>
+                        <div className="text-xs text-white/50 font-mono">
+                          BLOCKCHAIN ID: #
+                          {Math.floor(Math.random() * 10000)
+                            .toString()
+                            .padStart(4, "0")}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -746,8 +866,13 @@ export default function IdentityCardGenerator() {
               <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-purple-500/30 group-hover:border-purple-500/70 transition-colors" />
               <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-purple-500/30 group-hover:border-purple-500/70 transition-colors" />
 
-              <h3 className="text-lg font-medium mb-2 text-purple-300">Soulbound Identity</h3>
-              <p className="text-white/70 text-sm">Your O.IDENTITY card is cryptographically bound to your wallet and cannot be transferred or duplicated.</p>
+              <h3 className="text-lg font-medium mb-2 text-purple-300">
+                Soulbound Identity
+              </h3>
+              <p className="text-white/70 text-sm">
+                Your N.IDENTITY card is cryptographically bound to your wallet
+                and cannot be transferred or duplicated.
+              </p>
             </div>
 
             <div className="relative bg-black/30 backdrop-blur-sm border border-white/10 rounded-sm p-4 group hover:border-purple-500/30 transition-all duration-300">
@@ -756,8 +881,13 @@ export default function IdentityCardGenerator() {
               <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-purple-500/30 group-hover:border-purple-500/70 transition-colors" />
               <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-purple-500/30 group-hover:border-purple-500/70 transition-colors" />
 
-              <h3 className="text-lg font-medium mb-2 text-purple-300">Quantum Security</h3>
-              <p className="text-white/70 text-sm">Advanced cryptographic protection ensures your identity remains secure even against quantum computing attacks.</p>
+              <h3 className="text-lg font-medium mb-2 text-purple-300">
+                Quantum Security
+              </h3>
+              <p className="text-white/70 text-sm">
+                Advanced cryptographic protection ensures your identity remains
+                secure even against quantum computing attacks.
+              </p>
             </div>
 
             <div className="relative bg-black/30 backdrop-blur-sm border border-white/10 rounded-sm p-4 group hover:border-purple-500/30 transition-all duration-300">
@@ -766,8 +896,13 @@ export default function IdentityCardGenerator() {
               <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-purple-500/30 group-hover:border-purple-500/70 transition-colors" />
               <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-purple-500/30 group-hover:border-purple-500/70 transition-colors" />
 
-              <h3 className="text-lg font-medium mb-2 text-purple-300">DAO Access</h3>
-              <p className="text-white/70 text-sm">Your identity card grants you voting rights in the O.DAO governance system and access to exclusive ecosystem features.</p>
+              <h3 className="text-lg font-medium mb-2 text-purple-300">
+                DAO Access
+              </h3>
+              <p className="text-white/70 text-sm">
+                Your identity card grants you voting rights in the N.DAO
+                governance system and access to exclusive ecosystem features.
+              </p>
             </div>
           </div>
         </main>
@@ -807,5 +942,5 @@ export default function IdentityCardGenerator() {
         `}
       </style>
     </>
-  )
+  );
 }
