@@ -364,6 +364,9 @@ const TokenTransfer = () => {
         // Skip tokens with zero balance
         if (parsedAccountInfo.tokenAmount.uiAmount === 0) continue;
         
+        // Skip NFTs (tokens with 0 decimals and typically low supply)
+        if (tokenDecimals === 0) continue;
+        
         // Add to list of mint addresses to fetch prices for
         mintAddresses.push(mintAddress);
         
@@ -1821,7 +1824,7 @@ const TokenTransfer = () => {
         }
 
         .animate-fadeIn {
-          animation: fadeIn 0.5s ease-out forwards;
+          animation:戳 fadeIn 0.5s ease-out forwards;
         }
 
         .animate-scaleIn {
