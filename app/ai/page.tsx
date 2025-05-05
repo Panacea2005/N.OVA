@@ -26,6 +26,7 @@ import {
   Cpu,
   BookOpen,
   Wallet,
+  Coins,
 } from "lucide-react";
 import { Canvas } from "@react-three/fiber";
 import {
@@ -39,9 +40,12 @@ import {
   ChatHistory,
 } from "@/lib/services/ai/chatStore"; // Import the new chatStore
 import AnalysisResultDisplay from "./components/analysis-result-display";
+import TokenInsightsDisplay from "./components/token-insights-display";
 import WalletSummaryDisplay from "./components/wallet-summary-display";
+import { useTokenInsights } from "@/hooks/use-token-insights";
 import { useWalletSummary } from "@/hooks/use-wallet-summary";
 import { usePhantom } from "@/hooks/use-phantom";
+
 import ReactMarkdown from "react-markdown";
 
 // Import the Navigation component
@@ -87,6 +91,7 @@ export default function AIPage() {
   const [mounted, setMounted] = useState(false);
   const [input, setInput] = useState("");
   type Message = BaseMessage & {
+    tokenInsights?: any; // Add tokenInsights property
     walletSummary?: any; // Add walletSummary property
   };
 
@@ -115,6 +120,12 @@ export default function AIPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { isConnected } = usePhantom();
+  const {
+    handleTokenInput,
+    isLoading: isAnalyzingToken,
+    error: tokenError,
+    tokenInsights,
+  } = useTokenInsights();
   const {
     summarizeWallet,
     isLoading: isSummarizing,
@@ -472,10 +483,118 @@ export default function AIPage() {
     );
   };
 
-  const handleDeploy = () => {
+  const handleTokenInsights = async () => {
     setShowInitialMessage(false);
-    // Implement deploy functionality
-    console.log("Deploy functionality not yet implemented");
+    if (!input.trim()) return;
+
+    try {
+      setIsLoading(true);
+      const userMessage: Message = {
+        role: "user",
+        content: `Get insights for token: ${input}`,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, userMessage]);
+      setMessages((prev) => [...prev, { role: "assistant", content: "..." }]);
+
+      const insights = await handleTokenInput(input);
+      if (!insights) {
+        setMessages((prev) => [
+          ...prev.slice(0, -1),
+          {
+            role: "assistant",
+            content:
+              tokenError ||
+              "Could not retrieve token insights. Please check the token address and try again.",
+            timestamp: new Date(),
+          },
+        ]);
+        return;
+      }
+
+      setMessages((prev) => [
+        ...prev.slice(0, -1),
+        {
+          role: "assistant",
+          content: "",
+          tokenInsights: insights,
+          timestamp: new Date(),
+        },
+      ]);
+
+      setInput("");
+
+      const updatedMessages: Message[] = [
+        ...messages,
+        userMessage,
+        {
+          role: "assistant" as "assistant",
+          content: "",
+          tokenInsights: insights,
+          timestamp: new Date(),
+        },
+      ];
+
+      if (currentChatId === null) {
+        const title = chatStore.generateChatTitle(
+          updatedMessages.map((msg) => ({
+            ...msg,
+            role: msg.role as "user" | "assistant" | "system",
+          }))
+        );
+        const newChat: ChatHistory = {
+          id: Date.now(),
+          title: title,
+          date: new Date().toLocaleDateString(),
+          messages: updatedMessages.map((msg) => ({
+            ...msg,
+            role: msg.role as "user" | "assistant" | "system",
+            tokenInsights: msg.tokenInsights || undefined,
+          })),
+          user_id: userId,
+        };
+
+        const savedChat = await chatStore.saveChat(newChat);
+        if (savedChat) {
+          setCurrentChatId(savedChat.id);
+        }
+      } else {
+        await chatStore.updateChat(currentChatId, {
+          messages: updatedMessages.map((msg) => ({
+            ...msg,
+            role: msg.role as "assistant" | "user" | "system",
+            tokenInsights: msg.tokenInsights || undefined,
+          })),
+        });
+      }
+
+      const history = await chatStore.getChatHistory(userId);
+      setChatHistory(history);
+    } catch (error) {
+      console.error("Error in handleTokenInsights:", error);
+      setMessages((prev) => [
+        ...prev.slice(0, -1),
+        {
+          role: "assistant",
+          content:
+            "I encountered an error retrieving token insights. Please try again.",
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const renderTokenInsights = (insights: any) => {
+    return (
+      <TokenInsightsDisplay
+        insights={insights}
+        isLoading={isAnalyzingToken}
+        onCopy={handleCopyText}
+      />
+    );
   };
 
   const handleTokenize = () => {
@@ -494,9 +613,9 @@ export default function AIPage() {
           content: "Summarize my wallet activity",
           timestamp: new Date(),
         };
-  
+
         setMessages((prev) => [...prev, userMessage]);
-  
+
         setMessages((prev) => [
           ...prev,
           {
@@ -506,7 +625,7 @@ export default function AIPage() {
             timestamp: new Date(),
           },
         ]);
-  
+
         // Save chat using existing functionality
         if (currentChatId === null) {
           // New chat
@@ -520,7 +639,7 @@ export default function AIPage() {
               timestamp: new Date(),
             },
           ];
-  
+
           const title = chatStore.generateChatTitle(
             updatedMessages.map((msg) => ({
               ...msg,
@@ -537,7 +656,7 @@ export default function AIPage() {
             })),
             user_id: userId,
           };
-  
+
           const savedChat = await chatStore.saveChat(newChat);
           if (savedChat) {
             setCurrentChatId(savedChat.id);
@@ -557,43 +676,44 @@ export default function AIPage() {
             ],
           });
         }
-  
+
         // Refresh chat history
         const history = await chatStore.getChatHistory(userId);
         setChatHistory(history);
-  
+
         return;
       }
-  
+
       // Add user request message
       const userMessage: Message = {
         role: "user",
         content: "Summarize my wallet activity for the past 24 hours",
         timestamp: new Date(),
       };
-  
+
       setMessages((prev) => [...prev, userMessage]);
-  
+
       // Add loading message
       setMessages((prev) => [...prev, { role: "assistant", content: "..." }]);
-  
+
       // Trigger the wallet summary and get the raw summary data
       const summaryData = await summarizeWallet();
       console.log("Summary data received from summarizeWallet:", summaryData);
-  
+
       // If no summary data was returned (e.g., due to an error), provide fallback content
       if (!summaryData) {
         setMessages((prev) => [
           ...prev.slice(0, -1), // Remove loading message
           {
             role: "assistant",
-            content: "I couldn't retrieve your wallet summary at this time. Please try again later.",
+            content:
+              "I couldn't retrieve your wallet summary at this time. Please try again later.",
             timestamp: new Date(),
           },
         ]);
         return;
       }
-  
+
       // Replace loading message with summary using the raw summary object
       setMessages((prev) => [
         ...prev.slice(0, -1), // Remove loading message
@@ -604,7 +724,7 @@ export default function AIPage() {
           timestamp: new Date(),
         },
       ]);
-  
+
       // Save chat using existing functionality
       if (currentChatId === null) {
         // New chat
@@ -618,7 +738,7 @@ export default function AIPage() {
             timestamp: new Date(),
           },
         ];
-  
+
         const title = chatStore.generateChatTitle(
           updatedMessages.map((msg) => ({
             ...msg,
@@ -637,7 +757,7 @@ export default function AIPage() {
           })),
           user_id: userId,
         };
-  
+
         const savedChat = await chatStore.saveChat(newChat);
         if (savedChat) {
           setCurrentChatId(savedChat.id);
@@ -657,13 +777,13 @@ export default function AIPage() {
           ],
         });
       }
-  
+
       // Refresh chat history
       const history = await chatStore.getChatHistory(userId);
       setChatHistory(history);
     } catch (error) {
       console.error("Error in handleSummarize:", error);
-  
+
       // Show error message
       setMessages((prev) => [
         ...prev.slice(0, -1), // Remove loading message
@@ -674,7 +794,7 @@ export default function AIPage() {
           timestamp: new Date(),
         },
       ]);
-  
+
       // Still save the error message to chat history
       if (currentChatId !== null) {
         await chatStore.updateChat(currentChatId, {
@@ -693,7 +813,7 @@ export default function AIPage() {
             },
           ],
         });
-  
+
         // Refresh chat history
         const history = await chatStore.getChatHistory(userId);
         setChatHistory(history);
@@ -1036,6 +1156,8 @@ export default function AIPage() {
                                 renderAnalysisResult(message.analysisResult)
                               ) : message.walletSummary ? (
                                 renderWalletSummary(message.walletSummary)
+                              ) : message.tokenInsights ? (
+                                renderTokenInsights(message.tokenInsights)
                               ) : (
                                 <div className="text-white break-words overflow-wrap-anywhere">
                                   {message.content === "..." ? (
@@ -1328,12 +1450,12 @@ export default function AIPage() {
                   </div>
                 </motion.button>
 
-                {/* Deploy Button */}
+                {/* Token Button */}
                 <motion.button
                   className="relative overflow-hidden rounded-md bg-black/50 backdrop-blur-sm"
-                  onMouseEnter={() => setHoveredButton("deploy")}
+                  onMouseEnter={() => setHoveredButton("tokenInsights")}
                   onMouseLeave={() => setHoveredButton(null)}
-                  onClick={handleDeploy}
+                  onClick={handleTokenInsights}
                   whileTap={{ scale: 0.98 }}
                 >
                   {/* Animated border */}
@@ -1343,50 +1465,52 @@ export default function AIPage() {
                       className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-600 to-transparent"
                       animate={{
                         backgroundPosition:
-                          hoveredButton === "deploy"
+                          hoveredButton === "tokenInsights"
                             ? ["0% center", "100% center"]
                             : "0% center",
-                        opacity: hoveredButton === "deploy" ? 0.9 : 0.5,
+                        opacity: hoveredButton === "tokenInsights" ? 0.9 : 0.5,
                       }}
                       transition={{
                         duration: 2,
-                        repeat: hoveredButton === "deploy" ? Infinity : 0,
+                        repeat:
+                          hoveredButton === "tokenInsights" ? Infinity : 0,
                       }}
                     />
-
                     {/* Bottom border */}
                     <motion.div
                       className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500 to-transparent"
                       animate={{
                         backgroundPosition:
-                          hoveredButton === "deploy"
+                          hoveredButton === "tokenInsights"
                             ? ["100% center", "0% center"]
                             : "100% center",
-                        opacity: hoveredButton === "deploy" ? 0.9 : 0.5,
+                        opacity: hoveredButton === "tokenInsights" ? 0.9 : 0.5,
                       }}
                       transition={{
                         duration: 2,
-                        repeat: hoveredButton === "deploy" ? Infinity : 0,
+                        repeat:
+                          hoveredButton === "tokenInsights" ? Infinity : 0,
                       }}
                     />
                   </div>
 
                   {/* Button content */}
                   <div className="relative z-10 py-2 flex flex-col items-center gap-1 px-1">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center bg-blue-900/50">
-                      <Cpu className="w-3.5 h-3.5 text-blue-400" />
+                    <div className="w-6 h-6 rounded-full Горький items-center justify-center bg-blue-900/50">
+                      <Coins className="w-3.5 h-3.5 text-blue-400" />
                     </div>
                     <span className="text-[10px] font-light text-blue-300">
-                      Deploy
+                      Insights
                     </span>
 
                     {/* Status indicator dot */}
                     <motion.div
                       className="absolute top-1 right-1 w-1 h-1 rounded-full bg-blue-500"
                       animate={{
-                        scale: hoveredButton === "deploy" ? [1, 1.5, 1] : 1,
+                        scale:
+                          hoveredButton === "tokenInsights" ? [1, 1.5, 1] : 1,
                         boxShadow:
-                          hoveredButton === "deploy"
+                          hoveredButton === "tokenInsights"
                             ? [
                                 "0 0 0px rgba(59, 130, 246, 0.2)",
                                 "0 0 4px rgba(59, 130, 246, 0.7)",
@@ -1396,7 +1520,8 @@ export default function AIPage() {
                       }}
                       transition={{
                         duration: 1.5,
-                        repeat: hoveredButton === "deploy" ? Infinity : 0,
+                        repeat:
+                          hoveredButton === "tokenInsights" ? Infinity : 0,
                         ease: "easeInOut",
                       }}
                     />
@@ -1406,7 +1531,7 @@ export default function AIPage() {
                   <motion.div
                     className="absolute inset-0 pointer-events-none rounded-md opacity-0"
                     animate={{
-                      opacity: hoveredButton === "deploy" ? 0.15 : 0,
+                      opacity: hoveredButton === "tokenInsights" ? 0.15 : 0,
                       background:
                         "linear-gradient(90deg, rgba(37, 99, 235, 0.7) 0%, rgba(59, 130, 246, 0.7) 100%)",
                     }}
