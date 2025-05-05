@@ -58,9 +58,13 @@ export default function Navigation() {
   const navItems = [
     { name: "N.OVA", href: "/" },
     { name: "N.ABOUT", href: "/about" },
+    { name: "N.TOKENOMICS", href: "/tokenomics" },
     { name: "N.AI", href: "/ai" },
     { name: "N.IDENTITY", href: "/nft" },
-    { name: "N.DASHBOARD", href: "/profile" },
+    { name: "N.DAO", href: "/dao" },
+    { name: "N.TRANSFER", href: "/transfer" },
+    { name: "N.DASHBOARD", href: "/dashboard" },
+    { name: "N.PROFILE", href: "/profile" },
   ];
 
   return (
