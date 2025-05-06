@@ -209,6 +209,13 @@ const getExplorerUrl = (signature: any, cluster = "mainnet-beta") => {
   return `https://explorer.solana.com/tx/${signature}?cluster=${cluster}`;
 };
 
+const SUPPLY_TOKEN_MINTS = [
+  "So11111111111111111111111111111111111111112", // SOL
+  "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", // USDC
+  "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", // USDT
+  "H2LhfTsiT2RWKpbyDLstZALcvVyUcaZmM2T7GtQoGJCu", // NOVA
+];
+
 // Helper to get token or NFT icon URL
 const getTokenIconUrl = (address: string | number) => {
   if (!address) return "/images/unknown-token.png";
@@ -317,26 +324,7 @@ const NFTCard: React.FC<{ nft: NFT; onClick: (nft: NFT) => void }> = ({
       </div>
       <div className="p-4">
         <h3 className="font-medium mb-1">{nft.name || "Unnamed NFT"}</h3>
-        <p className="text-white/60 text-sm mb-3">
-          {nft.collection || "Unknown Collection"}
-        </p>
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-white/60 text-xs">Floor</p>
-            <p className="font-mono">{nft.floorPrice || "??"} SOL</p>
-          </div>
-          {nft.priceChange && (
-            <div
-              className={cn(
-                "text-sm",
-                nft.priceChange >= 0 ? "text-green-400" : "text-red-400"
-              )}
-            >
-              {nft.priceChange >= 0 ? "+" : ""}
-              {nft.priceChange}%
-            </div>
-          )}
-        </div>
+        <p className="text-white/60 text-sm">{nft.collection || "Unknown Collection"}</p>
       </div>
     </motion.div>
   );
@@ -367,8 +355,7 @@ const NFTDetailModal: React.FC<NFTDetailModalProps> = ({ nft, onClose }) => {
                 alt={nft.name}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src =
-                    "/images/unknown-nft.png";
+                  (e.target as HTMLImageElement).src = "/images/unknown-nft.png";
                 }}
               />
             </div>
@@ -378,12 +365,8 @@ const NFTDetailModal: React.FC<NFTDetailModalProps> = ({ nft, onClose }) => {
           <div className="lg:w-1/2 p-6 border-t lg:border-t-0 lg:border-l border-white/10">
             <div className="flex justify-between items-start">
               <div>
-                <h2 className="text-2xl font-light">
-                  {nft.name || "Unnamed NFT"}
-                </h2>
-                <p className="text-white/60">
-                  {nft.collection || "Unknown Collection"}
-                </p>
+                <h2 className="text-2xl font-light">{nft.name || "Unnamed NFT"}</h2>
+                <p className="text-white/60">{nft.collection || "Unknown Collection"}</p>
               </div>
               <button
                 onClick={onClose}
@@ -396,19 +379,9 @@ const NFTDetailModal: React.FC<NFTDetailModalProps> = ({ nft, onClose }) => {
             <div className="mt-6 space-y-6">
               {/* Ownership Info */}
               <div className="border border-white/10 p-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-white/60 text-sm">Owner</p>
-                    <p className="font-mono text-sm">
-                      {truncateAddress(nft.owner || "")}
-                    </p>
-                  </div>
-                  {nft.floorPrice && (
-                    <div>
-                      <p className="text-white/60 text-sm">Floor Price</p>
-                      <p className="text-xl font-light">{nft.floorPrice} SOL</p>
-                    </div>
-                  )}
+                <div>
+                  <p className="text-white/60 text-sm">Owner</p>
+                  <p className="font-mono text-sm">{truncateAddress(nft.owner || "")}</p>
                 </div>
               </div>
 
@@ -428,41 +401,13 @@ const NFTDetailModal: React.FC<NFTDetailModalProps> = ({ nft, onClose }) => {
                     {nft.attributes.map(
                       (
                         attr: {
-                          trait_type:
-                            | string
-                            | number
-                            | bigint
-                            | boolean
-                            | React.ReactElement<
-                                any,
-                                string | React.JSXElementConstructor<any>
-                              >
-                            | Iterable<React.ReactNode>
-                            | React.ReactPortal
-                            | Promise<React.AwaitedReactNode>
-                            | null
-                            | undefined;
-                          value:
-                            | string
-                            | number
-                            | bigint
-                            | boolean
-                            | React.ReactElement<
-                                any,
-                                string | React.JSXElementConstructor<any>
-                              >
-                            | Iterable<React.ReactNode>
-                            | React.ReactPortal
-                            | Promise<React.AwaitedReactNode>
-                            | null
-                            | undefined;
+                          trait_type: any;
+                          value: any;
                         },
                         index: React.Key | null | undefined
                       ) => (
                         <div key={index} className="border border-white/10 p-3">
-                          <p className="text-white/60 text-xs">
-                            {attr.trait_type}
-                          </p>
+                          <p className="text-white/60 text-xs">{attr.trait_type}</p>
                           <p className="font-medium">{attr.value}</p>
                         </div>
                       )
@@ -483,10 +428,7 @@ const NFTDetailModal: React.FC<NFTDetailModalProps> = ({ nft, onClose }) => {
                   <span className="text-xs">View on Explorer</span>
                 </a>
                 <a
-                  href={
-                    nft.marketplaceUrl ||
-                    `https://magiceden.io/item-details/${nft.mint}`
-                  }
+                  href={nft.marketplaceUrl || `https://magiceden.io/item-details/${nft.mint}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex flex-col items-center justify-center border border-white/20 hover:border-white/40 p-3 transition-colors"
@@ -1059,63 +1001,61 @@ export default function ProfilePage() {
   // Fetch token balances
   const fetchTokenBalances = useCallback(async () => {
     if (!publicKey || !connection) return;
-
+  
     try {
       setLoadingTokens(true);
-
+  
       // Fetch SOL token first
       const solTokenAmount = await connection.getBalance(publicKey);
-
+  
       // Create token list starting with SOL
       const solToken: Token = {
         symbol: "SOL",
         name: "Solana",
         balance: solTokenAmount,
         decimals: 9,
-        price: 0, // Will be updated
-        change24h: 0, // Will be updated
+        price: 0,
+        change24h: 0,
         logo: "/images/solana-logo.png",
-        mint: "So11111111111111111111111111111111111111112", // Native SOL mint address
+        mint: "So11111111111111111111111111111111111111112",
         tokenAccount: null,
       };
-
+  
       const tokenList: Token[] = [solToken];
-
+  
       // Fetch token accounts
       const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
         publicKey,
         { programId: TOKEN_PROGRAM_ID }
       );
-
+  
       // Process each token account and gather all mint addresses
       const mintAddresses = [solToken.mint];
-
+  
       for (const { account, pubkey } of tokenAccounts.value) {
         const parsedAccountInfo = account.data.parsed.info;
         const mintAddress = parsedAccountInfo.mint;
         const tokenBalance = parsedAccountInfo.tokenAmount.amount;
         const tokenDecimals = parsedAccountInfo.tokenAmount.decimals;
-
-        // Skip tokens with zero balance
-        if (parsedAccountInfo.tokenAmount.uiAmount === 0) continue;
-
-        // Add to list of mint addresses to fetch prices for
+  
+        // Skip tokens with zero balance or non-supply tokens
+        if (parsedAccountInfo.tokenAmount.uiAmount === 0 || !SUPPLY_TOKEN_MINTS.includes(mintAddress)) continue;
+  
         mintAddresses.push(mintAddress);
-
-        // Add token to list with placeholder info
+  
         tokenList.push({
           symbol: mintAddress.slice(0, 4).toUpperCase(),
           name: `Token ${mintAddress.slice(0, 8)}...`,
           balance: tokenBalance,
           decimals: tokenDecimals,
-          price: 0, // Will be updated
-          change24h: 0, // Will be updated
+          price: 0,
+          change24h: 0,
           logo: getTokenIconUrl(mintAddress),
           mint: mintAddress,
           tokenAccount: pubkey.toBase58(),
         });
       }
-
+  
       // Update token names and symbols for known tokens
       const knownTokens: Record<
         string,
@@ -1136,9 +1076,8 @@ export default function ProfilePage() {
           name: "N.OVA",
           logo: "/images/logo.png",
         },
-        // Add more known tokens here
       };
-
+  
       for (const token of tokenList) {
         if (knownTokens[token.mint]) {
           token.symbol = knownTokens[token.mint].symbol;
@@ -1146,10 +1085,10 @@ export default function ProfilePage() {
           token.logo = knownTokens[token.mint].logo;
         }
       }
-
+  
       // Fetch prices for all tokens
       const prices = await fetchTokenPrices(mintAddresses);
-
+  
       // Update token list with prices
       for (const token of tokenList) {
         if (prices[token.mint]) {
@@ -1157,30 +1096,29 @@ export default function ProfilePage() {
           token.change24h = prices[token.mint].change24h;
         }
       }
-
+  
       setTokens(tokenList);
-
+  
       // Calculate portfolio total value
       let totalValue = 0;
       let weightedChange = 0;
-
+  
       for (const token of tokenList) {
         const tokenAmount =
           typeof token.balance === "bigint"
             ? Number(token.balance) / Math.pow(10, token.decimals)
             : token.balance / Math.pow(10, token.decimals);
-
+  
         const tokenValue = tokenAmount * token.price;
         totalValue += tokenValue;
-
-        // Calculate weighted change contribution
+  
         const weight = totalValue > 0 ? tokenValue / totalValue : 0;
         weightedChange += token.change24h * weight;
       }
-
+  
       setPortfolioValue(totalValue);
       setPortfolioChange(weightedChange);
-
+  
       // Set top token by value
       const sortedTokens = [...tokenList].sort((a, b) => {
         const aValue =
@@ -1193,28 +1131,28 @@ export default function ProfilePage() {
             : b.balance / Math.pow(10, b.decimals)) * b.price;
         return bValue - aValue;
       });
-
+  
       if (sortedTokens.length > 0) {
         setTopToken(sortedTokens[0]);
       }
-
+  
       // Generate token allocation data for pie chart
       const allocationData = tokenList.map((token) => {
         const tokenAmount =
           typeof token.balance === "bigint"
             ? Number(token.balance) / Math.pow(10, token.decimals)
             : token.balance / Math.pow(10, token.decimals);
-
+  
         const value = tokenAmount * token.price;
-
+  
         return {
           name: token.symbol,
           value: value,
         };
       });
-
+  
       setTokenAllocationData(allocationData);
-
+  
       // Generate token performance data
       await fetchTokenPerformanceData(tokenList.slice(0, 3));
     } catch (error) {
@@ -1227,98 +1165,39 @@ export default function ProfilePage() {
   // Fetch NFTs for the wallet
   const fetchNFTs = useCallback(async () => {
     if (!publicKey) return;
-
+  
     try {
       setLoadingNFTs(true);
-
-      // In a real implementation, you would use an NFT API service like Helius, Shyft, Metaplex, etc.
-      // For demonstration purposes, we're simulating the API call
-
-      let nftList = [];
-
-      try {
-        // Try to make a real API call to fetch NFTs
-        // Example using a hypothetical API (replace with actual working endpoint)
-        const response = await fetch(
-          `https://api.helius.xyz/v0/addresses/${publicKey.toString()}/nfts?api-key=YOUR_API_KEY`
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          nftList = data.map(
-            (nft: {
-              mint: any;
-              name: any;
-              symbol: any;
-              image: any;
-              collectionName: any;
-              description: any;
-              attributes: any;
-              floorPrice: any;
-              priceChange24h: any;
-              marketplaceUrl: any;
-            }) => ({
-              mint: nft.mint,
-              name: nft.name,
-              symbol: nft.symbol,
-              image: nft.image,
-              collection: nft.collectionName,
-              description: nft.description,
-              attributes: nft.attributes,
-              owner: publicKey.toString(),
-              floorPrice: nft.floorPrice,
-              priceChange: nft.priceChange24h,
-              marketplaceUrl: nft.marketplaceUrl,
-            })
-          );
-        } else {
-          throw new Error("Failed to fetch NFTs from API");
-        }
-      } catch (error) {
-        console.error(
-          "Error fetching NFTs from API, using fallback data:",
-          error
-        );
-
-        // Fallback to simulated data
-        nftList = [
-          {
-            mint: "AFjGCUvQmCugQXz76zoCJYAKSxVaCjvHMHr9HKfScdas",
-            name: "NOVA Genesis #1248",
-            collection: "NOVA Genesis",
-            image: "/images/nft1.png",
-            description:
-              "A unique NFT from the NOVA Genesis collection featuring futuristic cyber designs and advanced AI elements.",
-            attributes: [
-              { trait_type: "Background", value: "Cosmic Blue" },
-              { trait_type: "Body", value: "Diamond" },
-              { trait_type: "Eyes", value: "Laser" },
-              { trait_type: "Outfit", value: "Cyber Armor" },
-            ],
-            owner: publicKey.toString(),
-            floorPrice: 1.5,
-            priceChange: 3.2,
-          },
-          {
-            mint: "BHe1afUQMyCgSSm12Ufkp4vFQbBGZKQFSP8ksp5o7zUg",
-            name: "Solana Monkey #6843",
-            collection: "SMB",
-            image: "/images/nft2.png",
-            description:
-              "One of the rarest Solana Monkeys with unique traits that make it highly collectible.",
-            attributes: [
-              { trait_type: "Background", value: "Jungle" },
-              { trait_type: "Fur", value: "Golden" },
-              { trait_type: "Eyes", value: "Hypnotic" },
-              { trait_type: "Hat", value: "Crown" },
-            ],
-            owner: publicKey.toString(),
-            floorPrice: 14.8,
-            priceChange: -1.2,
-          },
-        ];
+  
+      const heliusApiKey = process.env.NEXT_PUBLIC_HELIUS_API_KEY;
+      if (!heliusApiKey) {
+        throw new Error("Missing Helius API key");
       }
-
+  
+      const response = await axios.get(`https://api.helius.xyz/v0/addresses/${publicKey.toString()}/nfts`, {
+        params: {
+          apiKey: heliusApiKey,
+        },
+      });
+  
+      const nftList = (response.data as Array<{
+        mint: string;
+        name?: string;
+        image?: string;
+        collectionName?: string;
+        description?: string;
+        attributes?: any[];
+      }>).map((nft) => ({
+        mint: nft.mint,
+        name: nft.name || "Unnamed NFT",
+        image: nft.image || "/images/unknown-nft.png",
+        collection: nft.collectionName || "Unknown Collection",
+        description: nft.description || "",
+        attributes: nft.attributes || [],
+        owner: publicKey.toString(),
+        marketplaceUrl: `https://magiceden.io/item-details/${nft.mint}`,
+      }));
+  
       setNfts(nftList);
     } catch (error) {
       console.error("Error fetching NFTs:", error);
@@ -1806,40 +1685,27 @@ export default function ProfilePage() {
 
   // Filter tokens based on active filter
   const filteredTokens = tokens
-    .filter((token) => {
-      if (activeAssetFilter === "all") return true;
-      if (activeAssetFilter === "value") {
-        const tokenValue =
-          (typeof token.balance === "bigint"
-            ? Number(token.balance) / Math.pow(10, token.decimals)
-            : token.balance / Math.pow(10, token.decimals)) * token.price;
-
-        return tokenValue > 100; // Example threshold
-      }
-      if (activeAssetFilter === "gainers") return token.change24h > 0;
-      if (activeAssetFilter === "losers") return token.change24h < 0;
-      return true;
-    })
-    .sort((a, b) => {
-      if (activeAssetFilter === "value") {
-        const aValue =
-          (typeof a.balance === "bigint"
-            ? Number(a.balance) / Math.pow(10, a.decimals)
-            : a.balance / Math.pow(10, a.decimals)) * a.price;
-        const bValue =
-          (typeof b.balance === "bigint"
-            ? Number(b.balance) / Math.pow(10, b.decimals)
-            : b.balance / Math.pow(10, b.decimals)) * b.price;
-        return bValue - aValue;
-      }
-      if (activeAssetFilter === "gainers") {
-        return b.change24h - a.change24h;
-      }
-      if (activeAssetFilter === "losers") {
-        return a.change24h - b.change24h;
-      }
-      return 0;
-    });
+  .filter((token) => SUPPLY_TOKEN_MINTS.includes(token.mint))
+  .sort((a, b) => {
+    if (activeAssetFilter === "value") {
+      const aValue =
+        (typeof a.balance === "bigint"
+          ? Number(a.balance) / Math.pow(10, a.decimals)
+          : a.balance / Math.pow(10, a.decimals)) * a.price;
+      const bValue =
+        (typeof b.balance === "bigint"
+          ? Number(b.balance) / Math.pow(10, b.decimals)
+          : b.balance / Math.pow(10, b.decimals)) * b.price;
+      return bValue - aValue;
+    }
+    if (activeAssetFilter === "gainers") {
+      return b.change24h - a.change24h;
+    }
+    if (activeAssetFilter === "losers") {
+      return a.change24h - b.change24h;
+    }
+    return 0;
+  });
 
   // Filter NFTs based on active filter
   const filteredNFTs = nfts.filter((nft) => {
@@ -2022,543 +1888,506 @@ export default function ProfilePage() {
           <div className="mb-8">
             {/* DASHBOARD TAB */}
             {activeTab === TABS.DASHBOARD && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 0.5 }}
+  >
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+      {/* Portfolio Value */}
+      <DashboardCard
+        title="PORTFOLIO VALUE"
+        icon={<Wallet className="w-5 h-5" />}
+      >
+        {loadingTokens ? (
+          <div className="flex justify-center items-center h-24">
+            <Loader className="w-8 h-8 animate-spin text-white/50" />
+          </div>
+        ) : portfolioValue > 0 ? (
+          <>
+            <p className="text-3xl font-light mb-2">
+              {formatCurrency(portfolioValue)}
+            </p>
+            <p
+              className={cn(
+                "text-lg",
+                portfolioChange >= 0 ? "text-green-400" : "text-red-400"
+              )}
+            >
+              {portfolioChange >= 0 ? "+" : ""}
+              {portfolioChange.toFixed(2)}% (24h)
+            </p>
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-24 text-white/60">
+            <p>No portfolio data</p>
+          </div>
+        )}
+      </DashboardCard>
+
+      {/* Top Token */}
+      <DashboardCard
+        title="TOP SUPPLY TOKEN"
+        icon={<Sparkles className="w-5 h-5" />}
+      >
+        {loadingTokens ? (
+          <div className="flex justify-center items-center h-24">
+            <Loader className="w-8 h-8 animate-spin text-white/50" />
+          </div>
+        ) : topToken ? (
+          <>
+            <div className="flex items-center gap-4 mb-4">
+              <img
+                src={topToken.logo}
+                alt={topToken.symbol}
+                className="w-12 h-12 rounded-full"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/images/unknown-token.png";
+                }}
+              />
+              <div>
+                <h3 className="text-2xl font-light">{topToken.symbol}</h3>
+                <p className="text-white/60">{topToken.name}</p>
+              </div>
+            </div>
+
+            <div className="border-t border-white/10 pt-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-white/60 text-sm">Balance</p>
+                  <p className="font-mono text-lg">
+                    {formatBalance(
+                      typeof topToken.balance === "bigint"
+                        ? Number(topToken.balance)
+                        : topToken.balance,
+                      topToken.decimals
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-white/60 text-sm">Value</p>
+                  <p className="font-mono text-lg">
+                    {formatCurrency(
+                      (typeof topToken.balance === "bigint"
+                        ? Number(topToken.balance) / Math.pow(10, topToken.decimals)
+                        : topToken.balance / Math.pow(10, topToken.decimals)) *
+                        topToken.price
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-24 text-white/60">
+            <p>No supply tokens found</p>
+          </div>
+        )}
+      </DashboardCard>
+
+      {/* Recent Transaction */}
+      <DashboardCard
+        title="RECENT ACTIVITY"
+        icon={<History className="w-5 h-5" />}
+      >
+        {loadingTransactions ? (
+          <div className="flex justify-center items-center h-24">
+            <Loader className="w-8 h-8 animate-spin text-white/50" />
+          </div>
+        ) : transactions.length > 0 ? (
+          <div className="space-y-4">
+            {transactions.slice(0, 1).map((tx, index) => (
+              <div key={index} className="group">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center">
+                    <div
+                      className={cn(
+                        "w-2 h-2 rounded-full mr-2",
+                        tx.type === "receive" ? "bg-green-500" : "bg-blue-500"
+                      )}
+                    ></div>
+                    <p className="font-medium">
+                      {tx.type === "receive" ? "Received" : "Sent"}
+                    </p>
+                  </div>
+                  <p className="text-white/60 text-sm">{getTimeAgo(tx.blockTime)}</p>
+                </div>
+
+                <div className="flex justify-between items-center mb-4">
+                  <p
+                    className={cn(
+                      "text-lg font-mono",
+                      tx.type === "receive" ? "text-green-400" : "text-white"
+                    )}
+                  >
+                    {tx.type === "receive" ? "+" : "-"}
+                    {tx.amount.toLocaleString(undefined, {
+                      maximumFractionDigits: 9,
+                    })}{" "}
+                    {tx.token}
+                  </p>
+                </div>
+
+                <a
+                  href={getExplorerUrl(tx.signature, network)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center text-sm text-white/60 hover:text-white transition-colors"
+                >
+                  View on Explorer
+                  <ExternalLink className="ml-1 w-3 h-3" />
+                </a>
+              </div>
+            ))}
+
+            <div className="border-t border-white/10 pt-4 text-center">
+              <button
+                onClick={() => setActiveTab(TABS.TRANSACTIONS)}
+                className="text-sm text-white/60 hover:text-white transition-colors"
               >
-                {/* Portfolio Value and Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-                  {/* Portfolio Value */}
-                  <DashboardCard
-                    title="PORTFOLIO VALUE"
-                    icon={<Wallet className="w-5 h-5" />}
+                View all transactions
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-24 text-white/60">
+            <p>No transactions found</p>
+          </div>
+        )}
+      </DashboardCard>
+    </div>
+
+    {/* Charts Row 1 */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+      {/* Portfolio History Chart */}
+      <div className="border border-white/20 p-0.5">
+        <div className="border border-white/10 p-4 h-full">
+          <div className="flex justify-between items-start mb-4">
+            <h2 className="text-lg font-light">Portfolio History</h2>
+            <div className="bg-white/10 p-1.5 rounded-full">
+              <LineChartIcon className="w-4 h-4" />
+            </div>
+          </div>
+
+          {loadingChartData ? (
+            <div className="flex justify-center items-center h-40">
+              <Loader className="w-6 h-6 animate-spin text-white/50" />
+            </div>
+          ) : portfolioHistoryData.length > 0 ? (
+            <div className="h-40">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={portfolioHistoryData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fill: "#9ca3af", fontSize: 12 }}
+                    axisLine={{ stroke: "#4b5563" }}
+                    tickLine={false}
+                    interval="preserveStartEnd"
+                    minTickGap={50}
+                  />
+                  <YAxis
+                    tickFormatter={(value) => formatCurrency(value)}
+                    tick={{ fill: "#9ca3af", fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={60}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "rgba(0, 0, 0, 0.8)",
+                      border: "none",
+                      borderRadius: "4px",
+                      color: "#fff",
+                      fontSize: "12px",
+                      padding: "8px",
+                    }}
+                    formatter={(value) => [formatCurrency(value), "Value"]}
+                    labelFormatter={(label) => label}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#3b82f6"
+                    fill="#3b82f6"
+                    fillOpacity={0.3}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-40 text-white/60">
+              <p>No portfolio history data</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Token Allocation Chart */}
+      <div className="border border-white/20 p-0.5">
+        <div className="border border-white/10 p-4 h-full">
+          <div className="flex justify-between items-start mb-4">
+            <h2 className="text-lg font-light">Token Allocation</h2>
+            <div className="bg-white/10 p-1.5 rounded-full">
+              <PieChart className="w-4 h-4" />
+            </div>
+          </div>
+
+          {loadingTokens ? (
+            <div className="flex justify-center items-center h-40">
+              <Loader className="w-6 h-6 animate-spin text-white/50" />
+            </div>
+          ) : tokenAllocationData.length > 0 ? (
+            <div className="h-40">
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartPieChart margin={{ top: 0, right: 0, left: 0, bottom: 20 }}>
+                  <Pie
+                    data={tokenAllocationData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={70}
+                    dataKey="value"
+                    isAnimationActive={false}
                   >
-                    {loadingTokens ? (
-                      <div className="flex justify-center items-center h-24">
-                        <Loader className="w-8 h-8 animate-spin text-white/50" />
-                      </div>
-                    ) : (
-                      <>
-                        <div className="mb-4">
-                          <h3 className="text-4xl font-light mb-2">
-                            {formatCurrency(portfolioValue)}
-                          </h3>
-                          <p
-                            className={cn(
-                              "flex items-center",
-                              portfolioChange >= 0
-                                ? "text-green-400"
-                                : "text-red-400"
-                            )}
-                          >
-                            <span>
-                              {portfolioChange >= 0 ? "+" : ""}
-                              {portfolioChange.toFixed(2)}%
-                            </span>
-                            <span className="text-white/60 ml-2">24h</span>
-                          </p>
-                        </div>
+                    {tokenAllocationData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={["#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe"][index % 4]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "rgba(0, 0, 0, 0.8)",
+                      border: "none",
+                      borderRadius: "4px",
+                      color: "#fff",
+                      fontSize: "12px",
+                      padding: "8px",
+                    }}
+                    formatter={(value) => [formatCurrency(value), "Value"]}
+                    labelFormatter={(label) => label}
+                  />
+                  <Legend
+                    layout="horizontal"
+                    align="center"
+                    verticalAlign="bottom"
+                    iconType="circle"
+                    iconSize={8}
+                    formatter={(value) => <span style={{ color: "#9ca3af", fontSize: "12px" }}>{value}</span>}
+                  />
+                </RechartPieChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-40 text-white/60">
+              <p>No supply token data</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
 
-                        <div className="border-t border-white/10 pt-4">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-white/60">Tokens</span>
-                            <span>{tokens.length}</span>
-                          </div>
-                          <div className="flex justify-between text-sm mt-2">
-                            <span className="text-white/60">NFTs</span>
-                            <span>{nfts.length}</span>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </DashboardCard>
+    {/* Charts Row 2 */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+      {/* Daily Volume Chart */}
+      <div className="border border-white/20 p-0.5">
+        <div className="border border-white/10 p-4 h-full">
+          <div className="flex justify-between items-start mb-4">
+            <h2 className="text-lg font-light">Daily Volume</h2>
+            <div className="bg-white/10 p-1.5 rounded-full">
+              <BarChart className="w-4 h-4" />
+            </div>
+          </div>
 
-                  {/* Top Asset */}
-                  <DashboardCard
-                    title="TOP ASSET"
-                    icon={<Sparkles className="w-5 h-5" />}
+          {loadingTransactions ? (
+            <div className="flex justify-center items-center h-40">
+              <Loader className="w-6 h-6 animate-spin text-white/50" />
+            </div>
+          ) : dailyVolumeData.length > 0 ? (
+            <div className="h-40">
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartBarChart data={dailyVolumeData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fill: "#9ca3af", fontSize: 12 }}
+                    axisLine={{ stroke: "#4b5563" }}
+                    tickLine={false}
+                    interval="preserveStartEnd"
+                    minTickGap={50}
+                  />
+                  <YAxis
+                    tick={{ fill: "#9ca3af", fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={60}
+                    tickFormatter={(value) => value.toFixed(2)}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "rgba(0, 0, 0, 0.8)",
+                      border: "none",
+                      borderRadius: "4px",
+                      color: "#fff",
+                      fontSize: "12px",
+                      padding: "8px",
+                    }}
+                    formatter={(value) => [typeof value === "number" ? value.toFixed(4) : value, "Volume"]}
+                    labelFormatter={(label) => label}
+                  />
+                  <Bar dataKey="volume" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                </RechartBarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-40 text-white/60">
+              <p>No volume data</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Transaction Types Chart */}
+      <div className="border border-white/20 p-0.5">
+        <div className="border border-white/10 p-4 h-full">
+          <div className="flex justify-between items-start mb-4">
+            <h2 className="text-lg font-light">Transaction Types</h2>
+            <div className="bg-white/10 p-1.5 rounded-full">
+              <PieChart className="w-4 h-4" />
+            </div>
+          </div>
+
+          {loadingTransactions ? (
+            <div className="flex justify-center items-center h-40">
+              <Loader className="w-6 h-6 animate-spin text-white/50" />
+            </div>
+          ) : transactionTypesData.length > 0 &&
+            transactionTypesData.some((item) => item.value > 0) ? (
+            <div className="h-40">
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartPieChart margin={{ top: 0, right: 0, left: 0, bottom: 20 }}>
+                  <Pie
+                    data={transactionTypesData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={70}
+                    dataKey="value"
+                    isAnimationActive={false}
                   >
-                    {loadingTokens ? (
-                      <div className="flex justify-center items-center h-24">
-                        <Loader className="w-8 h-8 animate-spin text-white/50" />
-                      </div>
-                    ) : topToken ? (
-                      <>
-                        <div className="flex items-center gap-4 mb-4">
-                          <img
-                            src={topToken.logo}
-                            alt={topToken.symbol}
-                            className="w-12 h-12 rounded-full"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src =
-                                "/images/unknown-token.png";
-                            }}
-                          />
-                          <div>
-                            <h3 className="text-2xl font-light">
-                              {topToken.symbol}
-                            </h3>
-                            <p className="text-white/60">{topToken.name}</p>
-                          </div>
-                        </div>
+                    {transactionTypesData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={["#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe"][index % 4]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "rgba(0, 0, 0, 0.8)",
+                      border: "none",
+                      borderRadius: "4px",
+                      color: "#fff",
+                      fontSize: "12px",
+                      padding: "8px",
+                    }}
+                    formatter={(value) => [`${value}`, "Count"]}
+                    labelFormatter={(label) => label}
+                  />
+                  <Legend
+                    layout="horizontal"
+                    align="center"
+                    verticalAlign="bottom"
+                    iconType="circle"
+                    iconSize={8}
+                    formatter={(value) => <span style={{ color: "#9ca3af", fontSize: "12px" }}>{value}</span>}
+                  />
+                </RechartPieChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-40 text-white/60">
+              <p>No transaction data</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
 
-                        <div className="border-t border-white/10 pt-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <p className="text-white/60 text-sm">Balance</p>
-                              <p className="font-mono text-lg">
-                                {formatBalance(
-                                  typeof topToken.balance === "bigint"
-                                    ? Number(topToken.balance)
-                                    : topToken.balance,
-                                  topToken.decimals
-                                )}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-white/60 text-sm">Value</p>
-                              <p className="font-mono text-lg">
-                                {formatCurrency(
-                                  (typeof topToken.balance === "bigint"
-                                    ? Number(topToken.balance) /
-                                      Math.pow(10, topToken.decimals)
-                                    : topToken.balance /
-                                      Math.pow(10, topToken.decimals)) *
-                                    topToken.price
-                                )}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-24 text-white/60">
-                        <p>No assets found</p>
-                      </div>
-                    )}
-                  </DashboardCard>
+    {/* Token Performance Chart */}
+    <div className="border border-white/20 p-0.5 mb-8">
+      <div className="border border-white/10 p-4 h-full">
+        <div className="flex justify-between items-start mb-4">
+          <h2 className="text-lg font-light">Token Performance</h2>
+          <div className="bg-white/10 p-1.5 rounded-full">
+            <LineChartIcon className="w-4 h-4" />
+          </div>
+        </div>
 
-                  {/* Recent Transaction */}
-                  <DashboardCard
-                    title="RECENT ACTIVITY"
-                    icon={<History className="w-5 h-5" />}
-                  >
-                    {loadingTransactions ? (
-                      <div className="flex justify-center items-center h-24">
-                        <Loader className="w-8 h-8 animate-spin text-white/50" />
-                      </div>
-                    ) : transactions.length > 0 ? (
-                      <div className="space-y-4">
-                        {transactions.slice(0, 1).map((tx, index) => (
-                          <div key={index} className="group">
-                            <div className="flex justify-between items-center mb-2">
-                              <div className="flex items-center">
-                                <div
-                                  className={cn(
-                                    "w-2 h-2 rounded-full mr-2",
-                                    tx.type === "receive"
-                                      ? "bg-green-500"
-                                      : "bg-blue-500"
-                                  )}
-                                ></div>
-                                <p className="font-medium">
-                                  {tx.type === "receive" ? "Received" : "Sent"}
-                                </p>
-                              </div>
-                              <p className="text-white/60 text-sm">
-                                {getTimeAgo(tx.blockTime)}
-                              </p>
-                            </div>
-
-                            <div className="flex justify-between items-center mb-4">
-                              <p
-                                className={cn(
-                                  "text-lg font-mono",
-                                  tx.type === "receive"
-                                    ? "text-green-400"
-                                    : "text-white"
-                                )}
-                              >
-                                {tx.type === "receive" ? "+" : "-"}
-                                {tx.amount.toLocaleString(undefined, {
-                                  maximumFractionDigits: 9,
-                                })}{" "}
-                                {tx.token}
-                              </p>
-                            </div>
-
-                            <a
-                              href={getExplorerUrl(tx.signature, network)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center text-sm text-white/60 hover:text-white transition-colors"
-                            >
-                              View on Explorer
-                              <ExternalLink className="ml-1 w-3 h-3" />
-                            </a>
-                          </div>
-                        ))}
-
-                        <div className="border-t border-white/10 pt-4 text-center">
-                          <button
-                            onClick={() => setActiveTab(TABS.TRANSACTIONS)}
-                            className="text-sm text-white/60 hover:text-white transition-colors"
-                          >
-                            View all transactions
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-24 text-white/60">
-                        <p>No transactions found</p>
-                      </div>
-                    )}
-                  </DashboardCard>
-                </div>
-
-                {/* Charts Row 1 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                  {/* Portfolio History Chart */}
-                  <div className="border border-white/30 p-0.5">
-                    <div className="border border-white/10 p-6 h-full">
-                      <div className="flex justify-between items-start mb-6">
-                        <h2 className="text-xl font-light">
-                          PORTFOLIO HISTORY
-                        </h2>
-                        <div className="bg-white/10 p-2 rounded-full">
-                          <LineChartIcon className="w-5 h-5" />
-                        </div>
-                      </div>
-
-                      {loadingChartData ? (
-                        <div className="flex justify-center items-center h-48">
-                          <Loader className="w-8 h-8 animate-spin text-white/50" />
-                        </div>
-                      ) : portfolioHistoryData.length > 0 ? (
-                        <div className="h-48">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={portfolioHistoryData}>
-                              <defs>
-                                <linearGradient
-                                  id="colorValue"
-                                  x1="0"
-                                  y1="0"
-                                  x2="0"
-                                  y2="1"
-                                >
-                                  <stop
-                                    offset="5%"
-                                    stopColor="#8884d8"
-                                    stopOpacity={0.8}
-                                  />
-                                  <stop
-                                    offset="95%"
-                                    stopColor="#8884d8"
-                                    stopOpacity={0}
-                                  />
-                                </linearGradient>
-                              </defs>
-                              <XAxis
-                                dataKey="date"
-                                tick={{ fill: "#aaa", fontSize: 12 }}
-                                axisLine={{ stroke: "#333" }}
-                              />
-                              <YAxis
-                                tickFormatter={(value) => formatCurrency(value)}
-                                width={80}
-                                tick={{ fill: "#aaa", fontSize: 12 }}
-                                axisLine={{ stroke: "#333" }}
-                              />
-                              <CartesianGrid
-                                strokeDasharray="3 3"
-                                stroke="#333"
-                              />
-                              <Tooltip
-                                formatter={(value) => [
-                                  formatCurrency(value),
-                                  "Value",
-                                ]}
-                                contentStyle={{
-                                  backgroundColor: "#121212",
-                                  borderColor: "#333",
-                                  color: "white",
-                                }}
-                              />
-                              <Area
-                                type="monotone"
-                                dataKey="value"
-                                stroke="#8884d8"
-                                fillOpacity={1}
-                                fill="url(#colorValue)"
-                              />
-                            </AreaChart>
-                          </ResponsiveContainer>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center h-48 text-white/60">
-                          <p>No portfolio history data available</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Token Allocation Chart */}
-                  <div className="border border-white/30 p-0.5">
-                    <div className="border border-white/10 p-6 h-full">
-                      <div className="flex justify-between items-start mb-6">
-                        <h2 className="text-xl font-light">TOKEN ALLOCATION</h2>
-                        <div className="bg-white/10 p-2 rounded-full">
-                          <PieChart className="w-5 h-5" />
-                        </div>
-                      </div>
-
-                      {loadingTokens ? (
-                        <div className="flex justify-center items-center h-48">
-                          <Loader className="w-8 h-8 animate-spin text-white/50" />
-                        </div>
-                      ) : tokenAllocationData.length > 0 ? (
-                        <div className="h-48">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <RechartPieChart>
-                              <Pie
-                                data={tokenAllocationData}
-                                cx="50%"
-                                cy="50%"
-                                labelLine={false}
-                                label={({ name, percent }) =>
-                                  `${name}: ${(percent * 100).toFixed(0)}%`
-                                }
-                                outerRadius={80}
-                                fill="#8884d8"
-                                dataKey="value"
-                              >
-                                {tokenAllocationData.map((entry, index) => (
-                                  <Cell
-                                    key={`cell-${index}`}
-                                    fill={
-                                      CHART_COLORS[index % CHART_COLORS.length]
-                                    }
-                                  />
-                                ))}
-                              </Pie>
-                              <Tooltip
-                                formatter={(value) => [
-                                  formatCurrency(value),
-                                  "Value",
-                                ]}
-                                contentStyle={{
-                                  backgroundColor: "#121212",
-                                  borderColor: "#333",
-                                  color: "white",
-                                }}
-                              />
-                              <Legend />
-                            </RechartPieChart>
-                          </ResponsiveContainer>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center h-48 text-white/60">
-                          <p>No token data available</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Charts Row 2 */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                  {/* Daily Volume Chart */}
-                  <div className="border border-white/30 p-0.5">
-                    <div className="border border-white/10 p-6 h-full">
-                      <div className="flex justify-between items-start mb-6">
-                        <h2 className="text-xl font-light">DAILY VOLUME</h2>
-                        <div className="bg-white/10 p-2 rounded-full">
-                          <BarChart className="w-5 h-5" />
-                        </div>
-                      </div>
-
-                      {loadingTransactions ? (
-                        <div className="flex justify-center items-center h-48">
-                          <Loader className="w-8 h-8 animate-spin text-white/50" />
-                        </div>
-                      ) : dailyVolumeData.length > 0 ? (
-                        <div className="h-48">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <RechartBarChart data={dailyVolumeData}>
-                              <CartesianGrid
-                                strokeDasharray="3 3"
-                                stroke="#333"
-                              />
-                              <XAxis
-                                dataKey="date"
-                                tick={{ fill: "#aaa", fontSize: 12 }}
-                                axisLine={{ stroke: "#333" }}
-                              />
-                              <YAxis
-                                tick={{ fill: "#aaa", fontSize: 12 }}
-                                axisLine={{ stroke: "#333" }}
-                                width={80}
-                              />
-                              <Tooltip
-                                formatter={(value) => [
-                                  typeof value === "number"
-                                    ? value.toFixed(4)
-                                    : value,
-                                  "Volume",
-                                ]}
-                                contentStyle={{
-                                  backgroundColor: "#121212",
-                                  borderColor: "#333",
-                                  color: "white",
-                                }}
-                              />
-                              <Legend />
-                              <Bar dataKey="volume" fill="#82ca9d" />
-                            </RechartBarChart>
-                          </ResponsiveContainer>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center h-48 text-white/60">
-                          <p>No volume data available</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Transaction Types Chart */}
-                  <div className="border border-white/30 p-0.5">
-                    <div className="border border-white/10 p-6 h-full">
-                      <div className="flex justify-between items-start mb-6">
-                        <h2 className="text-xl font-light">
-                          TRANSACTION TYPES
-                        </h2>
-                        <div className="bg-white/10 p-2 rounded-full">
-                          <PieChart className="w-5 h-5" />
-                        </div>
-                      </div>
-
-                      {loadingTransactions ? (
-                        <div className="flex justify-center items-center h-48">
-                          <Loader className="w-8 h-8 animate-spin text-white/50" />
-                        </div>
-                      ) : transactionTypesData.length > 0 &&
-                        transactionTypesData.some((item) => item.value > 0) ? (
-                        <div className="h-48">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <RechartPieChart>
-                              <Pie
-                                data={transactionTypesData}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={40}
-                                outerRadius={80}
-                                fill="#8884d8"
-                                paddingAngle={2}
-                                dataKey="value"
-                              >
-                                {transactionTypesData.map((entry, index) => (
-                                  <Cell
-                                    key={`cell-${index}`}
-                                    fill={
-                                      CHART_COLORS[index % CHART_COLORS.length]
-                                    }
-                                  />
-                                ))}
-                              </Pie>
-                              <Tooltip
-                                formatter={(value) => [
-                                  `${value} transactions`,
-                                  "Count",
-                                ]}
-                                contentStyle={{
-                                  backgroundColor: "#121212",
-                                  borderColor: "#333",
-                                  color: "white",
-                                }}
-                              />
-                              <Legend />
-                            </RechartPieChart>
-                          </ResponsiveContainer>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center h-48 text-white/60">
-                          <p>No transaction data available</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Token Performance Chart */}
-                <div className="border border-white/30 p-0.5 mb-8">
-                  <div className="border border-white/10 p-6 h-full">
-                    <div className="flex justify-between items-start mb-6">
-                      <h2 className="text-xl font-light">TOKEN PERFORMANCE</h2>
-                      <div className="bg-white/10 p-2 rounded-full">
-                        <LineChartIcon className="w-5 h-5" />
-                      </div>
-                    </div>
-
-                    {loadingChartData ? (
-                      <div className="flex justify-center items-center h-64">
-                        <Loader className="w-8 h-8 animate-spin text-white/50" />
-                      </div>
-                    ) : tokenPerformanceData.data.length > 0 ? (
-                      <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={tokenPerformanceData.data}>
-                            <CartesianGrid
-                              strokeDasharray="3 3"
-                              stroke="#333"
-                            />
-                            <XAxis
-                              dataKey="date"
-                              tick={{ fill: "#aaa", fontSize: 12 }}
-                              axisLine={{ stroke: "#333" }}
-                            />
-                            <YAxis
-                              tickFormatter={(value) => `${value}%`}
-                              width={60}
-                              tick={{ fill: "#aaa", fontSize: 12 }}
-                              axisLine={{ stroke: "#333" }}
-                            />
-                            <Tooltip
-                              formatter={(value) => [
-                                `${value}%`,
-                                "Performance",
-                              ]}
-                              contentStyle={{
-                                backgroundColor: "#121212",
-                                borderColor: "#333",
-                                color: "white",
-                              }}
-                            />
-                            <Legend />
-                            {tokenPerformanceData.tokens.map((token, index) => (
-                              <Line
-                                key={token}
-                                type="monotone"
-                                dataKey={token}
-                                stroke={
-                                  CHART_COLORS[index % CHART_COLORS.length]
-                                }
-                                activeDot={{ r: 6 }}
-                                strokeWidth={2}
-                              />
-                            ))}
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-64 text-white/60">
-                        <p>No token performance data available</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            )}
+        {loadingChartData ? (
+          <div className="flex justify-center items-center h-56">
+            <Loader className="w-6 h-6 animate-spin text-white/50" />
+          </div>
+        ) : tokenPerformanceData.data.length > 0 ? (
+          <div className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={tokenPerformanceData.data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                <XAxis
+                  dataKey="date"
+                  tick={{ fill: "#9ca3af", fontSize: 12 }}
+                  axisLine={{ stroke: "#4b5563" }}
+                  tickLine={false}
+                  interval="preserveStartEnd"
+                  minTickGap={50}
+                />
+                <YAxis
+                  tickFormatter={(value) => `${value}%`}
+                  tick={{ fill: "#9ca3af", fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={60}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "rgba(0, 0, 0, 0.8)",
+                    border: "none",
+                    borderRadius: "4px",
+                    color: "#fff",
+                    fontSize: "12px",
+                    padding: "8px",
+                  }}
+                  formatter={(value) => [`${value}%`, "Performance"]}
+                  labelFormatter={(label) => label}
+                />
+                {tokenPerformanceData.tokens.map((token, index) => (
+                  <Line
+                    key={token}
+                    type="monotone"
+                    dataKey={token}
+                    stroke={["#3b82f6", "#60a5fa", "#93c5fd"][index % 3]}
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{ r: 4, fill: "#fff", stroke: "#3b82f6" }}
+                  />
+                ))}
+                <Legend
+                  layout="horizontal"
+                  align="center"
+                  verticalAlign="bottom"
+                  iconType="circle"
+                  iconSize={8}
+                  formatter={(value) => <span style={{ color: "#9ca3af", fontSize: "12px" }}>{value}</span>}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-56 text-white/60">
+            <p>No supply token performance data</p>
+          </div>
+        )}
+      </div>
+    </div>
+  </motion.div>
+)}
 
             {/* ASSETS TAB */}
             {activeTab === TABS.ASSETS && (
