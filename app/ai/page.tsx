@@ -69,20 +69,20 @@ const modelOptions: Record<
   string,
   { name: string; tag: string; gradient: string }
 > = {
+  "llama3-8b-8192": {
+    name: "llama3-8b-8192",
+    tag: "Balanced & Fast",
+    gradient: "bg-gradient-to-r from-yellow-500 to-orange-500",
+  },
+  "mistral-saba-24b": {
+    name: "mistral-saba-24b",
+    tag: "Blazing Fast UX",
+    gradient: "bg-gradient-to-r from-pink-500 to-red-500",
+  },
   "llama3-70b-8192": {
     name: "llama3-70b-8192",
-    tag: "Best for Coding",
+    tag: "Advanced Reasoning",
     gradient: "bg-gradient-to-r from-blue-500 to-purple-500",
-  },
-  "llama-3.3-70b-versatile": {
-    name: "llama-3.3-70b-versatile",
-    tag: "Gen AI & Reasoning",
-    gradient: "bg-gradient-to-r from-green-500 to-teal-500",
-  },
-  "qwen-qwq-32b": {
-    name: "qwen-qwq-32b",
-    tag: "Fast & Balanced",
-    gradient: "bg-gradient-to-r from-yellow-500 to-orange-500",
   },
 };
 
@@ -111,7 +111,7 @@ export default function AIPage() {
     null
   );
   const [selectedModel, setSelectedModel] =
-    useState<keyof typeof modelOptions>("llama3-70b-8192");
+    useState<keyof typeof modelOptions>("llama3-8b-8192");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [copied, setCopied] = useState(false);
   const [copiedSuggestions, setCopiedSuggestions] = useState(false);
@@ -1840,7 +1840,7 @@ export default function AIPage() {
                     </svg>
                   </div>
                 </motion.button>
-                
+
                 {/* Summarize Button */}
                 <motion.button
                   className="relative overflow-hidden rounded-md bg-black/50 backdrop-blur-sm"
