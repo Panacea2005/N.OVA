@@ -60,6 +60,7 @@ export default function Navigation() {
     { name: "N.ABOUT", href: "/about" },
     { name: "N.TOKENOMICS", href: "/tokenomics" },
     { name: "N.AI", href: "/ai" },
+    { name: "N.AURORA", href: "/music" },
     { name: "N.IDENTITY", href: "/nft" },
     { name: "N.DAO", href: "/dao" },
     { name: "N.TRANSFER", href: "/transfer" },
