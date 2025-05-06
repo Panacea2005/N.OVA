@@ -1,10 +1,16 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+
+// Extend the Window interface to include the ethereum property
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { LucideProps } from "lucide-react";
 import {
   Download,
   Share,
@@ -47,9 +53,7 @@ export default function IdentityCardGenerator() {
 
   // ID Card specific state
   const [userName, setUserName] = useState("Mai Anh");
-  const [userAddress, setUserAddress] = useState(
-    "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
-  );
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [userRank, setUserRank] = useState("ARCHITECT");
   const [userAvatar, setUserAvatar] = useState(
     "/placeholder.svg?height=100&width=100"
@@ -66,11 +70,42 @@ export default function IdentityCardGenerator() {
     nftCount: 5,
   });
 
+  // Fetch wallet address from connected wallet
+  useEffect(() => {
+    const fetchWalletAddress = async () => {
+      if (typeof window.ethereum !== "undefined") {
+        try {
+          const accounts = await window.ethereum.request({ method: "eth_accounts" });
+          if (accounts.length > 0) {
+            setWalletAddress(accounts[0]);
+          }
+        } catch (error: any) {
+          console.error("Error fetching wallet address:", error);
+          setErrorMessage(`Failed to fetch wallet address: ${error.message}`);
+        }
+      } else {
+        setErrorMessage("No wallet provider detected (e.g., MetaMask)");
+      }
+    };
+
+    fetchWalletAddress();
+
+    if (typeof window.ethereum !== "undefined") {
+      const handleAccountsChanged = (accounts: string[]) => {
+        setWalletAddress(accounts.length > 0 ? accounts[0] : null);
+      };
+      window.ethereum.on("accountsChanged", handleAccountsChanged);
+      return () => {
+        window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
+      };
+    }
+  }, []);
+
   // Save user data to local storage whenever it changes
   useEffect(() => {
     const userData = {
       userName,
-      userAddress,
+      userAddress: walletAddress || "",
       userRank,
       userAvatar,
       walletData,
@@ -83,9 +118,9 @@ export default function IdentityCardGenerator() {
       dateVerified: new Date().toLocaleDateString(),
     };
     localStorage.setItem("identityCardData", JSON.stringify(userData));
-  }, [userName, userAddress, userRank, userAvatar, walletData]);
+  }, [userName, walletAddress, userRank, userAvatar, walletData]);
 
-  // Generate QR code with a static URL to /nft/scan
+  // Generate QR code
   useEffect(() => {
     const generateQrCode = async () => {
       try {
@@ -94,8 +129,6 @@ export default function IdentityCardGenerator() {
             ? window.location.origin
             : "http://localhost:3000";
         const scanUrl = `${baseUrl}/nft/scan`;
-        console.log("QR Code URL:", scanUrl);
-
         const qrCodeImageUrl = await QRCode.toDataURL(scanUrl, {
           width: 80,
           margin: 1,
@@ -111,7 +144,6 @@ export default function IdentityCardGenerator() {
         setQrCodeUrl("");
       }
     };
-
     generateQrCode();
   }, []);
 
@@ -124,32 +156,23 @@ export default function IdentityCardGenerator() {
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     try {
-      console.log("Generating card background with:", {
-        prompt,
-        selectedStyle,
-      });
-      
-      // Using the actual CardBackgroundService
       const blob = await CardBackgroundService.generateCardBackground(
         prompt,
         selectedStyle
       );
-
-      // Convert blob to Data URL
       const reader = new FileReader();
       reader.onload = () => {
         const dataUrl = reader.result as string;
         setPreviewImage(dataUrl);
-        localStorage.setItem("previewImage", dataUrl); // Save Data URL to local storage
+        localStorage.setItem("previewImage", dataUrl);
       };
       reader.readAsDataURL(blob);
 
       setGenerationHistory((prev) => [prompt, ...prev].slice(0, 10));
 
-      // Save user data to local storage after generation
       const userData = {
         userName,
-        userAddress,
+        userAddress: walletAddress || "",
         userRank,
         userAvatar,
         walletData,
@@ -179,7 +202,6 @@ export default function IdentityCardGenerator() {
     }
   };
 
-  // Handle avatar upload
   const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -192,7 +214,6 @@ export default function IdentityCardGenerator() {
     }
   };
 
-  // Clean up object URLs to prevent memory leaks
   useEffect(() => {
     return () => {
       if (previewImage && previewImage.startsWith("blob:")) {
@@ -207,9 +228,11 @@ export default function IdentityCardGenerator() {
   };
 
   const copyAddress = () => {
-    navigator.clipboard.writeText(userAddress);
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
+    if (walletAddress) {
+      navigator.clipboard.writeText(walletAddress);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }
   };
 
   const downloadCard = async () => {
@@ -221,9 +244,7 @@ export default function IdentityCardGenerator() {
     }
 
     try {
-      const cardElement = canvasRef.current.querySelector(
-        ".card-container"
-      );
+      const cardElement = canvasRef.current.querySelector(".card-container");
       if (!cardElement) {
         throw new Error("Card element not found");
       }
@@ -244,7 +265,6 @@ export default function IdentityCardGenerator() {
     }
   };
 
-  // Example styles for the generator
   const styles = [
     { id: "cyberpunk", name: "CYBERPUNK", description: "Neon city vibes" },
     { id: "quantum", name: "QUANTUM", description: "Abstract patterns" },
@@ -254,32 +274,26 @@ export default function IdentityCardGenerator() {
     { id: "matrix", name: "MATRIX", description: "Digital code rain" },
   ];
 
-  // Truncate wallet address for display
-  const truncatedAddress = `${userAddress.substring(
-    0,
-    6
-  )}...${userAddress.substring(userAddress.length - 4)}`;
+  const truncatedAddress = walletAddress
+    ? `${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}`
+    : "Not connected";
 
   return (
     <main className="relative min-h-screen bg-black text-white font-mono">
-      {/* Background */}
       <div className="fixed inset-0 bg-black z-0" />
-      
-      {/* Grid pattern overlay */}
-      <div className="fixed inset-0 z-0 opacity-10"
+      <div
+        className="fixed inset-0 z-0 opacity-10"
         style={{
-          backgroundImage: "linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px)",
+          backgroundImage:
+            "linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px)",
           backgroundSize: "40px 40px",
-        }} 
+        }}
       />
 
-      {/* Navigation */}
       <Navigation />
 
       <div className="container mx-auto px-2 pt-24 pb-16 relative z-10">
-        {/* Main Content */}
         <div className="max-w-7xl mx-auto">
-          {/* NOVA Banner */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -289,7 +303,6 @@ export default function IdentityCardGenerator() {
             <NIdentityBanner />
           </motion.div>
 
-          {/* Main Header */}
           <div className="mb-16">
             <h1 className="text-8xl font-light mb-6">N.IDENTITY</h1>
             <p className="text-white/70 uppercase max-w-4xl">
@@ -300,7 +313,6 @@ export default function IdentityCardGenerator() {
             </p>
           </div>
 
-          {/* Generator Section */}
           <div className="border border-white/30 p-0.5 mb-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -309,10 +321,9 @@ export default function IdentityCardGenerator() {
               className="border border-white/10 px-6 py-8"
             >
               <h2 className="text-5xl font-light mb-10">Card Generator</h2>
-              
+
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
                 <div className="lg:col-span-2 space-y-6">
-                  {/* Prompt Input */}
                   <div className="border border-white/20 p-5">
                     <label className="block text-xs uppercase text-white/60 mb-2 flex items-center">
                       <Sparkles className="w-3 h-3 mr-1 text-white/80" />
@@ -324,7 +335,6 @@ export default function IdentityCardGenerator() {
                       placeholder="Describe the background for your identity card..."
                       className="w-full h-32 bg-black text-white/90 border border-white/10 p-3 focus:outline-none focus:border-white/30 resize-none"
                     />
-
                     <div className="flex justify-between items-center mt-2">
                       <div className="text-xs text-white/40">
                         {prompt.length} / 500
@@ -346,13 +356,11 @@ export default function IdentityCardGenerator() {
                     </div>
                   </div>
 
-                  {/* Background Style */}
                   <div className="border border-white/20 p-5">
                     <label className="block text-xs uppercase text-white/60 mb-3 flex items-center">
                       <ImagePlus className="w-3 h-3 mr-1 text-white/80" />
                       Background Style
                     </label>
-
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                       {styles.map((style) => (
                         <button
@@ -373,14 +381,12 @@ export default function IdentityCardGenerator() {
                     </div>
                   </div>
 
-                  {/* Identity Information */}
                   <div className="border border-white/20 p-5">
                     <div className="flex justify-between items-center mb-4">
                       <label className="block text-xs uppercase text-white/60 flex items-center">
                         <Shield className="w-3 h-3 mr-1 text-white/80" />
                         Identity Information
                       </label>
-
                       <button
                         className="text-xs text-white/60 hover:text-white transition-colors flex items-center"
                         onClick={() => setIsEditing(!isEditing)}
@@ -430,7 +436,7 @@ export default function IdentityCardGenerator() {
                           </button>
                         </label>
                         <div className="bg-black text-white/90 border border-white/10 p-2 font-mono text-xs truncate">
-                          {userAddress}
+                          {walletAddress ? truncatedAddress : "Not connected"}
                         </div>
                       </div>
 
@@ -469,7 +475,6 @@ export default function IdentityCardGenerator() {
                               className="w-full h-full object-cover"
                             />
                           </div>
-
                           {isEditing && (
                             <label className="cursor-pointer px-3 py-1 border border-white/10 text-xs text-white/70 hover:border-white/30 hover:text-white transition-colors flex items-center">
                               <Upload className="w-3 h-3 mr-1" />
@@ -487,7 +492,6 @@ export default function IdentityCardGenerator() {
                     </div>
                   </div>
 
-                  {/* Advanced Settings */}
                   <div className="border border-white/20 p-5">
                     <button
                       className="w-full flex justify-between items-center"
@@ -502,7 +506,6 @@ export default function IdentityCardGenerator() {
                         }`}
                       />
                     </button>
-
                     <AnimatePresence>
                       {showAdvancedSettings && (
                         <motion.div
@@ -541,7 +544,6 @@ export default function IdentityCardGenerator() {
                     </AnimatePresence>
                   </div>
 
-                  {/* Generate Button */}
                   <button
                     className="w-full py-3 bg-white text-black uppercase font-medium text-lg"
                     onClick={handleGenerate}
@@ -584,7 +586,6 @@ export default function IdentityCardGenerator() {
                     </div>
                   )}
 
-                  {/* Recent Cards */}
                   <div className="border border-white/20 p-5">
                     <div className="flex justify-between items-center mb-3">
                       <label className="block text-xs uppercase text-white/60 flex items-center">
@@ -617,7 +618,10 @@ export default function IdentityCardGenerator() {
                 </div>
 
                 <div className="lg:col-span-3">
-                  <div ref={canvasRef} className="border border-white/20 p-5 h-full flex flex-col">
+                  <div
+                    ref={canvasRef}
+                    className="border border-white/20 p-5 h-full flex flex-col"
+                  >
                     <div className="flex justify-between items-center mb-4">
                       <div className="flex items-center">
                         <div className="w-2 h-2 rounded-full bg-white animate-pulse mr-2" />
@@ -625,7 +629,6 @@ export default function IdentityCardGenerator() {
                           Identity Card Preview
                         </span>
                       </div>
-
                       <div className="flex space-x-3">
                         <button
                           className={`p-1.5 text-xs ${
@@ -650,6 +653,19 @@ export default function IdentityCardGenerator() {
                           <Share className="w-3 h-3 mr-1" />
                           <span>SHARE</span>
                         </button>
+                        <Link href="/nft/scan">
+                          <button
+                            className={`p-1.5 text-xs ${
+                              previewImage
+                                ? "text-white hover:bg-white/5"
+                                : "text-white/20"
+                              } transition-colors flex items-center uppercase`}
+                            disabled={previewImage === null}
+                          >
+                            <Camera className="w-3 h-3 mr-1" />
+                            <span>SCAN</span>
+                          </button>
+                        </Link>
                       </div>
                     </div>
 
@@ -676,7 +692,8 @@ export default function IdentityCardGenerator() {
                               <div
                                 className="absolute inset-0 pointer-events-none opacity-10"
                                 style={{
-                                  backgroundImage: "linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px)",
+                                  backgroundImage:
+                                    "linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px)",
                                   backgroundSize: "20px 20px",
                                 }}
                               />
@@ -783,34 +800,33 @@ export default function IdentityCardGenerator() {
             </motion.div>
           </div>
 
-          {/* Features Section */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
             {[
               {
                 title: "Soulbound Identity",
-                description: "Your N.IDENTITY card is cryptographically bound to your wallet and cannot be transferred or duplicated."
+                description:
+                  "Your N.IDENTITY card is cryptographically bound to your wallet and cannot be transferred or duplicated.",
               },
               {
                 title: "Quantum Security",
-                description: "Advanced cryptographic protection ensures your identity remains secure even against quantum computing attacks."
+                description:
+                  "Advanced cryptographic protection ensures your identity remains secure even against quantum computing attacks.",
               },
               {
                 title: "DAO Access",
-                description: "Your identity card grants you voting rights in the N.DAO governance system and access to exclusive ecosystem features."
-              }
+                description:
+                  "Your identity card grants you voting rights in the N.DAO governance system and access to exclusive ecosystem features.",
+              },
             ].map((feature, index) => (
               <div key={index} className="border border-white/30 p-0.5">
                 <div className="border border-white/10 px-6 py-8">
                   <h3 className="uppercase text-xl font-light mb-4">{feature.title}</h3>
-                  <p className="text-white/70 text-sm">
-                    {feature.description}
-                  </p>
+                  <p className="text-white/70 text-sm">{feature.description}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Footer CTA */}
           <div className="border border-white/30 p-0.5">
             <div className="border border-white/10 px-6 py-12 flex flex-col items-center justify-center">
               <h2 className="text-6xl font-light mb-8 text-center uppercase">
@@ -827,10 +843,8 @@ export default function IdentityCardGenerator() {
         </div>
       </div>
 
-      {/* Footer */}
       <Footer />
 
-      {/* CSS for hiding scrollbars */}
       <style jsx global>{`
         ::-webkit-scrollbar {
           width: 6px;
