@@ -74,6 +74,7 @@
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.5.5",
     "three": "^0.176.0",
+    "tweetnacl": "^1.0.3",
     "vaul": "^0.9.6",
     "wagmi": "^2.15.2",
     "zod": "^3.24.1"

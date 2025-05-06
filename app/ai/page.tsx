@@ -27,6 +27,7 @@ import {
   BookOpen,
   Wallet,
   Coins,
+  BarChart,
 } from "lucide-react";
 import { Canvas } from "@react-three/fiber";
 import {
@@ -41,8 +42,10 @@ import {
 } from "@/lib/services/ai/chatStore"; // Import the new chatStore
 import AnalysisResultDisplay from "./components/analysis-result-display";
 import TokenInsightsDisplay from "./components/token-insights-display";
+import ReputationScoreDisplay from "./components/reputation-score-display";
 import WalletSummaryDisplay from "./components/wallet-summary-display";
 import { useTokenInsights } from "@/hooks/use-token-insights";
+import { useReputationScore } from "@/hooks/use-reputation-score";
 import { useWalletSummary } from "@/hooks/use-wallet-summary";
 import { usePhantom } from "@/hooks/use-phantom";
 
@@ -66,20 +69,20 @@ const modelOptions: Record<
   string,
   { name: string; tag: string; gradient: string }
 > = {
+  "llama3-8b-8192": {
+    name: "llama3-8b-8192",
+    tag: "Balanced & Fast",
+    gradient: "bg-gradient-to-r from-yellow-500 to-orange-500",
+  },
+  "mistral-saba-24b": {
+    name: "mistral-saba-24b",
+    tag: "Blazing Fast UX",
+    gradient: "bg-gradient-to-r from-pink-500 to-red-500",
+  },
   "llama3-70b-8192": {
     name: "llama3-70b-8192",
-    tag: "Best for Coding",
+    tag: "Advanced Reasoning",
     gradient: "bg-gradient-to-r from-blue-500 to-purple-500",
-  },
-  "llama-3.3-70b-versatile": {
-    name: "llama-3.3-70b-versatile",
-    tag: "Gen AI & Reasoning",
-    gradient: "bg-gradient-to-r from-green-500 to-teal-500",
-  },
-  "qwen-qwq-32b": {
-    name: "qwen-qwq-32b",
-    tag: "Fast & Balanced",
-    gradient: "bg-gradient-to-r from-yellow-500 to-orange-500",
   },
 };
 
@@ -91,8 +94,10 @@ export default function AIPage() {
   const [mounted, setMounted] = useState(false);
   const [input, setInput] = useState("");
   type Message = BaseMessage & {
-    tokenInsights?: any; // Add tokenInsights property
-    walletSummary?: any; // Add walletSummary property
+    walletSummary?: any;
+    analysisResult?: any;
+    tokenInsights?: any;
+    reputationScore?: any;
   };
 
   const [messages, setMessages] = useState<Message[]>([]);
@@ -106,7 +111,7 @@ export default function AIPage() {
     null
   );
   const [selectedModel, setSelectedModel] =
-    useState<keyof typeof modelOptions>("llama3-70b-8192");
+    useState<keyof typeof modelOptions>("llama3-8b-8192");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [copied, setCopied] = useState(false);
   const [copiedSuggestions, setCopiedSuggestions] = useState(false);
@@ -126,6 +131,14 @@ export default function AIPage() {
     error: tokenError,
     tokenInsights,
   } = useTokenInsights();
+
+  const {
+    handleWalletInput,
+    isLoading: isCalculatingReputation,
+    error: reputationError,
+    reputationScore,
+  } = useReputationScore();
+
   const {
     summarizeWallet,
     isLoading: isSummarizing,
@@ -597,10 +610,118 @@ export default function AIPage() {
     );
   };
 
-  const handleTokenize = () => {
+  const handleReputationScore = async () => {
     setShowInitialMessage(false);
-    // Implement tokenize functionality
-    console.log("Tokenize functionality not yet implemented");
+    if (!input.trim()) return;
+
+    try {
+      setIsLoading(true);
+      const userMessage: Message = {
+        role: "user",
+        content: `Calculate reputation score for wallet: ${input}`,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, userMessage]);
+      setMessages((prev) => [...prev, { role: "assistant", content: "..." }]);
+
+      const score = await handleWalletInput(input);
+      if (!score) {
+        setMessages((prev) => [
+          ...prev.slice(0, -1),
+          {
+            role: "assistant",
+            content:
+              reputationError ||
+              "Could not calculate reputation score. Please check the wallet address and try again.",
+            timestamp: new Date(),
+          },
+        ]);
+        return;
+      }
+
+      setMessages((prev) => [
+        ...prev.slice(0, -1),
+        {
+          role: "assistant",
+          content: "",
+          reputationScore: score,
+          timestamp: new Date(),
+        },
+      ]);
+
+      setInput("");
+
+      const updatedMessages: Message[] = [
+        ...messages,
+        userMessage,
+        {
+          role: "assistant" as "assistant",
+          content: "",
+          reputationScore: score,
+          timestamp: new Date(),
+        },
+      ];
+
+      if (currentChatId === null) {
+        const title = chatStore.generateChatTitle(
+          updatedMessages.map((msg) => ({
+            ...msg,
+            role: msg.role as "user" | "assistant" | "system",
+          }))
+        );
+        const newChat: ChatHistory = {
+          id: Date.now(),
+          title: title,
+          date: new Date().toLocaleDateString(),
+          messages: updatedMessages.map((msg) => ({
+            ...msg,
+            role: msg.role as "user" | "assistant" | "system",
+            reputationScore: msg.reputationScore || undefined,
+          })),
+          user_id: userId,
+        };
+
+        const savedChat = await chatStore.saveChat(newChat);
+        if (savedChat) {
+          setCurrentChatId(savedChat.id);
+        }
+      } else {
+        await chatStore.updateChat(currentChatId, {
+          messages: updatedMessages.map((msg) => ({
+            ...msg,
+            role: msg.role as "assistant" | "user" | "system",
+            reputationScore: msg.reputationScore || undefined,
+          })),
+        });
+      }
+
+      const history = await chatStore.getChatHistory(userId);
+      setChatHistory(history);
+    } catch (error) {
+      console.error("Error in handleReputationScore:", error);
+      setMessages((prev) => [
+        ...prev.slice(0, -1),
+        {
+          role: "assistant",
+          content:
+            "I encountered an error calculating the reputation score. Please try again.",
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const renderReputationScore = (score: any) => {
+    return (
+      <ReputationScoreDisplay
+        score={score}
+        isLoading={isCalculatingReputation}
+        onCopy={handleCopyText}
+      />
+    );
   };
 
   const handleSummarize = async () => {
@@ -1151,13 +1272,15 @@ export default function AIPage() {
                                 </div>
                               )}
 
-                              {/* Message content or analysis result */}
+                              {/* Message content or results display */}
                               {message.analysisResult ? (
                                 renderAnalysisResult(message.analysisResult)
                               ) : message.walletSummary ? (
                                 renderWalletSummary(message.walletSummary)
                               ) : message.tokenInsights ? (
                                 renderTokenInsights(message.tokenInsights)
+                              ) : message.reputationScore ? (
+                                renderReputationScore(message.reputationScore)
                               ) : (
                                 <div className="text-white break-words overflow-wrap-anywhere">
                                   {message.content === "..." ? (
@@ -1587,75 +1710,72 @@ export default function AIPage() {
                   </div>
                 </motion.button>
 
-                {/* Tokenize Button */}
+                {/* Reputation Button */}
                 <motion.button
                   className="relative overflow-hidden rounded-md bg-black/50 backdrop-blur-sm"
-                  onMouseEnter={() => setHoveredButton("tokenize")}
+                  onMouseEnter={() => setHoveredButton("reputation")}
                   onMouseLeave={() => setHoveredButton(null)}
-                  onClick={handleTokenize}
+                  onClick={handleReputationScore}
                   whileTap={{ scale: 0.98 }}
                 >
                   {/* Animated border */}
                   <div className="absolute inset-0 rounded-md overflow-hidden">
-                    {/* Top border */}
                     <motion.div
-                      className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-rose-600 to-transparent"
+                      className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-600 to-transparent"
                       animate={{
                         backgroundPosition:
-                          hoveredButton === "tokenize"
+                          hoveredButton === "reputation"
                             ? ["0% center", "100% center"]
                             : "0% center",
-                        opacity: hoveredButton === "tokenize" ? 0.9 : 0.5,
+                        opacity: hoveredButton === "reputation" ? 0.9 : 0.5,
                       }}
                       transition={{
                         duration: 2,
-                        repeat: hoveredButton === "tokenize" ? Infinity : 0,
+                        repeat: hoveredButton === "reputation" ? Infinity : 0,
                       }}
                     />
-
-                    {/* Bottom border */}
                     <motion.div
-                      className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-rose-500 to-transparent"
+                      className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500 to-transparent"
                       animate={{
                         backgroundPosition:
-                          hoveredButton === "tokenize"
+                          hoveredButton === "reputation"
                             ? ["100% center", "0% center"]
                             : "100% center",
-                        opacity: hoveredButton === "tokenize" ? 0.9 : 0.5,
+                        opacity: hoveredButton === "reputation" ? 0.9 : 0.5,
                       }}
                       transition={{
                         duration: 2,
-                        repeat: hoveredButton === "tokenize" ? Infinity : 0,
+                        repeat: hoveredButton === "reputation" ? Infinity : 0,
                       }}
                     />
                   </div>
 
                   {/* Button content */}
                   <div className="relative z-10 py-2 flex flex-col items-center gap-1 px-1">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center bg-rose-900/50">
-                      <Wallet className="w-3.5 h-3.5 text-rose-400" />
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center bg-red-900/50">
+                      <BarChart className="w-3.5 h-3.5 text-red-400" />
                     </div>
-                    <span className="text-[10px] font-light text-rose-300">
-                      Tokenize
+                    <span className="text-[10px] font-light text-red-300">
+                      Reputation
                     </span>
 
                     {/* Status indicator dot */}
                     <motion.div
-                      className="absolute top-1 right-1 w-1 h-1 rounded-full bg-rose-500"
+                      className="absolute top-1 right-1 w-1 h-1 rounded-full bg-red-500"
                       animate={{
-                        scale: hoveredButton === "tokenize" ? [1, 1.5, 1] : 1,
+                        scale: hoveredButton === "reputation" ? [1, 1.5, 1] : 1,
                         boxShadow:
-                          hoveredButton === "tokenize"
+                          hoveredButton === "reputation"
                             ? [
-                                "0 0 0px rgba(244, 63, 94, 0.2)",
-                                "0 0 4px rgba(244, 63, 94, 0.7)",
-                                "0 0 0px rgba(244, 63, 94, 0.2)",
+                                "0 0 0px rgba(239, 68, 68, 0.2)",
+                                "0 0 4px rgba(239, 68, 68, 0.7)",
+                                "0 0 0px rgba(239, 68, 68, 0.2)",
                               ]
-                            : "0 0 0px rgba(244, 63, 94, 0.2)",
+                            : "0 0 0px rgba(239, 68, 68, 0.2)",
                       }}
                       transition={{
                         duration: 1.5,
-                        repeat: hoveredButton === "tokenize" ? Infinity : 0,
+                        repeat: hoveredButton === "reputation" ? Infinity : 0,
                         ease: "easeInOut",
                       }}
                     />
@@ -1665,9 +1785,9 @@ export default function AIPage() {
                   <motion.div
                     className="absolute inset-0 pointer-events-none rounded-md opacity-0"
                     animate={{
-                      opacity: hoveredButton === "tokenize" ? 0.15 : 0,
+                      opacity: hoveredButton === "reputation" ? 0.15 : 0,
                       background:
-                        "linear-gradient(90deg, rgba(244, 63, 94, 0.7) 0%, rgba(225, 29, 72, 0.7) 100%)",
+                        "linear-gradient(90deg, rgba(153, 27, 27, 0.7) 0%, rgba(239, 68, 68, 0.7) 100%)",
                     }}
                     transition={{ duration: 0.3 }}
                   />
@@ -1693,7 +1813,7 @@ export default function AIPage() {
                           y2="15"
                           stroke="currentColor"
                           strokeWidth="0.5"
-                          className="text-rose-500"
+                          className="text-red-500"
                         />
                         <line
                           x1="15"
@@ -1702,14 +1822,14 @@ export default function AIPage() {
                           y2="30"
                           stroke="currentColor"
                           strokeWidth="0.5"
-                          className="text-rose-500"
+                          className="text-red-500"
                         />
                         <circle
                           cx="15"
                           cy="15"
                           r="2"
                           fill="currentColor"
-                          className="text-rose-600"
+                          className="text-red-600"
                         />
                       </pattern>
                       <rect
@@ -1930,10 +2050,6 @@ export default function AIPage() {
                   <span className="ml-2">TO SEND</span>
                 </span>
               </div>
-
-              <span className="text-white/40 hover:text-white/70 transition-colors cursor-pointer">
-                HELP
-              </span>
             </div>
           </div>
         </div>

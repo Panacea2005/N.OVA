@@ -14,6 +14,11 @@ import {
   AlertTriangle,
   Info,
   Vote,
+  FileText,
+  Send,
+  Users,
+  Coins,
+  GanttChartSquare,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
@@ -57,6 +62,131 @@ const NovaDAO = () => {
   const [copySuccess, setCopySuccess] = useState(false);
   const [expandedSection, setExpandedSection] = useState(null);
   const [showProposalModal, setShowProposalModal] = useState(false);
+  const [showNewProposalModal, setShowNewProposalModal] = useState(false);
+  const [activeTab, setActiveTab] = useState("details");
+  const [activeProposalType, setActiveProposalType] = useState("treasury");
+
+  // New proposal form state
+  const [proposalForm, setProposalForm] = useState({
+    title: "",
+    description: "",
+    fundingAmount: "",
+    implementation: "",
+    background: "",
+    timeline: "",
+    type: "treasury",
+  });
+
+  // Form validation
+  interface FormErrors {
+    title?: string;
+    description?: string;
+    fundingAmount?: string;
+    implementation?: string;
+  }
+
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+
+  const handleProposalInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setProposalForm({
+      ...proposalForm,
+      [name]: value,
+    });
+
+    // Clear error for this field if it exists
+    if (name in formErrors) {
+      setFormErrors({
+        ...formErrors,
+        [name]: "",
+      });
+    }
+  };
+
+  // Simulate token data fetch
+  useEffect(() => {
+    if (mounted) {
+      setLocalLoading(true);
+      setTimeout(() => {
+        setLocalLoading(false);
+      }, 1200);
+    }
+  }, [mounted]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const validateProposalForm = () => {
+    const errors: FormErrors = {};
+
+    if (!proposalForm.title.trim()) {
+      errors.title = "Title is required";
+    }
+
+    if (!proposalForm.description.trim()) {
+      errors.description = "Description is required";
+    }
+
+    if (!proposalForm.fundingAmount.trim()) {
+      errors.fundingAmount = "Funding amount is required";
+    } else if (
+      isNaN(Number(proposalForm.fundingAmount)) ||
+      Number(proposalForm.fundingAmount) <= 0
+    ) {
+      errors.fundingAmount = "Must be a positive number";
+    }
+
+    if (!proposalForm.implementation.trim()) {
+      errors.implementation = "Implementation plan is required";
+    }
+
+    return errors;
+  };
+
+  const handleSubmitProposal = () => {
+    setSubmitAttempted(true);
+    const errors = validateProposalForm();
+
+    if (Object.keys(errors).length === 0) {
+      // In a real app, this would submit the proposal to the blockchain
+      console.log("Submitting proposal:", proposalForm);
+      setShowNewProposalModal(false);
+
+      // Reset form
+      setProposalForm({
+        title: "",
+        description: "",
+        fundingAmount: "",
+        implementation: "",
+        background: "",
+        timeline: "",
+        type: "treasury",
+      });
+      setSubmitAttempted(false);
+
+      // Show success message or transition
+      alert(
+        "Proposal submitted successfully! In a real implementation, this would be posted to the blockchain."
+      );
+    } else {
+      setFormErrors(errors);
+    }
+  };
+
+  // Function to copy text to clipboard
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    });
+  };
+
+  const [localLoading, setLocalLoading] = useState(false);
+
   interface Proposal {
     id: string;
     title: string;
@@ -74,42 +204,18 @@ const NovaDAO = () => {
   }
 
   const [activeProposal, setActiveProposal] = useState<Proposal | null>(null);
-  const [localLoading, setLocalLoading] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Simulate token data fetch
-  useEffect(() => {
-    if (mounted) {
-      setLocalLoading(true);
-      setTimeout(() => {
-        setLocalLoading(false);
-      }, 1200);
-    }
-  }, [mounted]);
-
-  // Function to copy text to clipboard
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
-    });
-  };
 
   // Handle viewing proposal details
   const handleViewProposal = (proposal: Proposal) => {
     setActiveProposal(proposal);
     setShowProposalModal(true);
+    setActiveTab("details");
   };
 
   // Navigate to proposal page
-  const navigateToProposal = (id: any) => {
-    // In a real implementation, this would navigate to the proposal page
+  const navigateToProposal = (id: string) => {
     console.log(`Navigating to proposal ${id}`);
     setShowProposalModal(false);
-    // router.push(`/dao/proposals/${id}`);
   };
 
   // Mock data for DAO distribution
@@ -289,6 +395,38 @@ const NovaDAO = () => {
     },
   ];
 
+  // Enhanced Proposal Types for creation modal
+  const proposalTypes = [
+    {
+      id: "treasury",
+      name: "Treasury Proposal",
+      icon: <Coins className="w-4 h-4" />,
+      description:
+        "Request funding from the DAO treasury for a specific project or initiative.",
+    },
+    {
+      id: "governance",
+      name: "Governance Change",
+      icon: <Users className="w-4 h-4" />,
+      description:
+        "Propose changes to the DAO governance structure, voting rules, or administrative processes.",
+    },
+    {
+      id: "parameter",
+      name: "Parameter Adjustment",
+      icon: <GanttChartSquare className="w-4 h-4" />,
+      description:
+        "Suggest adjustments to existing protocol parameters or thresholds.",
+    },
+    {
+      id: "integration",
+      name: "New Integration",
+      icon: <Sparkles className="w-4 h-4" />,
+      description:
+        "Propose integration with a new protocol, service, or platform.",
+    },
+  ];
+
   if (!mounted) {
     return (
       <main className="relative min-h-screen bg-black text-white font-mono">
@@ -322,17 +460,64 @@ const NovaDAO = () => {
           </motion.div>
 
           {/* Main Header */}
-          <div className="mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="mb-16"
+          >
             <h1 className="text-8xl font-light mb-6">DAO</h1>
-            <p className="text-white/70 uppercase max-w-4xl">
-              N.OVA DAO IS A DECENTRALIZED GOVERNANCE SYSTEM OPERATED BY THE
-              NOVA TOKEN HOLDING COMMUNITY.
-            </p>
-            <p className="text-white/70 uppercase max-w-4xl mt-2">
-              EACH NOVA TOKEN HOLDER HAS VOTING RIGHTS TO DETERMINE THE FUTURE
-              DIRECTION OF THE WEB3 AI PLATFORM.
-            </p>
-          </div>
+            <div className="max-w-4xl space-y-2">
+              <p className="text-white/70 uppercase">
+                N.OVA DAO IS A DECENTRALIZED GOVERNANCE SYSTEM OPERATED BY THE
+                NOVA TOKEN HOLDING COMMUNITY.
+              </p>
+              <p className="text-white/70 uppercase">
+                EACH NOVA TOKEN HOLDER HAS VOTING RIGHTS TO DETERMINE THE FUTURE
+                DIRECTION OF THE WEB3 AI PLATFORM.
+              </p>
+            </div>
+
+            <div className="mt-10 grid grid-cols-3 w-full gap-0">
+              <div className="border border-white/30 p-0.5">
+                <div className="border border-white/10 p-4 flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-purple-500/30 flex items-center justify-center">
+                    <Vote className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <div>
+                    <div className="text-white/50 text-xs">
+                      ACTIVE PROPOSALS
+                    </div>
+                    <div className="text-2xl font-light">2</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border border-white/30 p-0.5">
+                <div className="border border-white/10 p-4 flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-green-500/30 flex items-center justify-center">
+                    <Coins className="w-5 h-5 text-green-400" />
+                  </div>
+                  <div>
+                    <div className="text-white/50 text-xs">TREASURY VALUE</div>
+                    <div className="text-2xl font-light">300M NOVA</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border border-white/30 p-0.5">
+                <div className="border border-white/10 p-4 flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-500/30 flex items-center justify-center">
+                    <Users className="w-5 h-5 text-blue-400" />
+                  </div>
+                  <div>
+                    <div className="text-white/50 text-xs">VOTERS</div>
+                    <div className="text-2xl font-light">12,547</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
 
           {/* Tokenomics Section */}
           <div className="border border-white/30 p-0.5 mb-8">
@@ -342,7 +527,9 @@ const NovaDAO = () => {
               transition={{ duration: 0.7, delay: 0.2 }}
               className="border border-white/10 px-6 py-8"
             >
-              <h2 className="text-5xl font-light mb-10">Tokenomics</h2>
+              <h2 className="text-5xl font-light mb-10 bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-white/80">
+                Tokenomics
+              </h2>
               <p className="text-white/70 uppercase mb-6">
                 TOTAL SUPPLY: 1,000,000,000 NOVA
               </p>
@@ -359,9 +546,15 @@ const NovaDAO = () => {
                   </thead>
                   <tbody>
                     {daoDistribution.map((item, index) => (
-                      <tr
+                      <motion.tr
                         key={index}
-                        className="border-t border-white/10 hover:bg-white/5"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                          duration: 0.5,
+                          delay: 0.1 + index * 0.05,
+                        }}
+                        className="border-t border-white/10 hover:bg-white/5 transition-colors"
                       >
                         <td className="py-4 pr-6 font-mono">{item.name}</td>
                         <td className="py-4 px-6">
@@ -377,9 +570,9 @@ const NovaDAO = () => {
                         <td className="py-4 px-6">
                           {/* Progress bar styled like in the reference */}
                           <div className="flex items-center">
-                            <div className="h-2 bg-white/10 w-32 mr-3">
+                            <div className="h-2 bg-white/10 w-32 mr-3 overflow-hidden">
                               <div
-                                className="h-full bg-white/50"
+                                className="h-full bg-gradient-to-r from-purple-500 to-purple-400"
                                 style={{ width: item.percentage }}
                               ></div>
                             </div>
@@ -387,12 +580,12 @@ const NovaDAO = () => {
                           </div>
                         </td>
                         <td className="py-4 pl-6">
-                          <button className="text-white hover:text-white/70 transition-colors uppercase text-xs flex items-center">
+                          <button className="text-white hover:text-purple-400 transition-colors uppercase text-xs flex items-center group">
                             VIEW ON SOLSCAN{" "}
-                            <ArrowRight className="h-3 w-3 ml-1" />
+                            <ArrowRight className="h-3 w-3 ml-1 group-hover:translate-x-0.5 transition-transform" />
                           </button>
                         </td>
-                      </tr>
+                      </motion.tr>
                     ))}
                   </tbody>
                 </table>
@@ -405,41 +598,55 @@ const NovaDAO = () => {
                 </h3>
 
                 {/* Visualization bar */}
-                <div className="flex h-12 w-full bg-black overflow-hidden mb-6">
-                  <div
+                <div className="flex h-12 w-full bg-black overflow-hidden mb-6 rounded-sm">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: "30%" }}
+                    transition={{ duration: 1, delay: 0.1 }}
                     className="bg-purple-500 h-full"
-                    style={{ width: "30%" }}
-                  ></div>
-                  <div
+                  ></motion.div>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: "20%" }}
+                    transition={{ duration: 1, delay: 0.2 }}
                     className="bg-blue-500 h-full"
-                    style={{ width: "20%" }}
-                  ></div>
-                  <div
+                  ></motion.div>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: "15%" }}
+                    transition={{ duration: 1, delay: 0.3 }}
                     className="bg-green-500 h-full"
-                    style={{ width: "15%" }}
-                  ></div>
-                  <div
+                  ></motion.div>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: "15%" }}
+                    transition={{ duration: 1, delay: 0.4 }}
                     className="bg-yellow-500 h-full"
-                    style={{ width: "15%" }}
-                  ></div>
-                  <div
+                  ></motion.div>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: "10%" }}
+                    transition={{ duration: 1, delay: 0.5 }}
                     className="bg-red-500 h-full"
-                    style={{ width: "10%" }}
-                  ></div>
-                  <div
+                  ></motion.div>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: "2%" }}
+                    transition={{ duration: 1, delay: 0.6 }}
                     className="bg-cyan-500 h-full"
-                    style={{ width: "2%" }}
-                  ></div>
-                  <div
+                  ></motion.div>
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: "8%" }}
+                    transition={{ duration: 1, delay: 0.7 }}
                     className="bg-amber-500 h-full"
-                    style={{ width: "8%" }}
-                  ></div>
+                  ></motion.div>
                 </div>
 
                 {/* Distribution table instead of inline labels */}
                 <div className="grid grid-cols-7 gap-2 text-xs">
                   <div className="flex flex-col items-center">
-                    <div className="w-4 h-4 bg-purple-500 mb-1"></div>
+                    <div className="w-4 h-4 bg-purple-500 mb-1 rounded-sm"></div>
                     <div className="text-white/60 text-center">
                       TREASURY DAO
                     </div>
@@ -447,37 +654,37 @@ const NovaDAO = () => {
                   </div>
 
                   <div className="flex flex-col items-center">
-                    <div className="w-4 h-4 bg-blue-500 mb-1"></div>
+                    <div className="w-4 h-4 bg-blue-500 mb-1 rounded-sm"></div>
                     <div className="text-white/60 text-center">INCENTIVES</div>
                     <div className="text-white/80 font-bold">20%</div>
                   </div>
 
                   <div className="flex flex-col items-center">
-                    <div className="w-4 h-4 bg-green-500 mb-1"></div>
+                    <div className="w-4 h-4 bg-green-500 mb-1 rounded-sm"></div>
                     <div className="text-white/60 text-center">TEAM</div>
                     <div className="text-white/80 font-bold">15%</div>
                   </div>
 
                   <div className="flex flex-col items-center">
-                    <div className="w-4 h-4 bg-yellow-500 mb-1"></div>
+                    <div className="w-4 h-4 bg-yellow-500 mb-1 rounded-sm"></div>
                     <div className="text-white/60 text-center">ECOSYSTEM</div>
                     <div className="text-white/80 font-bold">15%</div>
                   </div>
 
                   <div className="flex flex-col items-center">
-                    <div className="w-4 h-4 bg-red-500 mb-1"></div>
+                    <div className="w-4 h-4 bg-red-500 mb-1 rounded-sm"></div>
                     <div className="text-white/60 text-center">REWARDS</div>
                     <div className="text-white/80 font-bold">10%</div>
                   </div>
 
                   <div className="flex flex-col items-center">
-                    <div className="w-4 h-4 bg-cyan-500 mb-1"></div>
+                    <div className="w-4 h-4 bg-cyan-500 mb-1 rounded-sm"></div>
                     <div className="text-white/60 text-center">LIQUIDITY</div>
                     <div className="text-white/80 font-bold">2%</div>
                   </div>
 
                   <div className="flex flex-col items-center">
-                    <div className="w-4 h-4 bg-amber-500 mb-1"></div>
+                    <div className="w-4 h-4 bg-amber-500 mb-1 rounded-sm"></div>
                     <div className="text-white/60 text-center">RESERVE</div>
                     <div className="text-white/80 font-bold">8%</div>
                   </div>
@@ -487,7 +694,7 @@ const NovaDAO = () => {
           </div>
 
           {/* Individual Treasury Sections */}
-          {daoDistribution.map((item) => (
+          {daoDistribution.map((item, sectionIndex) => (
             <div key={item.id} className="border border-white/30 p-0.5 mb-8">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -537,11 +744,16 @@ const NovaDAO = () => {
                       </div>
                     </div>
 
-                    <div className="h-2 bg-white/10 w-full mb-6">
-                      <div
-                        className="h-full bg-purple-500"
-                        style={{ width: item.percentage }}
-                      ></div>
+                    <div className="h-2 bg-white/10 w-full mb-6 overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: item.percentage }}
+                        transition={{
+                          duration: 0.7,
+                          delay: 0.3 + sectionIndex * 0.1,
+                        }}
+                        className="h-full bg-gradient-to-r from-purple-500 to-purple-400"
+                      ></motion.div>
                     </div>
 
                     {item.id === "01" && (
@@ -570,7 +782,7 @@ const NovaDAO = () => {
                           INCENTIVE BREAKDOWN
                         </h4>
                         <div className="flex items-center mb-2">
-                          <div className="w-24 h-2 bg-white/10 mr-3">
+                          <div className="w-24 h-2 bg-white/10 mr-3 overflow-hidden">
                             <div
                               className="h-full bg-white/50"
                               style={{ width: "40%" }}
@@ -579,7 +791,7 @@ const NovaDAO = () => {
                           <span className="text-sm">40% Data contributors</span>
                         </div>
                         <div className="flex items-center mb-2">
-                          <div className="w-24 h-2 bg-white/10 mr-3">
+                          <div className="w-24 h-2 bg-white/10 mr-3 overflow-hidden">
                             <div
                               className="h-full bg-white/50"
                               style={{ width: "30%" }}
@@ -588,7 +800,7 @@ const NovaDAO = () => {
                           <span className="text-sm">30% Early adopters</span>
                         </div>
                         <div className="flex items-center mb-2">
-                          <div className="w-24 h-2 bg-white/10 mr-3">
+                          <div className="w-24 h-2 bg-white/10 mr-3 overflow-hidden">
                             <div
                               className="h-full bg-white/50"
                               style={{ width: "20%" }}
@@ -597,7 +809,7 @@ const NovaDAO = () => {
                           <span className="text-sm">20% Badge unlocks</span>
                         </div>
                         <div className="flex items-center mb-2">
-                          <div className="w-24 h-2 bg-white/10 mr-3">
+                          <div className="w-24 h-2 bg-white/10 mr-3 overflow-hidden">
                             <div
                               className="h-full bg-white/50"
                               style={{ width: "10%" }}
@@ -735,9 +947,13 @@ const NovaDAO = () => {
                 Buy $N.OVA
               </h2>
 
-              <button className="w-64 bg-white text-black uppercase font-medium text-center py-4 hover:bg-white/90 transition-colors mb-12">
+              <motion.button
+                className="w-64 bg-white text-black uppercase font-medium text-center py-4 hover:bg-white/90 transition-colors mb-12"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+              >
                 BUY NOW
-              </button>
+              </motion.button>
 
               <div className="border border-white/30 p-0.5 w-full max-w-3xl">
                 <div className="border border-white/10 px-6 py-4 flex justify-between items-center">
@@ -745,7 +961,7 @@ const NovaDAO = () => {
                     SOLANA CONTRACT ADDRESS
                   </div>
                   <div className="flex items-center flex-1">
-                    <div className="font-mono flex-1">
+                    <div className="font-mono flex-1 overflow-x-auto whitespace-nowrap text-white/80">
                       H2LhfTsiT2RWKpbyDLstZALcvVyUcaZmM2T7GtQoGJCu
                     </div>
                     <button
@@ -754,18 +970,22 @@ const NovaDAO = () => {
                           "H2LhfTsiT2RWKpbyDLstZALcvVyUcaZmM2T7GtQoGJCu"
                         )
                       }
-                      className="bg-black text-white border border-white/30 px-4 py-2 whitespace-nowrap"
+                      className="bg-black text-white border border-white/30 px-4 py-2 whitespace-nowrap hover:bg-white/5 transition-colors flex items-center space-x-2"
                     >
-                      COPY ADDRESS
+                      <Copy className="w-3 h-3" /> <span>COPY ADDRESS</span>
                     </button>
                   </div>
                 </div>
               </div>
 
               {copySuccess && (
-                <div className="mt-2 text-green-400 text-sm">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-2 text-green-400 text-sm"
+                >
                   Address copied to clipboard
-                </div>
+                </motion.div>
               )}
 
               <div className="text-center text-white/50 text-xs leading-relaxed mt-12 max-w-4xl">
@@ -789,12 +1009,34 @@ const NovaDAO = () => {
               transition={{ duration: 0.7, delay: 0.5 }}
               className="border border-white/10 px-6 py-8"
             >
-              <h2 className="text-5xl font-light mb-10">Active Proposals</h2>
+              <div className="flex justify-between items-center mb-10">
+                <h2 className="text-5xl font-light bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-white/80">
+                  Active Proposals
+                </h2>
+
+                <div className="flex space-x-3">
+                  <div className="border border-white/20 px-3 py-1 flex items-center space-x-2">
+                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                    <span className="text-xs">Active</span>
+                  </div>
+                  <div className="border border-white/20 px-3 py-1 flex items-center space-x-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    <span className="text-xs">Passed</span>
+                  </div>
+                  <div className="border border-white/20 px-3 py-1 flex items-center space-x-2">
+                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                    <span className="text-xs">Failed</span>
+                  </div>
+                </div>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {activeProposals.map((proposal) => (
-                  <div
+                {activeProposals.map((proposal, index) => (
+                  <motion.div
                     key={proposal.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1 + index * 0.1 }}
                     className="border border-white/20 p-5 hover:border-white/30 transition-colors"
                   >
                     <div className="flex justify-between items-center mb-3">
@@ -831,19 +1073,34 @@ const NovaDAO = () => {
                     </p>
 
                     <div className="mb-4">
-                      <div className="h-1.5 w-full bg-white/10 flex overflow-hidden">
-                        <div
+                      <div className="h-1.5 w-full bg-white/10 flex overflow-hidden rounded-sm">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${proposal.votes.for}%` }}
+                          transition={{
+                            duration: 0.8,
+                            delay: 0.2 + index * 0.1,
+                          }}
                           className="h-full bg-green-500"
-                          style={{ width: `${proposal.votes.for}%` }}
-                        ></div>
-                        <div
+                        ></motion.div>
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${proposal.votes.against}%` }}
+                          transition={{
+                            duration: 0.8,
+                            delay: 0.3 + index * 0.1,
+                          }}
                           className="h-full bg-red-500"
-                          style={{ width: `${proposal.votes.against}%` }}
-                        ></div>
-                        <div
+                        ></motion.div>
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${proposal.votes.abstain}%` }}
+                          transition={{
+                            duration: 0.8,
+                            delay: 0.4 + index * 0.1,
+                          }}
                           className="h-full bg-blue-500"
-                          style={{ width: `${proposal.votes.abstain}%` }}
-                        ></div>
+                        ></motion.div>
                       </div>
                       <div className="flex justify-between text-xs mt-1">
                         <span className="text-green-400">
@@ -859,26 +1116,38 @@ const NovaDAO = () => {
                     </div>
 
                     <div className="flex justify-between items-center text-xs text-white/60">
-                      <div>Funding: {proposal.fundingRequest}</div>
-                      <div>Time: {proposal.timeRemaining}</div>
+                      <div className="flex items-center space-x-1">
+                        <Coins className="w-3 h-3" />
+                        <span>Funding: {proposal.fundingRequest}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Clock className="w-3 h-3" />
+                        <span>Time: {proposal.timeRemaining}</span>
+                      </div>
                     </div>
 
                     <div className="mt-4 flex justify-end">
                       <button
                         onClick={() => handleViewProposal(proposal)}
-                        className="text-white hover:text-white/70 transition-colors uppercase text-xs flex items-center"
+                        className="flex items-center space-x-1 bg-white/5 hover:bg-white/10 transition-colors border border-white/20 px-4 py-1 text-xs uppercase"
                       >
-                        VIEW DETAILS <ArrowRight className="h-3 w-3 ml-1" />
+                        <span>VIEW DETAILS</span>
+                        <ArrowRight className="h-3 w-3" />
                       </button>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
 
               <div className="mt-8 flex justify-center">
-                <button className="bg-white text-black px-6 py-3 uppercase hover:bg-white/90 transition-colors">
+                <motion.button
+                  onClick={() => setShowNewProposalModal(true)}
+                  className="bg-white text-black px-6 py-3 uppercase hover:bg-white/90 transition-colors"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                >
                   SUBMIT NEW PROPOSAL
-                </button>
+                </motion.button>
               </div>
             </motion.div>
           </div>
@@ -889,245 +1158,736 @@ const NovaDAO = () => {
       <Footer />
 
       {/* Proposal Modal */}
-      {showProposalModal && activeProposal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-            onClick={() => setShowProposalModal(false)}
-          ></div>
-          <div className="relative z-10 w-full max-w-2xl max-h-[80vh] my-8 bg-black border border-white/30 overflow-hidden animate-scaleIn">
-            <div className="border border-white/10 flex flex-col max-h-[80vh]">
-              <div className="flex justify-between items-center px-6 py-4 border-b border-white/10">
-                <h3 className="text-xl uppercase">
-                  {activeProposal.id}: {activeProposal.title}
-                </h3>
-                <button
-                  onClick={() => setShowProposalModal(false)}
-                  className="p-2 border border-white/20 hover:bg-white/10 transition-colors"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-
-              <div className="overflow-y-auto scrollbar-hide px-6 py-5 flex-grow">
-                <div className="space-y-6">
-                  <div className="border border-white/20 p-5">
-                    <h4 className="uppercase text-sm text-white/60 mb-2">
-                      DESCRIPTION
-                    </h4>
-                    <p className="text-white/90">
-                      {activeProposal.description}
+      <AnimatePresence>
+        {showProposalModal && activeProposal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          >
+            <div
+              className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+              onClick={() => setShowProposalModal(false)}
+            ></div>
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ type: "spring", damping: 25 }}
+              className="relative z-10 w-full max-w-2xl max-h-[90vh] my-8 bg-black border border-white/30 overflow-hidden"
+            >
+              <div className="border border-white/10 flex flex-col max-h-[90vh]">
+                <div className="flex justify-between items-center px-6 py-4 border-b border-white/10">
+                  <div className="flex flex-col">
+                    <h3 className="text-xl text-white/90 uppercase flex items-center">
+                      <span
+                        className={`w-2 h-2 rounded-full mr-2 ${
+                          activeProposal.status === "Active"
+                            ? "bg-blue-500"
+                            : activeProposal.status === "Passed"
+                            ? "bg-green-500"
+                            : "bg-red-500"
+                        }`}
+                      ></span>
+                      {activeProposal.id}
+                    </h3>
+                    <p className="text-sm text-white/60">
+                      {activeProposal.title}
                     </p>
-
-                    {/* Additional content can be very long */}
-                    <div className="mt-4">
-                      <h5 className="uppercase text-xs text-white/50 mb-2">
-                        BACKGROUND
-                      </h5>
-                      <p className="text-white/80 text-sm mb-2">
-                        The N.AI platform has been experiencing increased demand
-                        for on-chain data analysis capabilities. Our current
-                        infrastructure can handle approximately 10,000 requests
-                        per hour, but we're now seeing peaks of over 15,000
-                        requests.
-                      </p>
-                      <p className="text-white/80 text-sm mb-2">
-                        The proposed technical stack includes Rust-based data
-                        processing pipelines, advanced machine learning models
-                        for pattern detection, and enhanced visualization
-                        capabilities.
-                      </p>
-                    </div>
-
-                    <div className="mt-4">
-                      <h5 className="uppercase text-xs text-white/50 mb-2">
-                        IMPLEMENTATION PLAN
-                      </h5>
-                      <p className="text-white/80 text-sm mb-2">
-                        Phase 1 (2 weeks): Infrastructure setup and deployment
-                      </p>
-                      <p className="text-white/80 text-sm mb-2">
-                        Phase 2 (4 weeks): Development and testing
-                      </p>
-                      <p className="text-white/80 text-sm mb-2">
-                        Phase 3 (3 weeks): ML model training
-                      </p>
-                      <p className="text-white/80 text-sm mb-2">
-                        Phase 4 (3 weeks): UI/UX integration
-                      </p>
-                    </div>
                   </div>
+                  <button
+                    onClick={() => setShowProposalModal(false)}
+                    className="p-2 border border-white/20 hover:bg-white/10 transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
 
-                  <div className="border border-white/20 p-5">
-                    <h4 className="uppercase text-sm text-white/60 mb-4">
-                      VOTING STATUS
-                    </h4>
-                    <div className="space-y-4">
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>For</span>
-                          <span>{activeProposal.votes.for}%</span>
-                        </div>
-                        <div className="h-2 bg-white/10 w-full">
-                          <div
-                            className="h-full bg-green-500"
-                            style={{ width: `${activeProposal.votes.for}%` }}
-                          ></div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>Against</span>
-                          <span>{activeProposal.votes.against}%</span>
-                        </div>
-                        <div className="h-2 bg-white/10 w-full">
-                          <div
-                            className="h-full bg-red-500"
-                            style={{
-                              width: `${activeProposal.votes.against}%`,
-                            }}
-                          ></div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>Abstain</span>
-                          <span>{activeProposal.votes.abstain}%</span>
-                        </div>
-                        <div className="h-2 bg-white/10 w-full">
-                          <div
-                            className="h-full bg-blue-500"
-                            style={{
-                              width: `${activeProposal.votes.abstain}%`,
-                            }}
-                          ></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="border border-white/20 p-5">
-                    <h4 className="uppercase text-sm text-white/60 mb-4">
+                <div className="border-b border-white/10">
+                  <div className="flex">
+                    <button
+                      onClick={() => setActiveTab("details")}
+                      className={`py-3 px-5 text-sm font-mono relative ${
+                        activeTab === "details"
+                          ? "text-white"
+                          : "text-white/50 hover:text-white/80"
+                      }`}
+                    >
                       DETAILS
-                    </h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <div className="text-white/60 text-xs">AUTHOR</div>
-                        <div className="font-mono">{activeProposal.author}</div>
-                      </div>
-                      <div>
-                        <div className="text-white/60 text-xs">
-                          TIME REMAINING
+                      {activeTab === "details" && (
+                        <motion.div
+                          layoutId="activeTabIndicator"
+                          className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500"
+                        />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("voting")}
+                      className={`py-3 px-5 text-sm font-mono relative ${
+                        activeTab === "voting"
+                          ? "text-white"
+                          : "text-white/50 hover:text-white/80"
+                      }`}
+                    >
+                      VOTING
+                      {activeTab === "voting" && (
+                        <motion.div
+                          layoutId="activeTabIndicator"
+                          className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500"
+                        />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setActiveTab("discussions")}
+                      className={`py-3 px-5 text-sm font-mono relative ${
+                        activeTab === "discussions"
+                          ? "text-white"
+                          : "text-white/50 hover:text-white/80"
+                      }`}
+                    >
+                      DISCUSSIONS
+                      {activeTab === "discussions" && (
+                        <motion.div
+                          layoutId="activeTabIndicator"
+                          className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-500"
+                        />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="overflow-y-auto scrollbar-hide flex-grow">
+                  {activeTab === "details" && (
+                    <div className="px-6 py-5 space-y-5">
+                      <div className="border border-white/20 p-5">
+                        <h4 className="uppercase text-sm text-white/60 mb-2">
+                          DESCRIPTION
+                        </h4>
+                        <p className="text-white/90">
+                          {activeProposal.description}
+                        </p>
+
+                        {/* Additional content can be very long */}
+                        <div className="mt-4">
+                          <h5 className="uppercase text-xs text-white/50 mb-2">
+                            BACKGROUND
+                          </h5>
+                          <p className="text-white/80 text-sm mb-2">
+                            The N.AI platform has been experiencing increased
+                            demand for on-chain data analysis capabilities. Our
+                            current infrastructure can handle approximately
+                            10,000 requests per hour, but we're now seeing peaks
+                            of over 15,000 requests.
+                          </p>
+                          <p className="text-white/80 text-sm mb-2">
+                            The proposed technical stack includes Rust-based
+                            data processing pipelines, advanced machine learning
+                            models for pattern detection, and enhanced
+                            visualization capabilities.
+                          </p>
                         </div>
-                        <div>{activeProposal.timeRemaining}</div>
-                      </div>
-                      <div>
-                        <div className="text-white/60 text-xs">STATUS</div>
-                        <div
-                          className={`inline-block px-2 py-1 text-xs 
-                    ${
-                      activeProposal.status === "Active"
-                        ? "border border-blue-500/30 text-blue-400"
-                        : activeProposal.status === "Passed"
-                        ? "border border-green-500/30 text-green-400"
-                        : "border border-red-500/30 text-red-400"
-                    }`}
-                        >
-                          {activeProposal.status}
+
+                        <div className="mt-4">
+                          <h5 className="uppercase text-xs text-white/50 mb-2">
+                            IMPLEMENTATION PLAN
+                          </h5>
+                          <p className="text-white/80 text-sm mb-2">
+                            Phase 1 (2 weeks): Infrastructure setup and
+                            deployment
+                          </p>
+                          <p className="text-white/80 text-sm mb-2">
+                            Phase 2 (4 weeks): Development and testing
+                          </p>
+                          <p className="text-white/80 text-sm mb-2">
+                            Phase 3 (3 weeks): ML model training
+                          </p>
+                          <p className="text-white/80 text-sm mb-2">
+                            Phase 4 (3 weeks): UI/UX integration
+                          </p>
                         </div>
                       </div>
-                      <div>
-                        <div className="text-white/60 text-xs">QUORUM</div>
-                        <div>
-                          {activeProposal.quorumMet
-                            ? "MET (15%+)"
-                            : "NOT MET (<15%)"}
+
+                      <div className="border border-white/20 p-5">
+                        <h4 className="uppercase text-sm text-white/60 mb-4">
+                          DETAILS
+                        </h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <div className="text-white/60 text-xs">AUTHOR</div>
+                            <div className="font-mono">
+                              {activeProposal.author}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-white/60 text-xs">
+                              TIME REMAINING
+                            </div>
+                            <div>{activeProposal.timeRemaining}</div>
+                          </div>
+                          <div>
+                            <div className="text-white/60 text-xs">STATUS</div>
+                            <div
+                              className={`inline-block px-2 py-1 text-xs 
+                            ${
+                              activeProposal.status === "Active"
+                                ? "border border-blue-500/30 text-blue-400"
+                                : activeProposal.status === "Passed"
+                                ? "border border-green-500/30 text-green-400"
+                                : "border border-red-500/30 text-red-400"
+                            }`}
+                            >
+                              {activeProposal.status}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-white/60 text-xs">QUORUM</div>
+                            <div>
+                              {activeProposal.quorumMet
+                                ? "MET (15%+)"
+                                : "NOT MET (<15%)"}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-white/60 text-xs">
+                              FUNDING REQUESTED
+                            </div>
+                            <div>{activeProposal.fundingRequest}</div>
+                          </div>
                         </div>
-                      </div>
-                      <div>
-                        <div className="text-white/60 text-xs">
-                          FUNDING REQUESTED
-                        </div>
-                        <div>{activeProposal.fundingRequest}</div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
-                  <div className="border border-white/20 p-5">
-                    <h4 className="uppercase text-sm text-white/60 mb-4">
-                      DISCUSSIONS
-                    </h4>
-                    <div className="space-y-4">
-                      <div className="border-b border-white/10 pb-3">
-                        <div className="flex justify-between items-center mb-2">
-                          <div className="font-mono text-xs">
-                            GZN35r...nJGFXZ
+                  {activeTab === "voting" && (
+                    <div className="px-6 py-5 space-y-5">
+                      <div className="border border-white/20 p-5">
+                        <h4 className="uppercase text-sm text-white/60 mb-4">
+                          VOTING STATUS
+                        </h4>
+                        <div className="space-y-4">
+                          <div>
+                            <div className="flex justify-between text-sm mb-1">
+                              <span>For</span>
+                              <span>{activeProposal.votes.for}%</span>
+                            </div>
+                            <div className="h-2 bg-white/10 w-full overflow-hidden rounded-sm">
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{
+                                  width: `${activeProposal.votes.for}%`,
+                                }}
+                                transition={{ duration: 0.8 }}
+                                className="h-full bg-green-500"
+                              ></motion.div>
+                            </div>
                           </div>
-                          <div className="text-white/50 text-xs">
-                            2 days ago
+
+                          <div>
+                            <div className="flex justify-between text-sm mb-1">
+                              <span>Against</span>
+                              <span>{activeProposal.votes.against}%</span>
+                            </div>
+                            <div className="h-2 bg-white/10 w-full overflow-hidden rounded-sm">
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{
+                                  width: `${activeProposal.votes.against}%`,
+                                }}
+                                transition={{ duration: 0.8, delay: 0.1 }}
+                                className="h-full bg-red-500"
+                              ></motion.div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <div className="flex justify-between text-sm mb-1">
+                              <span>Abstain</span>
+                              <span>{activeProposal.votes.abstain}%</span>
+                            </div>
+                            <div className="h-2 bg-white/10 w-full overflow-hidden rounded-sm">
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{
+                                  width: `${activeProposal.votes.abstain}%`,
+                                }}
+                                transition={{ duration: 0.8, delay: 0.2 }}
+                                className="h-full bg-blue-500"
+                              ></motion.div>
+                            </div>
                           </div>
                         </div>
-                        <p className="text-sm text-white/80">
-                          Great proposal! I believe this infrastructure upgrade
-                          is essential for us to keep up with demand.
+
+                        <div className="mt-6 border-t border-white/10 pt-4">
+                          <h5 className="uppercase text-xs text-white/50 mb-2">
+                            TOP VOTERS
+                          </h5>
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center text-xs">
+                              <div className="font-mono text-white/80">
+                                GZN35r...nJGFXZ
+                              </div>
+                              <div className="bg-green-500/20 text-green-400 px-2 py-0.5">
+                                FOR
+                              </div>
+                              <div>250,000 NOVA</div>
+                            </div>
+                            <div className="flex justify-between items-center text-xs">
+                              <div className="font-mono text-white/80">
+                                CLZES9...DJPY
+                              </div>
+                              <div className="bg-red-500/20 text-red-400 px-2 py-0.5">
+                                AGAINST
+                              </div>
+                              <div>180,000 NOVA</div>
+                            </div>
+                            <div className="flex justify-between items-center text-xs">
+                              <div className="font-mono text-white/80">
+                                2jvMnX...3tFzK
+                              </div>
+                              <div className="bg-blue-500/20 text-blue-400 px-2 py-0.5">
+                                ABSTAIN
+                              </div>
+                              <div>120,000 NOVA</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {activeProposal.status === "Active" && (
+                        <div className="border border-white/20 p-5">
+                          <h4 className="uppercase text-sm text-white/60 mb-4">
+                            CAST YOUR VOTE
+                          </h4>
+                          <div className="flex gap-3">
+                            <button className="flex-1 py-2 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white text-sm uppercase">
+                              FOR
+                            </button>
+                            <button className="flex-1 py-2 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white text-sm uppercase">
+                              AGAINST
+                            </button>
+                            <button className="flex-1 py-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white text-sm uppercase">
+                              ABSTAIN
+                            </button>
+                          </div>
+
+                          <div className="mt-4 bg-white/5 p-3 text-white/60 text-xs">
+                            <div className="flex justify-between">
+                              <span>Your voting power:</span>
+                              <span>
+                                {isConnected
+                                  ? (novaBalance || 0).toFixed(2)
+                                  : 0}{" "}
+                                NOVA
+                              </span>
+                            </div>
+                            {isConnected && (
+                              <div className="mt-1 text-white/40">
+                                Staking NOVA will increase your voting power up
+                                to 3x
+                              </div>
+                            )}
+                            {!isConnected && (
+                              <div className="mt-1 text-white/40">
+                                Connect your wallet to vote on this proposal
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {activeTab === "discussions" && (
+                    <div className="px-6 py-5 space-y-5">
+                      <div className="border border-white/20 p-5">
+                        <h4 className="uppercase text-sm text-white/60 mb-4">
+                          DISCUSSIONS
+                        </h4>
+                        <div className="space-y-4">
+                          <div className="border-b border-white/10 pb-3">
+                            <div className="flex justify-between items-center mb-2">
+                              <div className="font-mono text-xs">
+                                GZN35r...nJGFXZ
+                              </div>
+                              <div className="text-white/50 text-xs">
+                                2 days ago
+                              </div>
+                            </div>
+                            <p className="text-sm text-white/80">
+                              Great proposal! I believe this infrastructure
+                              upgrade is essential for us to keep up with
+                              demand.
+                            </p>
+                            <div className="flex mt-2 space-x-2">
+                              <button className="text-xs text-white/50 hover:text-white/80">
+                                <span>👍 12</span>
+                              </button>
+                              <button className="text-xs text-white/50 hover:text-white/80">
+                                <span>👎 2</span>
+                              </button>
+                              <button className="text-xs text-white/50 hover:text-white/80">
+                                Reply
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="border-b border-white/10 pb-3">
+                            <div className="flex justify-between items-center mb-2">
+                              <div className="font-mono text-xs">
+                                CLZES9...DJPY
+                              </div>
+                              <div className="text-white/50 text-xs">
+                                1 day ago
+                              </div>
+                            </div>
+                            <p className="text-sm text-white/80">
+                              The budget seems excessive. Could we first upgrade
+                              just the data processing pipelines?
+                            </p>
+                            <div className="flex mt-2 space-x-2">
+                              <button className="text-xs text-white/50 hover:text-white/80">
+                                <span>👍 5</span>
+                              </button>
+                              <button className="text-xs text-white/50 hover:text-white/80">
+                                <span>👎 8</span>
+                              </button>
+                              <button className="text-xs text-white/50 hover:text-white/80">
+                                Reply
+                              </button>
+                            </div>
+
+                            <div className="ml-4 mt-3 pt-3 border-t border-white/5">
+                              <div className="flex justify-between items-center mb-2">
+                                <div className="font-mono text-xs">
+                                  2jvMnX...3tFzK
+                                </div>
+                                <div className="text-white/50 text-xs">
+                                  12 hours ago
+                                </div>
+                              </div>
+                              <p className="text-sm text-white/80">
+                                I disagree. Partial upgrades will lead to
+                                compatibility issues. We need a complete
+                                solution.
+                              </p>
+                              <div className="flex mt-2 space-x-2">
+                                <button className="text-xs text-white/50 hover:text-white/80">
+                                  <span>👍 9</span>
+                                </button>
+                                <button className="text-xs text-white/50 hover:text-white/80">
+                                  <span>👎 3</span>
+                                </button>
+                                <button className="text-xs text-white/50 hover:text-white/80">
+                                  Reply
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 border-t border-white/10 pt-4">
+                          <h5 className="text-sm text-white/60 mb-2">
+                            Add your comment
+                          </h5>
+                          <textarea
+                            className="w-full bg-black border border-white/20 p-3 text-white/80 text-sm h-24 focus:outline-none focus:border-purple-500/50"
+                            placeholder="Share your thoughts on this proposal..."
+                          ></textarea>
+                          <div className="flex justify-end mt-2">
+                            <button className="bg-white text-black text-xs uppercase py-2 px-4 flex items-center space-x-1 hover:bg-white/90 transition-colors">
+                              <Send className="w-3 h-3" />
+                              <span>POST COMMENT</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="px-6 py-5 border-t border-white/10">
+                  {activeProposal.status === "Active" ? (
+                    <>
+                      <div className="flex gap-4 mb-4">
+                        <button className="flex-1 py-3 bg-white text-black uppercase font-medium hover:bg-white/90 transition-colors">
+                          VOTE FOR
+                        </button>
+                        <button className="flex-1 py-3 bg-white text-black uppercase font-medium hover:bg-white/90 transition-colors">
+                          VOTE AGAINST
+                        </button>
+                        <button className="flex-1 py-3 bg-white text-black uppercase font-medium hover:bg-white/90 transition-colors">
+                          ABSTAIN
+                        </button>
+                      </div>
+
+                      <div className="border border-white/10 p-4 text-center text-white/60 text-sm">
+                        <p>
+                          Your voting power:{" "}
+                          {isConnected ? (novaBalance || 0).toFixed(2) : 0} NOVA
+                        </p>
+                        <p className="mt-1">
+                          Stake NOVA to increase your voting power up to 3x
                         </p>
                       </div>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => navigateToProposal(activeProposal.id)}
+                      className="w-full py-3 bg-white text-black uppercase font-medium hover:bg-white/90 transition-colors"
+                    >
+                      VIEW FULL PROPOSAL DETAILS
+                    </button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <div className="font-mono text-xs">CLZES9...DJPY</div>
-                          <div className="text-white/50 text-xs">1 day ago</div>
+      {/* New Proposal Modal */}
+      <AnimatePresence>
+        {showNewProposalModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          >
+            <div
+              className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+              onClick={() => setShowNewProposalModal(false)}
+            ></div>
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ type: "spring", damping: 25 }}
+              className="relative z-10 w-full max-w-3xl max-h-[90vh] my-8 bg-black border border-white/30 overflow-hidden"
+            >
+              <div className="border border-white/10 flex flex-col max-h-[90vh]">
+                <div className="flex justify-between items-center px-6 py-4 border-b border-white/10">
+                  <h3 className="text-xl uppercase">Create New Proposal</h3>
+                  <button
+                    onClick={() => setShowNewProposalModal(false)}
+                    className="p-2 border border-white/20 hover:bg-white/10 transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <div className="overflow-y-auto scrollbar-hide px-6 py-5 flex-grow">
+                  {/* Proposal Type Selection */}
+                  <div className="mb-6">
+                    <label className="block text-white/60 uppercase text-xs mb-3">
+                      Proposal Type
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {proposalTypes.map((type) => (
+                        <div
+                          key={type.id}
+                          onClick={() => setActiveProposalType(type.id)}
+                          className={`cursor-pointer border ${
+                            activeProposalType === type.id
+                              ? "border-purple-500 bg-purple-500/10"
+                              : "border-white/20 hover:border-white/30"
+                          } p-3 transition-colors`}
+                        >
+                          <div className="flex items-center space-x-2 mb-1">
+                            <div
+                              className={`${
+                                activeProposalType === type.id
+                                  ? "text-purple-400"
+                                  : "text-white/70"
+                              }`}
+                            >
+                              {type.icon}
+                            </div>
+                            <div
+                              className={`${
+                                activeProposalType === type.id
+                                  ? "text-white"
+                                  : "text-white/80"
+                              } font-medium text-sm`}
+                            >
+                              {type.name}
+                            </div>
+                          </div>
+                          <p className="text-white/50 text-xs">
+                            {type.description}
+                          </p>
                         </div>
-                        <p className="text-sm text-white/80">
-                          The budget seems excessive. Could we first upgrade
-                          just the data processing pipelines?
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* Proposal Title */}
+                    <div>
+                      <label className="block text-white/60 uppercase text-xs mb-2">
+                        Title *
+                      </label>
+                      <input
+                        type="text"
+                        name="title"
+                        value={proposalForm.title}
+                        onChange={handleProposalInputChange}
+                        placeholder="Enter a clear, descriptive title"
+                        className={`w-full bg-black border ${
+                          formErrors.title && submitAttempted
+                            ? "border-red-500"
+                            : "border-white/20 focus:border-purple-500/50"
+                        } p-3 text-white/80 text-sm focus:outline-none`}
+                      />
+                      {formErrors.title && submitAttempted && (
+                        <p className="mt-1 text-red-500 text-xs">
+                          {formErrors.title}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                      <label className="block text-white/60 uppercase text-xs mb-2">
+                        Description *
+                      </label>
+                      <textarea
+                        name="description"
+                        value={proposalForm.description}
+                        onChange={handleProposalInputChange}
+                        placeholder="Provide a detailed description of your proposal"
+                        className={`w-full bg-black border ${
+                          formErrors.description && submitAttempted
+                            ? "border-red-500"
+                            : "border-white/20 focus:border-purple-500/50"
+                        } p-3 text-white/80 text-sm h-24 focus:outline-none`}
+                      />
+                      {formErrors.description && submitAttempted && (
+                        <p className="mt-1 text-red-500 text-xs">
+                          {formErrors.description}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Funding Amount */}
+                    <div>
+                      <label className="block text-white/60 uppercase text-xs mb-2">
+                        Funding Amount (NOVA) *
+                      </label>
+                      <input
+                        type="text"
+                        name="fundingAmount"
+                        value={proposalForm.fundingAmount}
+                        onChange={handleProposalInputChange}
+                        placeholder="e.g. 500000"
+                        className={`w-full bg-black border ${
+                          formErrors.fundingAmount && submitAttempted
+                            ? "border-red-500"
+                            : "border-white/20 focus:border-purple-500/50"
+                        } p-3 text-white/80 text-sm focus:outline-none`}
+                      />
+                      {formErrors.fundingAmount && submitAttempted && (
+                        <p className="mt-1 text-red-500 text-xs">
+                          {formErrors.fundingAmount}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Background */}
+                    <div>
+                      <label className="block text-white/60 uppercase text-xs mb-2">
+                        Background Information
+                      </label>
+                      <textarea
+                        name="background"
+                        value={proposalForm.background}
+                        onChange={handleProposalInputChange}
+                        placeholder="Share context and background information about the proposal"
+                        className="w-full bg-black border border-white/20 p-3 text-white/80 text-sm h-20 focus:outline-none focus:border-purple-500/50"
+                      />
+                    </div>
+
+                    {/* Implementation Plan */}
+                    <div>
+                      <label className="block text-white/60 uppercase text-xs mb-2">
+                        Implementation Plan *
+                      </label>
+                      <textarea
+                        name="implementation"
+                        value={proposalForm.implementation}
+                        onChange={handleProposalInputChange}
+                        placeholder="Describe how this proposal will be implemented if approved"
+                        className={`w-full bg-black border ${
+                          formErrors.implementation && submitAttempted
+                            ? "border-red-500"
+                            : "border-white/20 focus:border-purple-500/50"
+                        } p-3 text-white/80 text-sm h-24 focus:outline-none`}
+                      />
+                      {formErrors.implementation && submitAttempted && (
+                        <p className="mt-1 text-red-500 text-xs">
+                          {formErrors.implementation}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Timeline */}
+                    <div>
+                      <label className="block text-white/60 uppercase text-xs mb-2">
+                        Timeline
+                      </label>
+                      <textarea
+                        name="timeline"
+                        value={proposalForm.timeline}
+                        onChange={handleProposalInputChange}
+                        placeholder="Provide an estimated timeline for implementation"
+                        className="w-full bg-black border border-white/20 p-3 text-white/80 text-sm h-20 focus:outline-none focus:border-purple-500/50"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-6 border border-white/20 p-4 bg-white/5">
+                    <div className="flex items-start space-x-3">
+                      <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                      <div className="text-sm text-white/70">
+                        <p className="mb-1">
+                          <span className="text-white font-medium">
+                            Important:
+                          </span>{" "}
+                          Creating a proposal requires 100,000 NOVA tokens.
+                        </p>
+                        <p>
+                          Your current balance:{" "}
+                          <span className="text-white font-medium">
+                            {isConnected ? (novaBalance || 0).toFixed(2) : 0}{" "}
+                            NOVA
+                          </span>
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="px-6 py-5 border-t border-white/10">
-                {activeProposal.status === "Active" ? (
-                  <>
-                    <div className="flex gap-4 mb-4">
-                      <button className="flex-1 py-3 bg-green-500 text-black uppercase font-medium hover:bg-green-400 transition-colors">
-                        VOTE FOR
-                      </button>
-                      <button className="flex-1 py-3 bg-red-500 text-black uppercase font-medium hover:bg-red-400 transition-colors">
-                        VOTE AGAINST
-                      </button>
-                      <button className="flex-1 py-3 bg-blue-500 text-black uppercase font-medium hover:bg-blue-400 transition-colors">
-                        ABSTAIN
-                      </button>
-                    </div>
-
-                    <div className="border border-white/10 p-4 text-center text-white/60 text-sm">
-                      <p>
-                        Your voting power:{" "}
-                        {isConnected ? (novaBalance || 0).toFixed(2) : 0} NOVA
-                      </p>
-                      <p className="mt-1">
-                        Stake NOVA to increase your voting power up to 3x
-                      </p>
-                    </div>
-                  </>
-                ) : (
+                <div className="px-6 py-5 border-t border-white/10 flex justify-between items-center">
                   <button
-                    onClick={() => navigateToProposal(activeProposal.id)}
-                    className="w-full py-3 bg-white text-black uppercase font-medium hover:bg-white/90 transition-colors"
+                    onClick={() => setShowNewProposalModal(false)}
+                    className="px-4 py-2 border border-white/20 hover:bg-white/10 text-white/70 hover:text-white uppercase text-sm transition-colors"
                   >
-                    VIEW FULL PROPOSAL DETAILS
+                    Cancel
                   </button>
-                )}
+
+                  <button
+                    onClick={handleSubmitProposal}
+                    className="px-8 py-3 bg-white text-black uppercase text-sm hover:bg-white/90 transition-colors"
+                  >
+                    Submit Proposal
+                  </button>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* CSS for hiding scrollbars while maintaining scroll functionality */}
       <style jsx global>{`

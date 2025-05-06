@@ -192,7 +192,7 @@ export default function Home() {
                   className="relative inline-block"
                 >
                   <span className="text-[7rem] xl:text-[10rem] font-bold tracking-tighter text-white leading-none">
-                    ON
+                    YOUR
                   </span>
                   <motion.div
                     className="absolute bottom-0 right-0 w-[80%] h-[2px]"
@@ -217,7 +217,7 @@ export default function Home() {
                   className="relative inline-block"
                 >
                   <span className="text-[7rem] xl:text-[10rem] font-bold tracking-tighter text-white leading-none">
-                    CHAIN AI
+                    ONCHAIN AI
                   </span>
                   <motion.div
                     className="absolute bottom-0 left-0 w-[80%] h-[2px]"

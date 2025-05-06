@@ -378,7 +378,7 @@ const TokenTransfer = () => {
           decimals: tokenDecimals,
           price: 0, // Will be updated
           change24h: 0, // Will be updated
-          logo: "/images/unknown-token.png",
+          logo: "/partners/solana.svg",
           mint: mintAddress,
           tokenAccount: pubkey.toBase58(),
           isBurnable: BURNABLE_TOKENS.includes(mintAddress)
