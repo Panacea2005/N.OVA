@@ -32,7 +32,7 @@ import Navigation from "@/components/navigation";
 import Footer from "@/components/footer";
 import dynamic from "next/dynamic";
 
-const NAuroraBanner = dynamic(() => import("@/components/3d/ndao-banner"), {
+const NAuroraBanner = dynamic(() => import("@/components/3d/naurora-banner"), {
   ssr: false,
 });
 
