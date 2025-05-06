@@ -1,13 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-
-// Extend the Window interface to include the ethereum property
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
-}
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
@@ -70,33 +63,41 @@ export default function IdentityCardGenerator() {
     nftCount: 5,
   });
 
-  // Fetch wallet address from connected wallet
+  // Fetch Solana wallet address from Phantom
   useEffect(() => {
-    const fetchWalletAddress = async () => {
-      if (typeof window.ethereum !== "undefined") {
+    const fetchSolanaWalletAddress = async () => {
+      if (typeof window.solana !== "undefined" && window.solana.isPhantom) {
         try {
-          const accounts = await window.ethereum.request({ method: "eth_accounts" });
-          if (accounts.length > 0) {
-            setWalletAddress(accounts[0]);
+          // Check if Phantom is already connected
+          const response = await window.solana.connect({ onlyIfTrusted: true });
+          const address = response.publicKey.toString();
+          setWalletAddress(address);
+        } catch (err) {
+          // If not connected, attempt to connect
+          try {
+            await window.solana.connect();
+            const address = window.solana.publicKey.toString();
+            setWalletAddress(address);
+          } catch (connectErr) {
+            console.error("Error connecting to Phantom wallet:", connectErr);
+            setErrorMessage("Failed to connect to Phantom wallet. Please ensure Phantom is installed and unlocked.");
           }
-        } catch (error: any) {
-          console.error("Error fetching wallet address:", error);
-          setErrorMessage(`Failed to fetch wallet address: ${error.message}`);
         }
       } else {
-        setErrorMessage("No wallet provider detected (e.g., MetaMask)");
+        setErrorMessage("Phantom wallet not detected. Please install the Phantom extension.");
       }
     };
 
-    fetchWalletAddress();
+    fetchSolanaWalletAddress();
 
-    if (typeof window.ethereum !== "undefined") {
-      const handleAccountsChanged = (accounts: string[]) => {
-        setWalletAddress(accounts.length > 0 ? accounts[0] : null);
+    // Listen for account changes
+    if (typeof window.solana !== "undefined" && window.solana.isPhantom) {
+      const handleDisconnect = () => {
+        setWalletAddress(null);
       };
-      window.ethereum.on("accountsChanged", handleAccountsChanged);
+      window.solana.on("disconnect", handleDisconnect);
       return () => {
-        window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
+        window.solana.off("disconnect", handleDisconnect);
       };
     }
   }, []);
