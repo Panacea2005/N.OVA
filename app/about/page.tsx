@@ -1,27 +1,34 @@
 "use client";
 
-import { useEffect, useState, useRef, SetStateAction, Suspense } from "react";
+import { useEffect, useState, useRef, AwaitedReactNode, JSXElementConstructor, ReactElement, ReactNode, ReactPortal, SetStateAction } from "react";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { Canvas } from "@react-three/fiber";
-import { Environment, useGLTF, useTexture } from "@react-three/drei";
+import { Environment } from "@react-three/drei";
 import {
   ArrowRight,
   ExternalLink,
   Github,
   Linkedin,
   Twitter,
+  Info,
+  CheckCircle2,
+  Sparkles,
+  Users,
+  Coins,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
-import Link from "next/link";
-import * as THREE from "three";
 
 // Dynamically import components to reduce initial load time
 const Navigation = dynamic(() => import("@/components/navigation"), {
   ssr: false,
+  loading: () => <div className="h-16" />,
 });
 
 const Footer = dynamic(() => import("@/components/footer"), {
   ssr: false,
+  loading: () => <div className="h-16" />,
 });
 
 const ParticleBackground = dynamic(
@@ -42,202 +49,202 @@ const ParticleRing = dynamic(() => import("@/components/3d/particle-ring"), {
   ssr: false,
 });
 
-// Custom Team Member Image with Futuristic Effects
-interface TeamMemberImageProps {
-  image: string;
-  alias: string;
-}
-
-const TeamMemberImage = ({ image, alias }: TeamMemberImageProps) => {
+// Team Member Component
+const TeamMember = ({ member, index }: { member: any, index: number }) => {
   return (
-    <div className="relative aspect-square overflow-hidden border border-white/10 group-hover:border-purple-500/50 transition-colors duration-300">
-      {/* Base image with futuristic filter effects */}
-      <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-purple-900/30 to-black/80 mix-blend-multiply z-10"></div>
-
-      <img
-        src={image}
-        alt={alias}
-        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
-      />
-
-      {/* Futuristic overlay effects */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-20"></div>
-
-      {/* Scan line effect */}
-      <motion.div
-        className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent z-30"
-        animate={{
-          top: ["0%", "100%"],
-          opacity: [0, 1, 0],
-        }}
-        transition={{
-          duration: 3,
-          repeat: Infinity,
-          ease: "linear",
-        }}
-      />
-
-      {/* Digital noise overlay */}
-      <div className="absolute inset-0 opacity-30 mix-blend-overlay z-20 pointer-events-none">
-        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <filter id="noise">
-            <feTurbulence
-              type="fractalNoise"
-              baseFrequency="0.65"
-              numOctaves="3"
-              stitchTiles="stitch"
-            />
-            <feColorMatrix
-              type="matrix"
-              values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0"
-            />
-          </filter>
-          <rect width="100%" height="100%" filter="url(#noise)" opacity="0.4" />
-        </svg>
-      </div>
-
-      {/* Tech grid overlay */}
-      <div
-        className="absolute inset-0 opacity-20 pointer-events-none z-20"
-        style={{
-          backgroundImage: `linear-gradient(to right, rgba(167, 139, 250, 0.1) 1px, transparent 1px),
-                            linear-gradient(to bottom, rgba(167, 139, 250, 0.1) 1px, transparent 1px)`,
-          backgroundSize: "20px 20px",
-        }}
-      ></div>
-
-      {/* Hexagonal pattern overlay */}
-      <div
-        className="absolute inset-0 opacity-10 pointer-events-none z-20"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5.61l21.2 12.25v24.5L30 54.61 8.8 42.36v-24.5L30 5.62m0-3.25l-24 13.86v27.71l24 13.86 24-13.86V16.22L30 2.37z' fill='%23a78bfa' fill-opacity='0.4' fill-rule='evenodd'/%3E%3C/svg%3E")`,
-          backgroundSize: "30px 30px",
-        }}
-      ></div>
-
-      {/* Top interface elements */}
-      <div className="absolute top-0 left-0 right-0 flex justify-between items-center p-2 z-30">
-        <div className="text-xs font-mono text-purple-300 bg-black/50 px-2 py-1 rounded-sm">
-          ID:{Math.floor(Math.random() * 9000) + 1000}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.7, delay: 0.2 * index }}
+      viewport={{ once: true }}
+      className="relative border border-white/30 p-0.5"
+    >
+      <div className="border border-white/10 overflow-hidden bg-black/30">
+        <div className="aspect-square overflow-hidden relative">
+          {/* Image with overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-black/80 mix-blend-multiply z-10"></div>
+          <img
+            src={member.image}
+            alt={member.alias}
+            className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+          />
+          
+          {/* Top section */}
+          <div className="absolute top-3 left-3 z-20 flex items-center">
+            <div className="text-white/70 font-mono text-xs uppercase mr-2">ID</div>
+            <div className="bg-black/60 px-2 py-0.5 text-purple-400 text-xs font-mono">
+              {index < 10 ? `0${index + 1}` : index + 1}
+            </div>
+          </div>
+          
+          {/* Scan line effect */}
+          <motion.div
+            className="absolute left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/70 to-transparent z-30"
+            animate={{
+              top: ["0%", "100%"],
+              opacity: [0, 0.7, 0],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+          />
         </div>
-        <div className="flex space-x-1">
-          <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
-          <div className="w-2 h-2 rounded-full bg-purple-300 opacity-60"></div>
-        </div>
-      </div>
+        
+        <div className="p-5">
+          <h3 className="text-xl font-light text-white mb-1">
+            {member.alias}
+          </h3>
+          <p className="text-white/60 font-mono text-xs uppercase mb-1">
+            {member.name}
+          </p>
+          <p className="text-purple-400 text-xs mb-3 uppercase">
+            {member.role}
+          </p>
 
-      {/* Bottom data indicators */}
-      <div className="absolute bottom-0 left-0 right-0 bg-black/70 backdrop-blur-sm py-2 px-3 z-30 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-        <div className="flex justify-between items-center">
-          <div className="text-xs font-mono text-purple-300">{alias}</div>
-          <div className="text-xs font-mono text-white/60">ACTIVE</div>
+          <p className="text-white/70 text-sm leading-relaxed mb-4">
+            {member.bio}
+          </p>
+
+          <div className="flex space-x-3 mt-4 pt-4 border-t border-white/10">
+            <a
+              href={member.social.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/60 hover:text-purple-400 transition-colors"
+            >
+              <Github className="w-4 h-4" />
+            </a>
+            <a
+              href={member.social.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/60 hover:text-purple-400 transition-colors"
+            >
+              <Linkedin className="w-4 h-4" />
+            </a>
+            <a
+              href={member.social.twitter}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/60 hover:text-purple-400 transition-colors"
+            >
+              <Twitter className="w-4 h-4" />
+            </a>
+          </div>
         </div>
-        <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-purple-500/50 to-transparent mt-1"></div>
       </div>
+    </motion.div>
+  );
+};
+
+// Technology Box Component
+const TechnologyBox = ({ category, items, index }: { category: any, items: any, index: number }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.7, delay: 0.2 * index }}
+      viewport={{ once: true }}
+      className="border border-white/30 p-0.5"
+    >
+      <div className="border border-white/10 overflow-hidden">
+        <div className="px-5 py-4 border-b border-white/10">
+          <h3 className="text-xl font-light">{category.category}</h3>
+        </div>
+        
+        <div className="p-5 space-y-3">
+          {category.items.map((tech: { icon: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; name: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; description: string | number | bigint | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<AwaitedReactNode> | null | undefined; }, techIndex: number) => (
+            <motion.div
+              key={`tech-item-${index}-${techIndex}`}
+              initial={{ x: -10, opacity: 0 }}
+              whileInView={{ x: 0, opacity: 1 }}
+              transition={{
+                duration: 0.4,
+                delay: 0.1 * techIndex + 0.2 * index,
+              }}
+              viewport={{ once: true }}
+              className="flex items-center group"
+            >
+              <div className="w-7 h-7 border border-white/20 flex items-center justify-center mr-3 group-hover:border-purple-500/50 transition-colors">
+                <span>{tech.icon}</span>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-white/90">
+                  {tech.name}
+                </h4>
+                <p className="text-xs text-white/60">
+                  {tech.description}
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+// FAQ Item Component
+const FAQItem = ({ faq, index, isOpen, toggleFaq }: { faq: any, index: number, isOpen: boolean, toggleFaq: Function }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      viewport={{ once: true }}
+      className="border border-white/30 p-0.5 overflow-hidden"
+    >
+      <div className="border border-white/10">
+        <div 
+          className="px-5 py-4 border-b border-white/10 flex justify-between items-center cursor-pointer"
+          onClick={() => toggleFaq(index)}
+        >
+          <h4 className="text-sm font-mono uppercase">
+            {faq.question}
+          </h4>
+          <div className="text-white/60">
+            {isOpen ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
+          </div>
+        </div>
+        
+        {isOpen && (
+          <div className="p-5">
+            <p className="text-white/70 text-sm leading-relaxed">
+              {faq.answer}
+            </p>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
+
+// Section Header Component
+const SectionHeader = ({ title, subtitle }: { title: string, subtitle: string }) => {
+  return (
+    <div className="mb-8">
+      <h2 className="text-6xl font-light mb-4">{title}</h2>
+      <p className="text-white/70 uppercase">{subtitle}</p>
     </div>
   );
 };
 
-// Data visualization component
-const TechStackVisualizer = () => {
-  const meshRef = useRef<THREE.Group | null>(null);
-
-  useEffect(() => {
-    if (meshRef.current) {
-      const interval = setInterval(() => {
-        if (meshRef.current) {
-          meshRef.current.rotation.y += 0.003;
-        }
-      }, 16);
-      return () => clearInterval(interval);
-    }
-  }, []);
-
-  const technologies: {
-    name: string;
-    color: string;
-    position: [number, number, number];
-  }[] = [
-    { name: "React", color: "#61DAFB", position: [2, 0, 0] },
-    { name: "Web3", color: "#F16822", position: [-1, 1.5, 1] },
-    { name: "AI", color: "#a78bfa", position: [0, -2, -1] },
-    { name: "NextJS", color: "#FFFFFF", position: [-2, 0, 0] },
-    { name: "Solana", color: "#14F195", position: [1, -1.5, 1] },
-    { name: "Python", color: "#FFDE57", position: [0, 2, -1] },
-    { name: "TensorFlow", color: "#FF6F00", position: [1, 1, 2] },
-    { name: "TypeScript", color: "#007ACC", position: [-1, -1, 2] },
-  ];
-
-  return (
-    <group ref={meshRef}>
-      {technologies.map((tech, index) => (
-        <group key={index} position={tech.position}>
-          <mesh>
-            <sphereGeometry args={[0.3, 16, 16]} />
-            <meshStandardMaterial
-              color={tech.color}
-              emissive={tech.color}
-              emissiveIntensity={0.5}
-              roughness={0.2}
-            />
-          </mesh>
-          <line>
-            <bufferGeometry
-              attach="geometry"
-              onUpdate={(self) => {
-                const points = [
-                  new THREE.Vector3(0, 0, 0),
-                  new THREE.Vector3(0, 0, 0).sub(
-                    new THREE.Vector3(...tech.position)
-                  ),
-                ];
-                self.setFromPoints(points);
-              }}
-            />
-            <lineBasicMaterial
-              attach="material"
-              color={tech.color}
-              opacity={0.7}
-              transparent
-            />
-          </line>
-        </group>
-      ))}
-    </group>
-  );
-};
-
-// Gradient text component for consistent styling
-const GradientText: React.FC<{
-  children: React.ReactNode;
-  className?: string;
-  gradient?: string;
-}> = ({
-  children,
-  className,
-  gradient = "from-white via-white to-purple-200",
-}) => (
-  <span
-    className={`bg-clip-text text-transparent bg-gradient-to-r ${gradient} ${
-      className || ""
-    }`}
-  >
-    {children}
-  </span>
-);
-
 export default function AboutPage() {
-  const [cursorVariant, setCursorVariant] = useState("default");
   const [mounted, setMounted] = useState(false);
   const [activeSection, setActiveSection] = useState("mission");
+  const [expandedFaq, setExpandedFaq] = useState(null);
+  
   const aboutRef = useRef(null);
   const missionRef = useRef(null);
   const teamRef = useRef(null);
   const techRef = useRef(null);
-  const journeyRef = useRef(null);
-
-  // FAQ State
-  const [expandedFaq, setExpandedFaq] = useState(null);
+  const faqRef = useRef(null);
 
   const toggleFaq = (index: SetStateAction<null>) => {
     if (expandedFaq === index) {
@@ -263,7 +270,7 @@ export default function AboutPage() {
       { threshold: 0.5 }
     );
 
-    const sections = [aboutRef, missionRef, teamRef, techRef, journeyRef];
+    const sections = [aboutRef, missionRef, teamRef, techRef, faqRef];
 
     sections.forEach((section) => {
       if (section.current) {
@@ -280,7 +287,16 @@ export default function AboutPage() {
     };
   }, [mounted]);
 
-  if (!mounted) return null;
+  if (!mounted) {
+    return (
+      <main className="relative min-h-screen bg-black text-white font-mono">
+        <div className="fixed inset-0 bg-gradient-to-br from-black via-black to-black opacity-90 z-0" />
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4">
+          <h1 className="text-4xl font-bold mb-8">Loading...</h1>
+        </div>
+      </main>
+    );
+  }
 
   const team = [
     {
@@ -355,1278 +371,488 @@ export default function AboutPage() {
     },
   ];
 
+  // Mission statements
+  const mission = [
+    {
+      icon: <CheckCircle2 className="w-5 h-5 text-purple-400" />,
+      title: "Accessibility",
+      description:
+        "Making blockchain data intuitive and accessible to everyone regardless of technical expertise.",
+    },
+    {
+      icon: <Sparkles className="w-5 h-5 text-purple-400" />,
+      title: "Intelligence",
+      description:
+        "Using advanced AI to analyze blockchain data and provide personalized insights and recommendations.",
+    },
+    {
+      icon: <Info className="w-5 h-5 text-purple-400" />,
+      title: "Expression",
+      description:
+        "Creating unique visual identities that represent users' on-chain activity and crypto persona.",
+    },
+  ];
+
+  // FAQ items
+  const faqItems = [
+    {
+      question: "What is NOVA?",
+      answer:
+        "NOVA is a multi-agent AI platform that transforms Web3 wallets into smart, visual identities. It analyzes on-chain data to provide insights and creates a personalized visual identity for your wallet.",
+    },
+    {
+      question: "Which blockchains does NOVA support?",
+      answer:
+        "Currently, NOVA supports Solana as our primary blockchain, with plans to expand to Ethereum and other major chains in upcoming releases.",
+    },
+    {
+      question: "How does NOVA protect user privacy?",
+      answer:
+        "NOVA is designed with privacy at its core. While we analyze on-chain data, which is public by nature, we implement advanced encryption for any personal settings or preferences you create within the platform.",
+    },
+    {
+      question: "Is NOVA open source?",
+      answer:
+        "Parts of NOVA are open source, particularly our core visualization libraries and blockchain connectors. Our proprietary AI models and identity generation systems are currently closed source.",
+    },
+    {
+      question: "How can I get early access to NOVA?",
+      answer:
+        "You can join our waitlist by signing up on our homepage. Early access invitations are being rolled out gradually, with priority given to active community members and blockchain early adopters.",
+    },
+  ];
+
   return (
     <main className="relative min-h-screen bg-black text-white font-mono">
-      {/* Removed custom cursor */}
-
-      {/* Background Gradient */}
-      <div className="fixed inset-0 bg-gradient-to-br from-black via-black to-purple-950 opacity-80 z-0" />
-
-      {/* Animated grid background */}
+      {/* Fixed background */}
+      <div className="fixed inset-0 bg-black z-0" />
+      
+      {/* Minimal grid background */}
       <div
-        className="fixed inset-0 opacity-20 z-0"
+        className="fixed inset-0 opacity-10 z-0"
         style={{
           backgroundImage:
-            "radial-gradient(rgba(138, 75, 255, 0.15) 1px, transparent 1px), linear-gradient(to right, rgba(138, 75, 255, 0.05) 1px, transparent 1px)",
-          backgroundSize: "40px 40px, 40px 40px",
-          backgroundPosition: "0 0, 0 0",
+            "linear-gradient(rgba(138, 75, 255, 0.05) 1px, transparent 1px), linear-gradient(to right, rgba(138, 75, 255, 0.05) 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
         }}
       />
-
-      {/* Animated scan lines */}
-      <div className="fixed inset-0 overflow-hidden opacity-10 pointer-events-none z-0">
-        {Array(10)
-          .fill(0)
-          .map((_, i) => (
-            <motion.div
-              key={`scan-${i}`}
-              className="absolute w-full h-[1px] bg-purple-400/30"
-              style={{ top: `${i * 10}%` }}
-              animate={{
-                opacity: [0.2, 0.5, 0.2],
-                scaleY: [1, 1.5, 1],
-              }}
-              transition={{
-                duration: 2 + (i % 3),
-                repeat: Infinity,
-                delay: i * 0.5,
-              }}
-            />
-          ))}
-      </div>
-
-      {/* Particle Background */}
-      <ParticleBackground />
 
       {/* Navigation */}
       <Navigation />
 
-      {/* Main Content */}
-      <div className="relative z-10 pt-20">
-        {/* Hero Section */}
-        <section
-          id="about"
-          ref={aboutRef}
-          className="min-h-[100vh] flex flex-col justify-center relative border-b border-white/10"
-        >
-          <div className="container mx-auto px-4 md:px-6 py-20">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-              <div>
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8 }}
-                  viewport={{ once: true }}
-                  className="flex flex-col"
-                >
-                  <div className="mb-8 inline-flex items-center">
-                    <div className="w-12 h-[1px] bg-gradient-to-r from-transparent via-purple-500 to-transparent mr-4"></div>
-                    <span className="text-sm uppercase tracking-[0.3em] text-purple-400 font-light">
-                      Our Story
-                    </span>
+      <div className="container mx-auto px-2 pt-24 pb-16 relative z-10">
+        {/* Main Content */}
+        <div className="max-w-7xl mx-auto">
+          {/* Hero Section */}
+          <section 
+            id="about" 
+            ref={aboutRef}
+            className="min-h-[80vh] mb-16"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7 }}
+            >
+              <h1 className="text-8xl font-light mb-8">ABOUT</h1>
+              
+              <div className="border border-white/30 p-0.5 mb-8">
+                <div className="border border-white/10 px-6 py-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div>
+                      <p className="text-white/70 uppercase mb-6">
+                        N.OVA TRANSFORMS ANY WEB3 WALLET INTO A SMART, VISUAL, AND
+                        CONVERSATIONAL IDENTITY THAT EMPOWERS USERS TO TRULY
+                        UNDERSTAND AND LEVERAGE THEIR ON-CHAIN DATA.
+                      </p>
+                      <p className="text-white/70 uppercase mb-10">
+                        OUR MULTI-AGENT AI SYSTEM ANALYZES YOUR CRYPTO PRESENCE AND
+                        PROVIDES ACTIONABLE INSIGHTS THROUGH AN INTUITIVE INTERFACE
+                        THAT MAKES BLOCKCHAIN DATA ACCESSIBLE TO EVERYONE.
+                      </p>
+                      
+                      <motion.div
+                        initial={{ width: 0 }}
+                        whileInView={{ width: "120px" }}
+                        transition={{ duration: 1, ease: "easeOut", delay: 0.5 }}
+                        viewport={{ once: true }}
+                        className="h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent mb-8"
+                      />
+                      
+                      <a
+                        href="#mission"
+                        className="group flex items-center mt-4 hover:text-purple-400 transition-colors"
+                      >
+                        <span className="uppercase mr-2">Discover Our Mission</span>
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </a>
+                    </div>
+                    
+                    <div className="h-[40vh]">
+                      <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
+                        <HolographicSphere />
+                        <Environment preset="night" />
+                      </Canvas>
+                    </div>
                   </div>
-
-                  <h1 className="text-[5rem] md:text-[7rem] font-bold tracking-tighter leading-none mb-8">
-                    <span className="block bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-white/60">
-                      THE
-                    </span>
-                    <span className="block bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-white to-purple-300">
-                      NOVA
-                    </span>
-                    <span className="block bg-clip-text text-transparent bg-gradient-to-r from-white/60 via-white to-white">
-                      VISION
-                    </span>
-                  </h1>
-
-                  <motion.div
-                    initial={{ width: 0 }}
-                    whileInView={{ width: "120px" }}
-                    transition={{ duration: 1, ease: "easeOut", delay: 0.5 }}
-                    viewport={{ once: true }}
-                    className="h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent mb-8"
-                  />
-
-                  <p className="text-xl text-white/70 mb-6">
-                    NOVA transforms any Web3 wallet into a smart, visual, and
-                    conversational identity that empowers users to truly
-                    understand and leverage their on-chain data.
-                  </p>
-
-                  <p className="text-xl text-white/70 mb-10">
-                    Our multi-agent AI system analyzes your crypto presence and
-                    provides actionable insights through an intuitive interface
-                    that makes blockchain data accessible to everyone.
-                  </p>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.7 }}
-                    viewport={{ once: true }}
-                  >
-                    <a
-                      href="#mission"
-                      className="group relative inline-flex items-center font-medium"
-                      onMouseEnter={() => setCursorVariant("hover")}
-                      onMouseLeave={() => setCursorVariant("default")}
-                    >
-                      <span className="mr-4 relative after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:bg-purple-400 after:origin-left after:scale-x-0 group-hover:after:scale-x-100 after:transition-transform after:duration-300">
-                        DISCOVER OUR MISSION
-                      </span>
-                      <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center overflow-hidden group-hover:border-purple-400 transition-colors duration-300">
-                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-3 w-full gap-0">
+                <div className="border border-white/30 p-0.5">
+                  <div className="border border-white/10 p-4 flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full bg-purple-500/30 flex items-center justify-center">
+                      <CheckCircle2 className="w-5 h-5 text-purple-400" />
+                    </div>
+                    <div>
+                      <div className="text-white/50 text-xs">
+                        ACCESSIBILITY
                       </div>
-                    </a>
-                  </motion.div>
-                </motion.div>
-              </div>
-
-              <div className="h-[60vh] relative">
-                <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
-                  <Suspense fallback={null}>
-                    <HolographicSphere />
-                    <Environment preset="night" />
-                  </Suspense>
-                </Canvas>
-
-                {/* Animated overlays */}
-                <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-                  {/* Futuristic grid lines */}
-                  <div className="absolute inset-0 opacity-20">
-                    <div className="absolute top-0 left-0 w-1/2 h-[1px] bg-gradient-to-r from-transparent via-purple-500/70 to-transparent"></div>
-                    <div className="absolute top-1/3 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-purple-500/30 to-transparent"></div>
-                    <div className="absolute top-2/3 left-0 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-purple-500/50 to-transparent"></div>
-                    <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-purple-500/40 to-transparent"></div>
-
-                    <div className="absolute top-0 left-0 w-[1px] h-full bg-gradient-to-b from-transparent via-purple-500/50 to-transparent"></div>
-                    <div className="absolute top-0 left-1/3 w-[1px] h-3/4 bg-gradient-to-b from-transparent via-purple-500/30 to-transparent"></div>
-                    <div className="absolute top-0 left-2/3 w-[1px] h-1/2 bg-gradient-to-b from-transparent via-purple-500/70 to-transparent"></div>
-                    <div className="absolute top-0 right-0 w-[1px] h-full bg-gradient-to-b from-transparent via-purple-500/40 to-transparent"></div>
+                      <div className="text-lg font-light">Cross-Platform</div>
+                    </div>
                   </div>
+                </div>
 
-                  {/* Code snippets */}
-                  <div className="absolute bottom-10 left-0 text-[10px] font-mono text-white/40 opacity-60">
-                    <div>// nova.analyze(wallet)</div>
-                    <div>// visualize.render(insights)</div>
-                    <div>// agent.connect(solana.mainnet)</div>
+                <div className="border border-white/30 p-0.5">
+                  <div className="border border-white/10 p-4 flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full bg-green-500/30 flex items-center justify-center">
+                      <Sparkles className="w-5 h-5 text-green-400" />
+                    </div>
+                    <div>
+                      <div className="text-white/50 text-xs">AI-POWERED</div>
+                      <div className="text-lg font-light">Multi-Agent System</div>
+                    </div>
                   </div>
+                </div>
 
-                  <div className="absolute top-10 right-0 text-[10px] font-mono text-white/40 text-right opacity-60">
-                    <div>// identity.generate()</div>
-                    <div>// dashboard.update()</div>
-                    <div>// ml.predict(trends)</div>
+                <div className="border border-white/30 p-0.5">
+                  <div className="border border-white/10 p-4 flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-500/30 flex items-center justify-center">
+                      <Users className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <div className="text-white/50 text-xs">COMMUNITY</div>
+                      <div className="text-lg font-light">User-Driven</div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </section>
 
-          <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 py-4 backdrop-blur-sm">
-            <div className="container mx-auto px-4 md:px-6 flex justify-between items-center">
-              <div className="flex items-center">
-                <span className="text-xs text-white/60 mr-2">01:1</span>
-                <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2 animate-pulse"></div>
-                <span className="text-xs text-white/60 uppercase tracking-wider">
-                  ABOUT NOVA
-                </span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-6 h-[1px] bg-gradient-to-r from-purple-500/40 to-transparent mr-3"></div>
-                <span className="text-xs text-white/60 font-mono">
-                  INNOVATING THE FUTURE OF WEB3 IDENTITY
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Corner borders */}
-          <div className="absolute top-0 left-0 w-[100px] h-[100px] border-l border-t border-white/10"></div>
-          <div className="absolute top-0 right-0 w-[100px] h-[100px] border-r border-t border-white/10"></div>
-          <div className="absolute bottom-0 left-0 w-[100px] h-[100px] border-l border-b border-white/10"></div>
-          <div className="absolute bottom-0 right-0 w-[100px] h-[100px] border-r border-b border-white/10"></div>
-        </section>
-
-        {/* Mission Section */}
-        <section
-          id="mission"
-          ref={missionRef}
-          className="min-h-screen flex flex-col justify-center relative border-b border-white/10 py-20"
-        >
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="max-w-6xl mx-auto">
-              <div className="mb-16 text-center">
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.5 }}
-                  viewport={{ once: true }}
-                  className="inline-flex items-center justify-center"
-                >
-                  <div className="w-12 h-[1px] bg-gradient-to-r from-transparent via-purple-500 to-transparent mr-4"></div>
-                  <span className="text-sm uppercase tracking-[0.3em] text-purple-400 font-light">
-                    Our Purpose
-                  </span>
-                  <div className="w-12 h-[1px] bg-gradient-to-r from-transparent via-purple-500 to-transparent ml-4"></div>
-                </motion.div>
-
-                <motion.h2
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1 }}
-                  viewport={{ once: true }}
-                  className="text-[3.5rem] md:text-[5rem] font-bold tracking-tighter mt-6 mb-8"
-                >
-                  <GradientText gradient="from-purple-300 via-white to-purple-300">
-                    OUR MISSION
-                  </GradientText>
-                </motion.h2>
-
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.3 }}
-                  viewport={{ once: true }}
-                  className="text-xl md:text-2xl text-white/80 max-w-3xl mx-auto"
-                >
-                  We're building the bridge between complex blockchain data and
-                  human understanding through AI-powered insights and
-                  visualizations.
-                </motion.p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mt-20">
-                {[
-                  {
-                    icon: (
-                      <svg
-                        width="48"
-                        height="48"
-                        viewBox="0 0 48 48"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <circle
-                          cx="24"
-                          cy="24"
-                          r="10"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                        />
-                        <path
-                          d="M24 14V34"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                        />
-                        <path
-                          d="M14 24H34"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                        />
-                        <circle
-                          cx="24"
-                          cy="24"
-                          r="18"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                          strokeOpacity="0.3"
-                        />
-                        <circle
-                          cx="24"
-                          cy="24"
-                          r="23"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                          strokeOpacity="0.1"
-                        />
-                      </svg>
-                    ),
-                    title: "Accessibility",
-                    description:
-                      "Making blockchain data intuitive and accessible to everyone regardless of technical expertise.",
-                    delay: 0.3,
-                  },
-                  {
-                    icon: (
-                      <svg
-                        width="48"
-                        height="48"
-                        viewBox="0 0 48 48"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <rect
-                          x="14"
-                          y="14"
-                          width="20"
-                          height="20"
-                          rx="2"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                        />
-                        <path
-                          d="M14 22H34"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                        />
-                        <path
-                          d="M22 34V22"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                        />
-                        <circle cx="18" cy="18" r="2" fill="#4C1D95" />
-                        <path
-                          d="M24 6V10"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeOpacity="0.5"
-                        />
-                        <path
-                          d="M34 6L31 10"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeOpacity="0.5"
-                        />
-                        <path
-                          d="M42 16L38 19"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeOpacity="0.5"
-                        />
-                        <path
-                          d="M42 32L38 29"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeOpacity="0.5"
-                        />
-                        <path
-                          d="M34 42L31 38"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeOpacity="0.5"
-                        />
-                        <path
-                          d="M24 42V38"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeOpacity="0.5"
-                        />
-                        <path
-                          d="M14 42L17 38"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeOpacity="0.5"
-                        />
-                        <path
-                          d="M6 32L10 29"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeOpacity="0.5"
-                        />
-                        <path
-                          d="M6 16L10 19"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeOpacity="0.5"
-                        />
-                        <path
-                          d="M14 6L17 10"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeOpacity="0.5"
-                        />
-                      </svg>
-                    ),
-                    title: "Intelligence",
-                    description:
-                      "Using advanced AI to analyze blockchain data and provide personalized insights and recommendations.",
-                    delay: 0.5,
-                  },
-                  {
-                    icon: (
-                      <svg
-                        width="48"
-                        height="48"
-                        viewBox="0 0 48 48"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M10 16L24 6L38 16V32L24 42L10 32V16Z"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                        />
-                        <path
-                          d="M24 6V42"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                          strokeOpacity="0.5"
-                        />
-                        <path
-                          d="M10 16L38 32"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                          strokeOpacity="0.5"
-                        />
-                        <path
-                          d="M38 16L10 32"
-                          stroke="#a78bfa"
-                          strokeWidth="1.5"
-                          strokeOpacity="0.5"
-                        />
-                        <circle
-                          cx="24"
-                          cy="6"
-                          r="2"
-                          fill="#4C1D95"
-                          stroke="#a78bfa"
-                          strokeWidth="1"
-                        />
-                        <circle
-                          cx="10"
-                          cy="16"
-                          r="2"
-                          fill="#4C1D95"
-                          stroke="#a78bfa"
-                          strokeWidth="1"
-                        />
-                        <circle
-                          cx="10"
-                          cy="32"
-                          r="2"
-                          fill="#4C1D95"
-                          stroke="#a78bfa"
-                          strokeWidth="1"
-                        />
-                        <circle
-                          cx="24"
-                          cy="42"
-                          r="2"
-                          fill="#4C1D95"
-                          stroke="#a78bfa"
-                          strokeWidth="1"
-                        />
-                        <circle
-                          cx="38"
-                          cy="32"
-                          r="2"
-                          fill="#4C1D95"
-                          stroke="#a78bfa"
-                          strokeWidth="1"
-                        />
-                        <circle
-                          cx="38"
-                          cy="16"
-                          r="2"
-                          fill="#4C1D95"
-                          stroke="#a78bfa"
-                          strokeWidth="1"
-                        />
-                      </svg>
-                    ),
-                    title: "Expression",
-                    description:
-                      "Creating unique visual identities that represent users' on-chain activity and crypto persona.",
-                    delay: 0.7,
-                  },
-                ].map((item, index) => (
-                  <motion.div
-                    key={`mission-${index}`}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.7, delay: item.delay }}
-                    viewport={{ once: true }}
-                    whileHover={{ y: -10 }}
-                    className="flex flex-col items-center p-8 bg-black/20 backdrop-blur-sm border border-white/5 rounded-sm group hover:border-purple-500/30 transition-all duration-300"
-                  >
-                    {/* Top edge highlight */}
-                    <motion.div
-                      className="absolute top-0 left-10 right-10 h-[1px] bg-gradient-to-r from-transparent via-purple-500/50 to-transparent"
-                      initial={{ opacity: 0, scaleX: 0 }}
-                      whileInView={{ opacity: 1, scaleX: 1 }}
-                      transition={{ duration: 1, delay: item.delay + 0.3 }}
-                      viewport={{ once: true }}
-                    />
-
-                    <div className="mb-6">{item.icon}</div>
-
-                    <h3 className="text-2xl font-semibold mb-4 text-purple-300 text-center">
-                      {item.title}
-                    </h3>
-
-                    <p className="text-white/70 text-center leading-relaxed">
-                      {item.description}
-                    </p>
-
-                    {/* Bottom edge highlight */}
-                    <motion.div
-                      className="absolute bottom-0 left-10 right-10 h-[1px] bg-gradient-to-r from-transparent via-purple-500/50 to-transparent"
-                      initial={{ opacity: 0, scaleX: 0 }}
-                      whileInView={{ opacity: 1, scaleX: 1 }}
-                      transition={{ duration: 1, delay: item.delay + 0.3 }}
-                      viewport={{ once: true }}
-                    />
-
-                    {/* Hover glow effect */}
-                    <motion.div
-                      className="absolute -inset-0.5 -z-10 opacity-0 group-hover:opacity-20 transition-opacity duration-500 blur-xl"
-                      style={{
-                        background:
-                          "radial-gradient(circle at center, rgba(139, 92, 246, 0.8) 0%, transparent 70%)",
-                      }}
-                    />
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Vision statement */}
+          {/* Mission Section */}
+          <section
+            id="mission"
+            ref={missionRef}
+            className="mb-16"
+          >
+            <div className="border border-white/30 p-0.5">
               <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.8 }}
-                viewport={{ once: true }}
-                className="mt-24 max-w-4xl mx-auto text-center relative bg-black/30 backdrop-blur-sm border border-white/10 p-10 rounded-sm"
-              >
-                <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-black px-6 py-2 border border-white/10">
-                  <span className="text-sm uppercase tracking-[0.2em] text-purple-400">
-                    Our Vision
-                  </span>
-                </div>
-
-                <p className="text-2xl md:text-3xl text-white/90 italic font-light leading-relaxed">
-                  "A world where blockchain technology is{" "}
-                  <GradientText>accessible to everyone</GradientText>, not just
-                  the technically savvy, through intuitive interfaces powered by{" "}
-                  <GradientText>intelligent AI systems</GradientText>."
-                </p>
-
-                <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-purple-500 to-transparent mx-auto mt-8" />
-              </motion.div>
-            </div>
-          </div>
-
-          <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 py-4 backdrop-blur-sm">
-            <div className="container mx-auto px-4 md:px-6 flex justify-between items-center">
-              <div className="flex items-center">
-                <span className="text-xs text-white/60 mr-2">01:2</span>
-                <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2 animate-pulse"></div>
-                <span className="text-xs text-white/60 uppercase tracking-wider">
-                  MISSION
-                </span>
-              </div>
-              <div className="flex items-center">
-                <motion.div
-                  animate={{
-                    opacity: [1, 0.5, 1],
-                  }}
-                  transition={{ duration: 4, repeat: Infinity }}
-                >
-                  <span className="text-xs text-white/60 font-mono">
-                    BRIDGING BLOCKCHAIN AND HUMAN UNDERSTANDING
-                  </span>
-                </motion.div>
-              </div>
-            </div>
-          </div>
-
-          {/* Corner borders */}
-          <div className="absolute top-0 left-0 w-[100px] h-[100px] border-l border-t border-white/10"></div>
-          <div className="absolute top-0 right-0 w-[100px] h-[100px] border-r border-t border-white/10"></div>
-          <div className="absolute bottom-0 left-0 w-[100px] h-[100px] border-l border-b border-white/10"></div>
-          <div className="absolute bottom-0 right-0 w-[100px] h-[100px] border-r border-b border-white/10"></div>
-        </section>
-
-        {/* Team Section with 3D elements */}
-        <section
-          id="team"
-          ref={teamRef}
-          className="min-h-screen py-20 relative border-b border-white/10"
-        >
-          <div className="container mx-auto px-4 md:px-6 relative">
-            <div className="mb-16 text-center">
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-                className="inline-flex items-center justify-center"
-              >
-                <div className="w-12 h-[1px] bg-gradient-to-r from-transparent via-purple-500 to-transparent mr-4"></div>
-                <span className="text-sm uppercase tracking-[0.3em] text-purple-400 font-light">
-                  The Builders
-                </span>
-                <div className="w-12 h-[1px] bg-gradient-to-r from-transparent via-purple-500 to-transparent ml-4"></div>
-              </motion.div>
-
-              <motion.h2
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1 }}
-                viewport={{ once: true }}
-                className="text-[3.5rem] md:text-[5rem] font-bold tracking-tighter mt-6 mb-8"
-              >
-                <GradientText gradient="from-purple-300 via-white to-purple-300">
-                  OUR TEAM
-                </GradientText>
-              </motion.h2>
-
-              <motion.p
                 initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.3 }}
-                viewport={{ once: true }}
-                className="text-xl md:text-2xl text-white/80 max-w-3xl mx-auto"
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.2 }}
+                className="border border-white/10 px-6 py-8"
               >
-                A dedicated group of innovators at the intersection of AI,
-                blockchain, and human experience.
-              </motion.p>
-            </div>
+                <SectionHeader 
+                  title="Mission" 
+                  subtitle="OUR PURPOSE AND VISION FOR THE FUTURE OF WEB3 IDENTITY"
+                />
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mt-20">
-              {team.map((member, index) => (
-                <motion.div
-                  key={`team-${index}`}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.2 * index }}
-                  viewport={{ once: true }}
-                  className="relative bg-black/30 backdrop-blur-sm border border-white/10 rounded-sm overflow-hidden group"
-                  onMouseEnter={() => setCursorVariant("hover")}
-                  onMouseLeave={() => setCursorVariant("default")}
-                >
-                  {/* Animated border effects */}
-                  <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-purple-500/50 to-transparent"></div>
-                  <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-purple-500/50 to-transparent"></div>
-                  <div className="absolute top-0 left-0 h-full w-[1px] bg-gradient-to-b from-transparent via-purple-500/50 to-transparent"></div>
-                  <div className="absolute top-0 right-0 h-full w-[1px] bg-gradient-to-b from-transparent via-purple-500/50 to-transparent"></div>
-
-                  <div className="aspect-square overflow-hidden relative">
-                    {/* Futuristic 2D team member image with effects */}
-                    <TeamMemberImage
-                      image={member.image}
-                      alias={member.alias}
-                    />
-
-                    {/* Member information overlay - appears on hover */}
-                    <motion.div
-                      className="absolute bottom-0 left-0 right-0 py-4 px-6 text-center bg-black/60 backdrop-blur-sm transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"
-                      initial={{ y: 0 }}
-                      whileInView={{ y: 0 }}
-                      transition={{ duration: 0.5, delay: 0.5 + index * 0.2 }}
+                <div className="grid grid-cols-3 gap-0 mb-8">
+                  {mission.map((item, index) => (
+                    <motion.div 
+                      key={`mission-${index}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.7, delay: 0.3 + index * 0.2 }}
                       viewport={{ once: true }}
+                      className="border border-white/30 p-0.5"
                     >
-                      <h3 className="text-2xl font-bold text-purple-300 mb-1">
-                        {member.alias}
-                      </h3>
-                      <p className="text-white/90 text-lg mb-1">
-                        {member.name}
-                      </p>
-                      <p className="text-purple-400/80 text-sm mb-4">
-                        {member.role}
-                      </p>
-
-                      <div className="flex justify-center space-x-4">
-                        <a
-                          href={member.social.github}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-white/70 hover:text-purple-400 transition-colors"
-                        >
-                          <Github className="w-5 h-5" />
-                        </a>
-                        <a
-                          href={member.social.linkedin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-white/70 hover:text-purple-400 transition-colors"
-                        >
-                          <Linkedin className="w-5 h-5" />
-                        </a>
-                        <a
-                          href={member.social.twitter}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-white/70 hover:text-purple-400 transition-colors"
-                        >
-                          <Twitter className="w-5 h-5" />
-                        </a>
+                      <div className="border border-white/10 p-6 h-full flex flex-col">
+                        <div className="flex items-center space-x-3 mb-4">
+                          <div className="w-10 h-10 border border-white/20 flex items-center justify-center">
+                            {item.icon}
+                          </div>
+                          <h3 className="text-xl font-light">{item.title}</h3>
+                        </div>
+                        <p className="text-white/70 text-sm">{item.description}</p>
                       </div>
                     </motion.div>
-                  </div>
-
-                  <div className="p-6">
-                    <p className="text-white/80 text-sm leading-relaxed">
-                      {member.bio}
-                    </p>
-
-                    <div className="mt-6 pt-6 border-t border-white/10 flex justify-between items-center">
-                      <div className="text-xs text-white/60 font-mono uppercase tracking-wider">
-                        {member.role}
-                      </div>
-                      <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* CTA Banner */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.8 }}
-              viewport={{ once: true }}
-              className="mt-24 max-w-5xl mx-auto relative bg-black/40 backdrop-blur-sm border border-white/10 p-10 rounded-sm overflow-hidden"
-            >
-              <div className="absolute inset-0 opacity-30">
-                <Canvas>
-                  <ambientLight intensity={0.5} />
-                  <pointLight position={[10, 10, 10]} />
-                  <ParticleRing />
-                </Canvas>
-              </div>
-
-              <div className="relative z-10 flex flex-col md:flex-row items-center justify-between">
-                <div className="mb-6 md:mb-0">
-                  <h4 className="text-2xl font-bold mb-2 text-white">
-                    Join Our Team
-                  </h4>
-                  <p className="text-white/70">
-                    We're expanding our team of blockchain and AI innovators
-                  </p>
+                  ))}
                 </div>
 
-                <a
-                  href="#"
-                  className="group relative inline-flex items-center bg-black/50 border border-purple-500/50 px-6 py-3 rounded-sm overflow-hidden"
-                >
-                  <span className="relative z-10 font-medium mr-2">
-                    View Open Positions
-                  </span>
-                  <ExternalLink className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-
-                  {/* Light scan effect */}
-                  <motion.div className="absolute top-0 -right-40 w-32 h-full bg-white transform rotate-12 translate-x-0 -translate-y-0 opacity-20 group-hover:translate-x-80 transition-transform duration-1000" />
-                </a>
-              </div>
-            </motion.div>
-          </div>
-
-          <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 py-4 backdrop-blur-sm">
-            <div className="container mx-auto px-4 md:px-6 flex justify-between items-center">
-              <div className="flex items-center">
-                <span className="text-xs text-white/60 mr-2">01:3</span>
-                <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2 animate-pulse"></div>
-                <span className="text-xs text-white/60 uppercase tracking-wider">
-                  TEAM
-                </span>
-              </div>
-              <div className="flex items-center">
+                {/* Vision Statement */}
                 <motion.div
-                  animate={{
-                    opacity: [1, 0.5, 1],
-                  }}
-                  transition={{ duration: 4, repeat: Infinity }}
-                >
-                  <span className="text-xs text-white/60 font-mono">
-                    AI ENGINEERS & BLOCKCHAIN SPECIALISTS
-                  </span>
-                </motion.div>
-              </div>
-            </div>
-          </div>
-
-          {/* Corner borders */}
-          <div className="absolute top-0 left-0 w-[100px] h-[100px] border-l border-t border-white/10"></div>
-          <div className="absolute top-0 right-0 w-[100px] h-[100px] border-r border-t border-white/10"></div>
-          <div className="absolute bottom-0 left-0 w-[100px] h-[100px] border-l border-b border-white/10"></div>
-          <div className="absolute bottom-0 right-0 w-[100px] h-[100px] border-r border-b border-white/10"></div>
-        </section>
-
-        {/* Technology Stack Section */}
-        <section
-          id="tech"
-          ref={techRef}
-          className="min-h-screen py-20 relative border-b border-white/10"
-        >
-          <div className="container mx-auto px-4 md:px-6 relative">
-            <div className="mb-16 text-center">
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-                className="inline-flex items-center justify-center"
-              >
-                <div className="w-12 h-[1px] bg-gradient-to-r from-transparent via-purple-500 to-transparent mr-4"></div>
-                <span className="text-sm uppercase tracking-[0.3em] text-purple-400 font-light">
-                  Our Tools
-                </span>
-                <div className="w-12 h-[1px] bg-gradient-to-r from-transparent via-purple-500 to-transparent ml-4"></div>
-              </motion.div>
-
-              <motion.h2
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1 }}
-                viewport={{ once: true }}
-                className="text-[3.5rem] md:text-[5rem] font-bold tracking-tighter mt-6 mb-8"
-              >
-                <GradientText gradient="from-purple-300 via-white to-purple-300">
-                  TECHNOLOGY
-                </GradientText>
-              </motion.h2>
-
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.3 }}
-                viewport={{ once: true }}
-                className="text-xl md:text-2xl text-white/80 max-w-3xl mx-auto"
-              >
-                A powerful combination of cutting-edge technologies that deliver
-                intelligent insights and beautiful visuals.
-              </motion.p>
-            </div>
-
-            {/* 3D Tech Stack Visualization */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 1 }}
-              viewport={{ once: true }}
-              className="h-[50vh] mb-20"
-            >
-              <Canvas camera={{ position: [0, 0, 10], fov: 45 }}>
-                <ambientLight intensity={0.5} />
-                <pointLight position={[10, 10, 10]} />
-                <TechStackVisualizer />
-                <Environment preset="city" />
-              </Canvas>
-            </motion.div>
-
-            {/* Technology Stack Categories */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {technologies.map((category, catIndex) => (
-                <motion.div
-                  key={`tech-${catIndex}`}
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.7, delay: 0.2 * catIndex }}
+                  transition={{ duration: 0.7, delay: 0.7 }}
                   viewport={{ once: true }}
-                  className="relative bg-black/30 backdrop-blur-sm border border-white/10 rounded-sm overflow-hidden"
+                  className="border border-white/30 p-0.5 mt-12"
                 >
-                  {/* Category title */}
-                  <div className="relative border-b border-white/10 p-6">
-                    <h3 className="text-2xl font-bold text-purple-300">
-                      {category.category}
-                    </h3>
-                    <div className="absolute bottom-0 left-0 w-1/3 h-[1px] bg-gradient-to-r from-purple-500 to-transparent"></div>
+                  <div className="border border-white/10 p-6 text-center">
+                    <h3 className="text-2xl font-light mb-4">Our Vision</h3>
+                    <p className="text-xl text-white/90 italic font-light">
+                      "A world where blockchain technology is accessible to everyone, not just the technically savvy, 
+                      through intuitive interfaces powered by intelligent AI systems."
+                    </p>
                   </div>
+                </motion.div>
+              </motion.div>
+            </div>
+          </section>
 
-                  {/* Technology list */}
-                  <div className="p-6 space-y-4">
-                    {category.items.map((tech, techIndex) => (
-                      <motion.div
-                        key={`tech-item-${catIndex}-${techIndex}`}
-                        initial={{ x: -20, opacity: 0 }}
-                        whileInView={{ x: 0, opacity: 1 }}
-                        transition={{
-                          duration: 0.5,
-                          delay: 0.1 * techIndex + 0.3 * catIndex,
-                        }}
-                        viewport={{ once: true }}
-                        className="flex items-center group"
-                      >
-                        <div className="w-8 h-8 rounded-full bg-black/50 border border-purple-500/30 flex items-center justify-center mr-4 group-hover:border-purple-500 transition-colors">
-                          <span>{tech.icon}</span>
+          {/* Team Section */}
+          <section
+            id="team"
+            ref={teamRef}
+            className="mb-16"
+          >
+            <div className="border border-white/30 p-0.5">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.3 }}
+                className="border border-white/10 px-6 py-8"
+              >
+                <SectionHeader 
+                  title="Team" 
+                  subtitle="THE BUILDERS BEHIND THE NOVA ECOSYSTEM"
+                />
+                
+                <div className="grid grid-cols-3 gap-0">
+                  {team.map((member, index) => (
+                    <TeamMember 
+                      key={`team-${index}`} 
+                      member={member} 
+                      index={index} 
+                    />
+                  ))}
+                </div>
+                
+                {/* CTA Banner */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.7 }}
+                  viewport={{ once: true }}
+                  className="border border-white/30 p-0.5 mt-8"
+                >
+                  <div className="border border-white/10 p-6 flex flex-col md:flex-row items-center justify-between">
+                    <div className="mb-4 md:mb-0">
+                      <h3 className="text-2xl font-light mb-2">Join Our Team</h3>
+                      <p className="text-white/70 text-sm">
+                        We're expanding our team of blockchain and AI innovators
+                      </p>
+                    </div>
+                    
+                    <a
+                      href="#"
+                      className="border border-white/30 bg-white/5 hover:bg-white/10 px-4 py-3 text-sm uppercase transition-colors flex items-center space-x-2"
+                    >
+                      <span>View Open Positions</span>
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </div>
+                </motion.div>
+              </motion.div>
+            </div>
+          </section>
+
+          {/* Technology Section */}
+          <section
+            id="tech"
+            ref={techRef}
+            className="mb-16"
+          >
+            <div className="border border-white/30 p-0.5">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.4 }}
+                className="border border-white/10 px-6 py-8"
+              >
+                <SectionHeader 
+                  title="Technology" 
+                  subtitle="THE TOOLS AND FRAMEWORKS POWERING OUR PLATFORM"
+                />
+                
+                <div className="grid grid-cols-3 gap-0">
+                  {technologies.map((category, index) => (
+                    <TechnologyBox 
+                      key={`tech-${index}`} 
+                      category={category} 
+                      items={category.items} 
+                      index={index} 
+                    />
+                  ))}
+                </div>
+                
+                {/* Feature Highlight */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.7 }}
+                  viewport={{ once: true }}
+                  className="border border-white/30 p-0.5 mt-8"
+                >
+                  <div className="border border-white/10 p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                      <h3 className="text-2xl font-light mb-4">Multi-Agent Intelligence</h3>
+                      <p className="text-white/70 text-sm mb-4">
+                        Our system employs multiple AI agents that work together to analyze 
+                        blockchain data, identify patterns, and deliver personalized insights to users.
+                      </p>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center text-white/70 text-sm">
+                          <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2"></div>
+                          <span>Data Collection Agent</span>
+                        </div>
+                        <div className="flex items-center text-white/70 text-sm">
+                          <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2"></div>
+                          <span>Analysis Agent</span>
+                        </div>
+                        <div className="flex items-center text-white/70 text-sm">
+                          <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2"></div>
+                          <span>Visualization Agent</span>
+                        </div>
+                        <div className="flex items-center text-white/70 text-sm">
+                          <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2"></div>
+                          <span>Interaction Agent</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border border-white/10 p-4 bg-black/20 font-mono text-xs text-white/70">
+                      <div className="mb-2 text-purple-400">
+                        // Multi-Agent System
+                      </div>
+                      <div className="space-y-1">
+                        <div>
+                          <span className="text-blue-400">class</span>{" "}
+                          <span className="text-yellow-400">
+                            AgentCoordinator
+                          </span>{" "}
+                          {`{`}
                         </div>
                         <div>
-                          <h4 className="text-lg font-medium text-white/90">
-                            {tech.name}
-                          </h4>
-                          <p className="text-sm text-white/60">
-                            {tech.description}
-                          </p>
+                          &nbsp;&nbsp;
+                          <span className="text-green-400">constructor</span>
+                          (config) {`{`}
                         </div>
-                      </motion.div>
-                    ))}
-                  </div>
-
-                  {/* Decorative elements */}
-                  <div className="absolute top-0 right-0 p-2 text-[10px] text-white/40 font-mono opacity-60">
-                    <div>// {category.category.toLowerCase()}.init()</div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Feature Highlight */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.8 }}
-              viewport={{ once: true }}
-              className="mt-24 max-w-5xl mx-auto relative bg-black/40 backdrop-blur-sm border border-white/10 p-10 rounded-sm"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <div>
-                  <h4 className="text-2xl font-bold mb-4 text-purple-300">
-                    Multi-Agent Intelligence
-                  </h4>
-                  <p className="text-white/80 mb-6 leading-relaxed">
-                    Our system employs multiple AI agents that work in concert
-                    to analyze blockchain data, identify patterns, and deliver
-                    personalized insights to users.
-                  </p>
-
-                  <ul className="space-y-2">
-                    {[
-                      "Data Collection Agent",
-                      "Analysis Agent",
-                      "Visualization Agent",
-                      "Interaction Agent",
-                    ].map((agent, idx) => (
-                      <motion.li
-                        key={`agent-${idx}`}
-                        initial={{ opacity: 0, x: -20 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5, delay: 0.2 * idx }}
-                        viewport={{ once: true }}
-                        className="flex items-center text-white/70"
-                      >
-                        <div className="w-2 h-2 rounded-full bg-purple-500 mr-3"></div>
-                        {agent}
-                      </motion.li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="relative">
-                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-500/20 via-transparent to-transparent rounded-sm"></div>
-
-                  <div className="p-6 border border-white/10 rounded-sm h-full font-mono text-sm text-white/70">
-                    <div className="mb-4 text-purple-400">
-                      // Multi-Agent System Architecture
-                    </div>
-                    <div className="space-y-2">
-                      <div>
-                        <span className="text-blue-400">class</span>{" "}
-                        <span className="text-yellow-400">
-                          AgentCoordinator
-                        </span>{" "}
-                        {`{`}
-                      </div>
-                      <div>
-                        &nbsp;&nbsp;
-                        <span className="text-green-400">constructor</span>
-                        (config) {`{`}
-                      </div>
-                      <div>&nbsp;&nbsp;&nbsp;&nbsp;this.agents = [];</div>
-                      <div>
-                        &nbsp;&nbsp;&nbsp;&nbsp;this.initializeAgents(config);
-                      </div>
-                      <div>&nbsp;&nbsp;{`}`}</div>
-                      <div>&nbsp;</div>
-                      <div>
-                        &nbsp;&nbsp;
-                        <span className="text-green-400">async</span>{" "}
-                        analyze(walletData) {`{`}
-                      </div>
-                      <div>
-                        &nbsp;&nbsp;&nbsp;&nbsp;
-                        <span className="text-blue-400">const</span> results ={" "}
-                        {};
-                      </div>
-                      <div>
-                        &nbsp;&nbsp;&nbsp;&nbsp;
-                        <span className="text-purple-400">
-                          // Agent coordination logic
-                        </span>
+                        <div>&nbsp;&nbsp;&nbsp;&nbsp;this.agents = [];</div>
+                        <div>&nbsp;&nbsp;{`}`}</div>
+                        <div>&nbsp;</div>
+                        <div>
+                          &nbsp;&nbsp;
+                          <span className="text-green-400">async</span>{" "}
+                          analyze(walletData) {`{`}
+                        </div>
                         <div>
                           &nbsp;&nbsp;&nbsp;&nbsp;
-                          <span className="text-blue-400">for</span> (
-                          <span className="text-blue-400">const</span> agent of
-                          this.agents) {`{`}
+                          <span className="text-blue-400">const</span> results ={" "}
+                          {};
                         </div>
-                        <div>
-                          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;results[agent.name]
-                          = <span className="text-blue-400">await</span>{" "}
-                          agent.process(walletData);
-                        </div>
-                        <div>&nbsp;&nbsp;&nbsp;&nbsp;{`}`}</div>
+                        <div>&nbsp;&nbsp;&nbsp;&nbsp;...</div>
                         <div>
                           &nbsp;&nbsp;&nbsp;&nbsp;
                           <span className="text-blue-400">return</span>{" "}
-                          this.synthesizeResults(results);
+                          this.synthesize(results);
                         </div>
                         <div>&nbsp;&nbsp;{`}`}</div>
                         <div>{`}`}</div>
                       </div>
-
-                      <div className="absolute bottom-4 right-4 flex items-center">
-                        <div className="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></div>
+                      
+                      <div className="mt-2 flex items-center">
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1 animate-pulse"></div>
                         <span className="text-[10px] text-green-400">
                           SYSTEM ONLINE
                         </span>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 py-4 backdrop-blur-sm">
-            <div className="container mx-auto px-4 md:px-6 flex justify-between items-center">
-              <div className="flex items-center">
-                <span className="text-xs text-white/60 mr-2">01:4</span>
-                <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2 animate-pulse"></div>
-                <span className="text-xs text-white/60 uppercase tracking-wider">
-                  TECHNOLOGY
-                </span>
-              </div>
-              <div className="flex items-center">
-                <motion.div
-                  animate={{
-                    opacity: [1, 0.5, 1],
-                  }}
-                  transition={{ duration: 4, repeat: Infinity }}
-                >
-                  <span className="text-xs text-white/60 font-mono">
-                    CUTTING-EDGE AI AND BLOCKCHAIN INTEGRATION
-                  </span>
                 </motion.div>
-              </div>
+              </motion.div>
             </div>
-          </div>
-
-          {/* Corner borders */}
-          <div className="absolute top-0 left-0 w-[100px] h-[100px] border-l border-t border-white/10"></div>
-          <div className="absolute top-0 right-0 w-[100px] h-[100px] border-r border-t border-white/10"></div>
-          <div className="absolute bottom-0 left-0 w-[100px] h-[100px] border-l border-b border-white/10"></div>
-          <div className="absolute bottom-0 right-0 w-[100px] h-[100px] border-r border-b border-white/10"></div>
-        </section>
-
-        {/* Journey Timeline Section */}
-        <section
-          id="journey"
-          ref={journeyRef}
-          className="min-h-screen py-20 relative border-b border-white/10"
-        >
-          <div className="container mx-auto px-4 md:px-6 relative">
-            {/* Enhanced CTA Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 1 }}
-              viewport={{ once: true }}
-              className="mt-24 relative bg-black/30 backdrop-blur-sm border border-white/10 rounded-sm overflow-hidden"
-            >
-              <div className="absolute inset-0 opacity-30">
-                <Canvas>
-                  <ambientLight intensity={0.5} />
-                  <pointLight position={[10, 10, 10]} />
-                  <HolographicSphere />
-                </Canvas>
-              </div>
-
-              <div className="relative z-10 p-10 md:p-16 flex flex-col items-center text-center">
-                <h3 className="text-3xl md:text-4xl font-bold mb-6">
-                  <GradientText>Join The NOVA Evolution</GradientText>
-                </h3>
-
-                <p className="text-xl text-white/80 max-w-2xl mb-10">
-                  Be part of our journey as we redefine how users interact with
-                  blockchain technology. Sign up for early access and help shape
-                  the future of NOVA.
-                </p>
-
-                <a
-                  href="#"
-                  className="group relative inline-flex items-center bg-purple-600 px-8 py-4 rounded-sm overflow-hidden"
+          </section>
+          
+          {/* FAQ Section */}
+          <section
+            id="faq"
+            ref={faqRef}
+            className="mb-16"
+          >
+            <div className="border border-white/30 p-0.5">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.5 }}
+                className="border border-white/10 px-6 py-8"
+              >
+                <SectionHeader 
+                  title="FAQ" 
+                  subtitle="COMMON QUESTIONS ABOUT THE NOVA PLATFORM"
+                />
+                
+                <div className="space-y-0">
+                  {faqItems.map((faq, index) => (
+                    <FAQItem 
+                      key={`faq-${index}`} 
+                      faq={faq} 
+                      index={index} 
+                      isOpen={expandedFaq === index}
+                      toggleFaq={toggleFaq}
+                    />
+                  ))}
+                </div>
+                
+                {/* Early Access */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.7 }}
+                  viewport={{ once: true }}
+                  className="border border-white/30 p-0.5 mt-12"
                 >
-                  <span className="relative z-10 font-medium tracking-wide">
-                    GET EARLY ACCESS
-                  </span>
-
-                  {/* Button animation effects */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-700 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  <motion.div className="absolute top-0 -right-40 w-32 h-full bg-white transform rotate-12 translate-x-0 opacity-20 group-hover:translate-x-80 transition-transform duration-1000" />
-                </a>
-
-                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex items-center mt-8">
-                  <motion.div
-                    animate={{
-                      opacity: [0.5, 1, 0.5],
-                    }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-                      <span className="text-xs text-white/60 uppercase tracking-wider">
+                  <div className="border border-white/10 p-8 text-center">
+                    <h3 className="text-3xl font-light mb-4">Join The NOVA Evolution</h3>
+                    <p className="text-white/70 text-sm max-w-2xl mx-auto mb-6">
+                      Be part of our journey as we redefine how users interact with blockchain technology. 
+                      Sign up for early access and help shape the future of NOVA.
+                    </p>
+                    
+                    <button className="bg-white text-black px-6 py-3 uppercase hover:bg-white/90 transition-colors">
+                      GET EARLY ACCESS
+                    </button>
+                    
+                    <div className="mt-6 flex items-center justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2"></div>
+                      <span className="text-xs text-white/60 uppercase">
                         Limited Spots Available
                       </span>
                     </div>
-                  </motion.div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 py-4 backdrop-blur-sm">
-            <div className="container mx-auto px-4 md:px-6 flex justify-between items-center">
-              <div className="flex items-center">
-                <span className="text-xs text-white/60 mr-2">01:5</span>
-                <div className="w-1.5 h-1.5 rounded-full bg-purple-500 mr-2 animate-pulse"></div>
-                <span className="text-xs text-white/60 uppercase tracking-wider">
-                  JOURNEY
-                </span>
-              </div>
-              <div className="flex items-center">
-                <motion.div
-                  animate={{
-                    opacity: [1, 0.5, 1],
-                  }}
-                  transition={{ duration: 4, repeat: Infinity }}
-                >
-                  <span className="text-xs text-white/60 font-mono">
-                    FROM CONCEPT TO REALITY
-                  </span>
+                  </div>
                 </motion.div>
-              </div>
-            </div>
-          </div>
-
-          {/* Corner borders */}
-          <div className="absolute top-0 left-0 w-[100px] h-[100px] border-l border-t border-white/10"></div>
-          <div className="absolute top-0 right-0 w-[100px] h-[100px] border-r border-t border-white/10"></div>
-          <div className="absolute bottom-0 left-0 w-[100px] h-[100px] border-l border-b border-white/10"></div>
-          <div className="absolute bottom-0 right-0 w-[100px] h-[100px] border-r border-b border-white/10"></div>
-        </section>
-
-        {/* FAQ Section */}
-        <section className="py-20 relative border-b border-white/10">
-          <div className="container mx-auto px-4 md:px-6 relative">
-            <div className="mb-16 text-center">
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-                className="inline-flex items-center justify-center"
-              >
-                <div className="w-12 h-[1px] bg-gradient-to-r from-transparent via-purple-500 to-transparent mr-4"></div>
-                <span className="text-sm uppercase tracking-[0.3em] text-purple-400 font-light">
-                  Common Questions
-                </span>
-                <div className="w-12 h-[1px] bg-gradient-to-r from-transparent via-purple-500 to-transparent ml-4"></div>
               </motion.div>
-
-              <motion.h2
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1 }}
-                viewport={{ once: true }}
-                className="text-[3.5rem] md:text-[5rem] font-bold tracking-tighter mt-6 mb-8"
-              >
-                <GradientText gradient="from-purple-300 via-white to-purple-300">
-                  FAQ
-                </GradientText>
-              </motion.h2>
             </div>
-
-            {/* FAQ Items */}
-            <div className="max-w-4xl mx-auto space-y-6">
-              {[
-                {
-                  question: "What is NOVA?",
-                  answer:
-                    "NOVA is a multi-agent AI platform that transforms any Web3 wallet into a smart, visual, and conversational identity. It combines a chatbot that analyzes on-chain data and contracts, a dashboard that visualizes wallet behavior, and an AI-generated identity card that turns activity into personalized art.",
-                },
-                {
-                  question: "Which blockchains does NOVA support?",
-                  answer:
-                    "Currently, NOVA supports Solana as our primary blockchain, with plans to expand to Ethereum and other major chains in upcoming releases.",
-                },
-                {
-                  question: "How does NOVA protect user privacy?",
-                  answer:
-                    "NOVA is designed with privacy at its core. While we analyze on-chain data, which is public by nature, we implement advanced encryption for any personal settings, preferences, or custom configurations you create within the platform.",
-                },
-                {
-                  question: "Is NOVA open source?",
-                  answer:
-                    "Parts of NOVA are open source, particularly our core visualization libraries and blockchain connectors. Our proprietary AI models and identity generation systems are currently closed source.",
-                },
-                {
-                  question: "How can I get early access to NOVA?",
-                  answer:
-                    "You can join our waitlist by signing up on our homepage. Early access invitations are being rolled out gradually, with priority given to active community members and blockchain early adopters.",
-                },
-              ].map((faq, index) => (
-                <motion.div
-                  key={`faq-${index}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className="bg-black/30 backdrop-blur-sm border border-white/10 rounded-sm overflow-hidden"
-                >
-                  <div className="p-6 border-b border-white/10">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-xl font-bold text-white/90">
-                        {faq.question}
-                      </h3>
-                      <div className="w-6 h-6 rounded-full bg-black/60 border border-purple-500/50 flex items-center justify-center">
-                        <div className="w-1 h-1 rounded-full bg-purple-500"></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-6">
-                    <p className="text-white/70 leading-relaxed">
-                      {faq.answer}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Contact prompt */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.8 }}
-              viewport={{ once: true }}
-              className="mt-16 text-center"
-            >
-              <p className="text-white/70 mb-4">Still have questions?</p>
-              <a
-                href="mailto:info@nova.ai"
-                className="text-purple-400 hover:text-purple-300 transition-colors inline-flex items-center"
-              >
-                <span className="mr-2">Contact our team</span>
-                <ArrowRight className="w-4 h-4" />
-              </a>
-            </motion.div>
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
 
       {/* Footer */}
       <Footer />
+      
+      {/* CSS for hiding scrollbars while maintaining scroll functionality */}
+      <style jsx global>{`
+        .scrollbar-hide {
+          -ms-overflow-style: none; /* IE and Edge */
+          scrollbar-width: none; /* Firefox */
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none; /* Chrome, Safari and Opera */
+        }
+      `}</style>
     </main>
   );
 }

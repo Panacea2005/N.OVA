@@ -58,7 +58,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { isConnected } = usePhantom();
 
   useEffect(() => {
     // Simulate loading assets
@@ -72,21 +71,6 @@ export default function Home() {
   }, []);
 
   if (!mounted) return null;
-
-  if (!isConnected) {
-    return (
-      <main className="relative min-h-screen bg-black text-white font-mono">
-        <div className="fixed inset-0 bg-gradient-to-br from-black via-black to-purple-950 opacity-80 z-0" />
-        <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4">
-          <h1 className="text-4xl font-bold mb-8">Welcome to NOVA</h1>
-          <p className="text-xl text-gray-400 mb-8">
-            Connect your Phantom wallet to get started
-          </p>
-          <ConnectWalletButton />
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className="relative min-h-screen bg-black text-white font-mono">
