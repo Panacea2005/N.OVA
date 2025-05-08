@@ -933,413 +933,790 @@ export default function Home() {
         <TechnologySection />
 
         {/* Ecosystem Section */}
-        <section
-          id="ecosystem"
-          className="min-h-screen flex flex-col justify-center relative border-t border-white/10 overflow-hidden"
-        >
-          {/* Enhanced background elements */}
-          <div className="absolute inset-0 z-0">
-            {/* Grid pattern */}
-            <div
-              className="absolute inset-0 opacity-10"
-              style={{
-                backgroundImage:
-                  "linear-gradient(to right, rgba(139, 92, 246, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(139, 92, 246, 0.1) 1px, transparent 1px)",
-                backgroundSize: "40px 40px",
+        {/* Enhanced Ecosystem Section */}
+<section
+  id="ecosystem"
+  className="min-h-screen flex flex-col justify-center relative border-t border-white/10 overflow-hidden"
+>
+  {/* Minimal background elements */}
+  <div className="absolute inset-0 z-0">
+    {/* Grid pattern */}
+    <div
+      className="absolute inset-0 opacity-10"
+      style={{
+        backgroundImage:
+          "linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px)",
+        backgroundSize: "40px 40px",
+      }}
+    />
+
+    {/* Subtle radial gradient overlay */}
+    <div
+      className="absolute inset-0 opacity-20"
+      style={{
+        background:
+          "radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0) 70%)",
+      }}
+    />
+
+    {/* Minimal scan lines */}
+    {Array(3)
+      .fill(0)
+      .map((_, i) => (
+        <motion.div
+          key={`scan-${i}`}
+          className="absolute w-full h-[1px] bg-white/10"
+          style={{ top: `${(i + 1) * 25}%` }}
+          animate={{
+            opacity: [0.05, 0.1, 0.05],
+            x: ["-100%", "100%"],
+          }}
+          transition={{
+            duration: 15 + (i % 3),
+            repeat: Infinity,
+            delay: i * 2,
+          }}
+        />
+      ))}
+  </div>
+
+  <div className="container mx-auto px-4 md:px-6 py-20 relative z-10">
+    <div className="flex flex-col items-center mb-16">
+      {/* Minimalist header */}
+      <div className="mb-8">
+        <div className="text-xs uppercase tracking-widest text-white/60 mb-4">
+          N.OVA Ecosystem
+        </div>
+        <h2 className="text-7xl font-light mb-6 text-center">
+          OUR PRODUCTS
+        </h2>
+        <div className="w-16 h-px bg-white/20 mx-auto"></div>
+      </div>
+
+      <p className="text-lg text-white/70 max-w-2xl text-center">
+        Explore the complete suite of N.OVA technologies powering the next generation 
+        of decentralized artificial intelligence.
+      </p>
+    </div>
+
+    {/* Interactive Products Grid - More flexible layout with 3 columns on larger screens */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+      {/* N.TOKENOMICS Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        viewport={{ once: true }}
+        className="relative border border-white/10 p-6 group hover:border-white/30 transition-all duration-300 flex flex-col h-full"
+      >
+        {/* Dotted arch figure */}
+        <div className="relative h-40 mb-6 overflow-hidden">
+          <svg 
+            className="absolute inset-0 w-full"
+            viewBox="0 0 200 160" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M100 150C138.66 150 170 118.66 170 80C170 41.34 138.66 10 100 10C61.34 10 30 41.34 30 80C30 118.66 61.34 150 100 150Z"
+              stroke="white"
+              strokeOpacity="0.2"
+              strokeWidth="1"
+              strokeDasharray="2 2"
+              fill="none"
+            />
+            <path
+              d="M100 130C127.614 130 150 107.614 150 80C150 52.386 127.614 30 100 30C72.386 30 50 52.386 50 80C50 107.614 72.386 130 100 130Z"
+              stroke="white"
+              strokeOpacity="0.3"
+              strokeWidth="1"
+              strokeDasharray="2 2"
+              fill="none"
+            />
+            <circle cx="100" cy="80" r="15" fill="#FFFFFF" fillOpacity="0.03" stroke="white" strokeOpacity="0.3" />
+            <circle cx="100" cy="80" r="5" fill="#FFFFFF" fillOpacity="0.2" />
+            {/* Animated dots along the path */}
+            <motion.circle 
+              cx="100" 
+              cy="10" 
+              r="2" 
+              fill="white"
+              animate={{
+                cx: [100, 170, 100, 30, 100],
+                cy: [10, 80, 150, 80, 10],
+              }}
+              transition={{
+                duration: 10,
+                repeat: Infinity,
+                ease: "linear"
               }}
             />
-
-            {/* Subtle radial gradient overlay */}
-            <div
-              className="absolute inset-0 opacity-20"
-              style={{
-                background:
-                  "radial-gradient(circle at center, rgba(139, 92, 246, 0.3) 0%, rgba(0, 0, 0, 0) 70%)",
+            <motion.circle 
+              cx="140" 
+              cy="35" 
+              r="2" 
+              fill="white"
+              animate={{
+                cx: [140, 140, 100, 60, 60, 100, 140],
+                cy: [35, 125, 150, 125, 35, 10, 35],
+              }}
+              transition={{
+                duration: 10,
+                repeat: Infinity,
+                ease: "linear",
+                delay: 2
               }}
             />
+            {/* Dollar sign */}
+            <text x="95" y="85" fill="white" fontSize="14">$</text>
+          </svg>
+        </div>
 
-            {/* Animated scan lines */}
-            {Array(5)
-              .fill(0)
-              .map((_, i) => (
-                <motion.div
-                  key={`scan-${i}`}
-                  className="absolute w-full h-[1px] bg-purple-400/10"
-                  style={{ top: `${i * 20}%` }}
-                  animate={{
-                    opacity: [0.1, 0.2, 0.1],
-                    scaleY: [1, 1.5, 1],
-                    x: ["-100%", "100%"],
-                  }}
-                  transition={{
-                    duration: 15 + (i % 3),
-                    repeat: Infinity,
-                    delay: i * 1.5,
-                  }}
-                />
-              ))}
+        {/* Content */}
+        <div className="flex items-center mb-3">
+          <div className="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center mr-3 group-hover:border-white/40 transition-colors">
+            <span className="text-xs text-white/70">$</span>
           </div>
+          <h3 className="text-xl font-light text-white/90">
+            N.TOKENOMICS
+          </h3>
+        </div>
 
-          <div className="container mx-auto px-4 md:px-6 py-20 relative z-10">
-            <div className="flex flex-col items-center mb-20">
-              {/* Enhanced header with animations */}
-              <div className="relative mb-4">
-                <motion.div
-                  initial={{ width: 0 }}
-                  whileInView={{ width: "120px" }}
-                  transition={{ duration: 1, ease: "easeOut" }}
-                  viewport={{ once: true }}
-                  className="h-[1px] bg-gradient-to-r from-transparent via-purple-500 to-transparent absolute -top-6 left-1/2 transform -translate-x-1/2"
-                />
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  viewport={{ once: true }}
-                  className="text-sm uppercase tracking-[0.3em] text-purple-400 font-light text-center mb-2"
-                >
-                  Decentralized Innovation
-                </motion.div>
-              </div>
+        <p className="text-white/60 mb-6 flex-grow text-sm">
+          The economic foundation of our ecosystem with innovative token mechanics providing 
+          incentives for contributors, validators, and users of the network.
+        </p>
 
-              <motion.h2
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1 }}
-                viewport={{ once: true }}
-                className="text-[4rem] md:text-[6rem] lg:text-[7rem] font-bold tracking-tighter leading-none text-center mb-8"
-              >
-                <span className="block bg-clip-text text-transparent bg-gradient-to-b from-white via-white to-white/60">
-                  INTRODUCING
-                </span>
-                <span className="block bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-white to-purple-300">
-                  THE N.OVA
-                </span>
-                <span className="block bg-clip-text text-transparent bg-gradient-to-b from-white/60 via-white to-white">
-                  ECOSYSTEM
-                </span>
-              </motion.h2>
-
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.3 }}
-                viewport={{ once: true }}
-                className="text-xl md:text-2xl text-white/80 max-w-3xl text-center leading-relaxed"
-              >
-                From fractional ownership of real-world assets to transparent
-                ecosystem analytics, N.OVA is driving the future of
-                decentralized AI through a suite of revolutionary products.
-              </motion.p>
-
-              <motion.div
-                className="w-32 h-[1px] bg-gradient-to-r from-transparent via-purple-500 to-transparent mt-10"
-                initial={{ width: 0, opacity: 0 }}
-                whileInView={{ width: "8rem", opacity: 1 }}
-                transition={{ delay: 0.8, duration: 0.8 }}
-                viewport={{ once: true }}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16 max-w-6xl mx-auto">
-              {/* Product Card 1 - O.AGENTS */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.3 }}
-                viewport={{ once: true }}
-                className="relative bg-black/30 backdrop-blur-sm border border-white/10 p-8 rounded-sm group hover:border-purple-500/30 transition-all duration-300"
-              >
-                {/* Decorative corner elements */}
-                <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-purple-500/30 group-hover:border-purple-500/70 transition-colors"></div>
-                <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-purple-500/30 group-hover:border-purple-500/70 transition-colors"></div>
-                <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-purple-500/30 group-hover:border-purple-500/70 transition-colors"></div>
-                <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-purple-500/30 group-hover:border-purple-500/70 transition-colors"></div>
-
-                {/* Content */}
-                <div className="flex items-center mb-4">
-                  <div className="w-8 h-8 rounded-full border border-purple-500/30 flex items-center justify-center mr-3 group-hover:border-purple-500 transition-colors">
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 6C13.93 6 15.5 7.57 15.5 9.5C15.5 11.43 13.93 13 12 13C10.07 13 8.5 11.43 8.5 9.5C8.5 7.57 10.07 6 12 6ZM12 20C9.97 20 8.1 19.33 6.66 18.12C6.25 17.78 6 17.28 6 16.75C6 14.58 7.8 12.75 10 12.75H14C16.2 12.75 18 14.58 18 16.75C18 17.28 17.75 17.78 17.34 18.12C15.9 19.33 14.03 20 12 20Z"
-                        fill="#A78BFA"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-2xl font-medium text-purple-300">
-                    N.AGENTS
-                  </h3>
-                </div>
-
-                <h4 className="text-3xl md:text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-purple-200">
-                  Become an AI Agent
-                </h4>
-
-                <p className="text-white/80 mb-8 leading-relaxed">
-                  Get involved, contribute your ideas, and earn exclusive
-                  rewards as we build something revolutionary together. Join our
-                  decentralized autonomous workforce powering the future of AI.
-                </p>
-
-                <div className="flex items-center">
-                  <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse mr-2"></div>
-                  <div className="text-sm uppercase tracking-widest text-white/60 font-light">
-                    COMING SOON
-                  </div>
-                </div>
-
-                {/* Hover effect */}
-                <motion.div
-                  className="absolute -inset-0.5 -z-10 opacity-0 group-hover:opacity-10 transition-opacity duration-500 blur-xl"
-                  style={{
-                    background:
-                      "radial-gradient(circle at center, rgba(139, 92, 246, 0.8) 0%, transparent 70%)",
-                  }}
-                />
-              </motion.div>
-
-              {/* Product Visual - Dashboard */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.5 }}
-                viewport={{ once: true }}
-                className="relative bg-black/30 backdrop-blur-sm border border-white/10 p-0 rounded-sm overflow-hidden group hover:border-purple-500/30 transition-all duration-300"
-              >
-                {/* Decorative corner elements */}
-                <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-purple-500/30 group-hover:border-purple-500/70 transition-colors z-10"></div>
-                <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-purple-500/30 group-hover:border-purple-500/70 transition-colors z-10"></div>
-                <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-purple-500/30 group-hover:border-purple-500/70 transition-colors z-10"></div>
-                <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-purple-500/30 group-hover:border-purple-500/70 transition-colors z-10"></div>
-
-                {/* Top bar */}
-                <div className="absolute top-0 left-0 right-0 bg-black/60 backdrop-blur-sm py-2 px-4 border-b border-white/10 flex items-center justify-between z-10">
-                  <div className="flex items-center">
-                    <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse mr-2"></div>
-                    <span className="text-xs text-white/60 font-mono">
-                      N.OVA // DASHBOARD
-                    </span>
-                  </div>
-                  <div className="flex space-x-2">
-                    <div className="w-3 h-3 rounded-full bg-white/10 border border-white/20"></div>
-                    <div className="w-3 h-3 rounded-full bg-white/10 border border-white/20"></div>
-                    <div className="w-3 h-3 rounded-full bg-white/10 border border-white/20"></div>
-                  </div>
-                </div>
-
-                {/* Main image */}
-                <div className="relative pt-10">
-                  <img
-                    src="/placeholder.svg?height=300&width=500"
-                    alt="Dashboard"
-                    className="w-full h-auto"
-                  />
-
-                  {/* Scanning line effect */}
-                  <motion.div
-                    className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent"
-                    animate={{
-                      top: ["0%", "100%"],
-                      opacity: [0, 1, 0],
-                    }}
-                    transition={{
-                      duration: 3,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                  />
-                </div>
-
-                {/* Bottom bar with status */}
-                <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm py-2 px-4 border-t border-white/10 flex items-center justify-between z-10">
-                  <span className="text-xs text-white/60 font-mono">
-                    STATUS: DEVELOPMENT
-                  </span>
-                  <span className="text-xs text-white/60 font-mono">
-                    02.27.2025
-                  </span>
-                </div>
-              </motion.div>
-
-              {/* Additional Products - O.INFRASTRUCTURE */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.7 }}
-                viewport={{ once: true }}
-                className="relative bg-black/30 backdrop-blur-sm border border-white/10 p-8 rounded-sm group hover:border-purple-500/30 transition-all duration-300"
-              >
-                {/* Decorative corner elements */}
-                <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-purple-500/30 group-hover:border-purple-500/70 transition-colors"></div>
-                <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-purple-500/30 group-hover:border-purple-500/70 transition-colors"></div>
-                <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-purple-500/30 group-hover:border-purple-500/70 transition-colors"></div>
-                <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-purple-500/30 group-hover:border-purple-500/70 transition-colors"></div>
-
-                {/* Content */}
-                <div className="flex items-center mb-4">
-                  <div className="w-8 h-8 rounded-full border border-purple-500/30 flex items-center justify-center mr-3 group-hover:border-purple-500 transition-colors">
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M21 12.5C21 17.75 17.2 22 12.5 22C10.26 22 8.17 21.17 6.5 19.67C5.3 18.67 3 17.3 3 15V11.5C3 10.4 3.4 9.36 4.11 8.54C4.39 8.21 4.8 8 5.25 8H11.5C12.1 8 12.6 8.5 12.6 9.1C12.6 9.63 12.19 10.08 11.68 10.16L11.5 10.18C10.96 10.29 10.3 10.68 10.08 11.54C10 11.85 10.3 12.1 10.6 12.06C14.69 11.22 17.3 11.75 18.95 12.72C19.55 13.09 19.97 13.77 19.97 14.45V14.88C19.99 14.08 21 13.29 21 12.5ZM9 2H15C15.55 2 16 2.45 16 3V7C16 7.55 15.55 8 15 8H9C8.45 8 8 7.55 8 7V3C8 2.45 8.45 2 9 2Z"
-                        fill="#A78BFA"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-2xl font-medium text-purple-300">
-                    N.INFRASTRUCTURE
-                  </h3>
-                </div>
-
-                <h4 className="text-3xl md:text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-purple-200">
-                  Unstoppable Computing
-                </h4>
-
-                <p className="text-white/80 mb-8 leading-relaxed">
-                  Our revolutionary decentralized computing network ensures AI
-                  operations remain censorship-resistant, transparent and
-                  autonomous. Built for maximum resilience and scalability.
-                </p>
-
-                <div className="flex items-center">
-                  <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse mr-2"></div>
-                  <div className="text-sm uppercase tracking-widest text-white/60 font-light">
-                    IN DEVELOPMENT
-                  </div>
-                </div>
-
-                {/* Hover effect */}
-                <motion.div
-                  className="absolute -inset-0.5 -z-10 opacity-0 group-hover:opacity-10 transition-opacity duration-500 blur-xl"
-                  style={{
-                    background:
-                      "radial-gradient(circle at center, rgba(139, 92, 246, 0.8) 0%, transparent 70%)",
-                  }}
-                />
-              </motion.div>
-
-              {/* Additional Products - O.DAO */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.9 }}
-                viewport={{ once: true }}
-                className="relative bg-black/30 backdrop-blur-sm border border-white/10 p-8 rounded-sm group hover:border-purple-500/30 transition-all duration-300"
-              >
-                {/* Decorative corner elements */}
-                <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-purple-500/30 group-hover:border-purple-500/70 transition-colors"></div>
-                <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-purple-500/30 group-hover:border-purple-500/70 transition-colors"></div>
-                <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-purple-500/30 group-hover:border-purple-500/70 transition-colors"></div>
-                <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-purple-500/30 group-hover:border-purple-500/70 transition-colors"></div>
-
-                {/* Content */}
-                <div className="flex items-center mb-4">
-                  <div className="w-8 h-8 rounded-full border border-purple-500/30 flex items-center justify-center mr-3 group-hover:border-purple-500 transition-colors">
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M21 9V3H15V9H21ZM15 21V15H9V21H15ZM9 9V3H3V9H9ZM21 21V15H15V21H21ZM9 15V9H3V15H9Z"
-                        stroke="#A78BFA"
-                        strokeWidth="1.5"
-                        fill="none"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-2xl font-medium text-purple-300">
-                    N.DAO
-                  </h3>
-                </div>
-
-                <h4 className="text-3xl md:text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-purple-200">
-                  Decentralized Governance
-                </h4>
-
-                <p className="text-white/80 mb-8 leading-relaxed">
-                  Our revolutionary governance framework where humans and AI
-                  collaborate to guide the future of the O ecosystem through
-                  transparent, verifiable decision-making protocols.
-                </p>
-
-                <div className="flex items-center">
-                  <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse mr-2"></div>
-                  <div className="text-sm uppercase tracking-widest text-white/60 font-light">
-                    LAUNCHING Q2 2025
-                  </div>
-                </div>
-
-                {/* Hover effect */}
-                <motion.div
-                  className="absolute -inset-0.5 -z-10 opacity-0 group-hover:opacity-10 transition-opacity duration-500 blur-xl"
-                  style={{
-                    background:
-                      "radial-gradient(circle at center, rgba(139, 92, 246, 0.8) 0%, transparent 70%)",
-                  }}
-                />
-              </motion.div>
-            </div>
+        <div className="flex items-center mt-auto">
+          <div className="w-1 h-1 rounded-full bg-white animate-pulse mr-2"></div>
+          <div className="text-xs text-white/50 uppercase">
+            ACTIVE
           </div>
+        </div>
 
-          {/* Enhanced footer bar */}
-          <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 py-3 backdrop-blur-sm z-10">
-            <div className="container mx-auto px-4 md:px-6 flex justify-between items-center">
-              <motion.div
-                className="flex items-center"
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <div className="w-7 h-[1px] bg-gradient-to-r from-purple-500/40 to-transparent mr-3"></div>
-                <span className="text-xs font-mono text-white/60 mr-3">
-                  00:4
-                </span>
-                <span className="text-xs font-mono text-white/60 uppercase tracking-wider">
-                  Ecosystem
-                </span>
-              </motion.div>
+        {/* Interactive overlay */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/20 backdrop-blur-sm transition-all duration-300">
+          <button className="px-4 py-2 border border-white/20 text-white/90 text-sm hover:bg-white/10 transition-colors">
+            EXPLORE
+          </button>
+        </div>
+      </motion.div>
 
-              <motion.div
-                className="flex items-center"
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                viewport={{ once: true }}
-              >
-                <div className="flex items-center space-x-3">
-                  <span className="font-mono text-white/60 text-xs flex items-center">
-                    <span className="w-1 h-1 rounded-full bg-purple-500 mr-2"></span>
-                    <span>N.OVA —</span>
-                  </span>
-                  <span className="font-mono text-white/60 text-xs uppercase tracking-wider">
-                    Products
-                  </span>
-                </div>
-              </motion.div>
-            </div>
+      {/* N.AI Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        viewport={{ once: true }}
+        className="relative border border-white/10 p-6 group hover:border-white/30 transition-all duration-300 flex flex-col h-full"
+      >
+        {/* Dotted arch figure - brain network */}
+        <div className="relative h-40 mb-6 overflow-hidden">
+          <svg 
+            className="absolute inset-0 w-full"
+            viewBox="0 0 200 160" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle cx="100" cy="80" r="50" stroke="white" strokeOpacity="0.2" strokeWidth="1" strokeDasharray="2 2" fill="none" />
+            <circle cx="100" cy="80" r="35" stroke="white" strokeOpacity="0.3" strokeWidth="1" strokeDasharray="2 2" fill="none" />
+            
+            {/* Neural network nodes */}
+            <circle cx="100" cy="80" r="4" fill="#FFFFFF" fillOpacity="0.2" />
+            <circle cx="70" cy="60" r="3" fill="#FFFFFF" fillOpacity="0.1" />
+            <circle cx="130" cy="60" r="3" fill="#FFFFFF" fillOpacity="0.1" />
+            <circle cx="80" cy="110" r="3" fill="#FFFFFF" fillOpacity="0.1" />
+            <circle cx="120" cy="110" r="3" fill="#FFFFFF" fillOpacity="0.1" />
+            <circle cx="60" cy="90" r="3" fill="#FFFFFF" fillOpacity="0.1" />
+            <circle cx="140" cy="90" r="3" fill="#FFFFFF" fillOpacity="0.1" />
+            
+            {/* Connection lines */}
+            <line x1="100" y1="80" x2="70" y2="60" stroke="white" strokeOpacity="0.2" strokeDasharray="2 2" />
+            <line x1="100" y1="80" x2="130" y2="60" stroke="white" strokeOpacity="0.2" strokeDasharray="2 2" />
+            <line x1="100" y1="80" x2="80" y2="110" stroke="white" strokeOpacity="0.2" strokeDasharray="2 2" />
+            <line x1="100" y1="80" x2="120" y2="110" stroke="white" strokeOpacity="0.2" strokeDasharray="2 2" />
+            <line x1="100" y1="80" x2="60" y2="90" stroke="white" strokeOpacity="0.2" strokeDasharray="2 2" />
+            <line x1="100" y1="80" x2="140" y2="90" stroke="white" strokeOpacity="0.2" strokeDasharray="2 2" />
+            
+            {/* Animated data flow */}
+            <motion.circle 
+              r="2" 
+              fill="white"
+              animate={{
+                cx: [100, 70, 100, 130, 100],
+                cy: [80, 60, 80, 60, 80],
+              }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+            />
+            <motion.circle 
+              r="2" 
+              fill="white"
+              animate={{
+                cx: [100, 80, 100, 120, 100],
+                cy: [80, 110, 80, 110, 80],
+              }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                ease: "linear",
+                delay: 1
+              }}
+            />
+            <motion.circle 
+              r="2" 
+              fill="white"
+              animate={{
+                cx: [100, 60, 100, 140, 100],
+                cy: [80, 90, 80, 90, 80],
+              }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                ease: "linear",
+                delay: 2
+              }}
+            />
+          </svg>
+        </div>
+
+        {/* Content */}
+        <div className="flex items-center mb-3">
+          <div className="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center mr-3 group-hover:border-white/40 transition-colors">
+            <span className="text-xs text-white/70">AI</span>
           </div>
+          <h3 className="text-xl font-light text-white/90">
+            N.AI
+          </h3>
+        </div>
 
-          {/* Corner decorations */}
-          <div className="absolute top-6 left-6 w-16 h-16 border-l border-t border-white/10 z-10"></div>
-          <div className="absolute top-6 right-6 w-16 h-16 border-r border-t border-white/10 z-10"></div>
-          <div className="absolute bottom-6 left-6 w-16 h-16 border-l border-b border-white/10 z-10"></div>
-          <div className="absolute bottom-6 right-6 w-16 h-16 border-r border-b border-white/10 z-10"></div>
-        </section>
+        <p className="text-white/60 mb-6 flex-grow text-sm">
+          Our core intelligence layer powered by advanced neural networks, designed 
+          for decentralized autonomous operation while maintaining alignment with human values.
+        </p>
+
+        <div className="flex items-center mt-auto">
+          <div className="w-1 h-1 rounded-full bg-white animate-pulse mr-2"></div>
+          <div className="text-xs text-white/50 uppercase">
+            ACTIVE
+          </div>
+        </div>
+
+        {/* Interactive overlay */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/20 backdrop-blur-sm transition-all duration-300">
+          <button className="px-4 py-2 border border-white/20 text-white/90 text-sm hover:bg-white/10 transition-colors">
+            EXPLORE
+          </button>
+        </div>
+      </motion.div>
+
+      {/* N.IDENTITY Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+        viewport={{ once: true }}
+        className="relative border border-white/10 p-6 group hover:border-white/30 transition-all duration-300 flex flex-col h-full"
+      >
+        {/* Dotted arch figure - identity verification */}
+        <div className="relative h-40 mb-6 overflow-hidden">
+          <svg 
+            className="absolute inset-0 w-full"
+            viewBox="0 0 200 160" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <rect x="60" y="40" width="80" height="80" rx="4" stroke="white" strokeOpacity="0.2" strokeWidth="1" strokeDasharray="2 2" fill="none" />
+            <circle cx="100" cy="65" r="15" stroke="white" strokeOpacity="0.2" strokeWidth="1" fill="none" />
+            <path d="M85 95C85 87.268 91.268 81 99 81H101C108.732 81 115 87.268 115 95V110H85V95Z" stroke="white" strokeOpacity="0.2" strokeWidth="1" fill="none" />
+            
+            {/* Shield outline */}
+            <path d="M100 130C120 120 130 100 130 80H70C70 100 80 120 100 130Z" stroke="white" strokeOpacity="0.2" strokeWidth="1" strokeDasharray="2 2" fill="none" />
+            
+            {/* Animated verification checkmark */}
+            <motion.path 
+              d="M90 80L95 85L110 70" 
+              stroke="white" 
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeDasharray="30"
+              initial={{ strokeDashoffset: 30 }}
+              animate={{ strokeDashoffset: 0 }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                repeatType: "loop",
+                repeatDelay: 3
+              }}
+            />
+            
+            {/* Animated scan line */}
+            <motion.line 
+              x1="60" 
+              y1="60" 
+              x2="140" 
+              y2="60" 
+              stroke="white" 
+              strokeOpacity="0.5"
+              animate={{
+                y1: [60, 100, 60],
+                y2: [60, 100, 60],
+                opacity: [0.5, 0.8, 0.5]
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+            />
+          </svg>
+        </div>
+
+        {/* Content */}
+        <div className="flex items-center mb-3">
+          <div className="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center mr-3 group-hover:border-white/40 transition-colors">
+            <span className="text-xs text-white/70">ID</span>
+          </div>
+          <h3 className="text-xl font-light text-white/90">
+            N.IDENTITY
+          </h3>
+        </div>
+
+        <p className="text-white/60 mb-6 flex-grow text-sm">
+          Secure, sovereign, and privacy-preserving digital identity system enabling 
+          seamless verification without compromising personal data.
+        </p>
+
+        <div className="flex items-center mt-auto">
+          <div className="w-1 h-1 rounded-full bg-white animate-pulse mr-2"></div>
+          <div className="text-xs text-white/50 uppercase">
+            ACTIVE
+          </div>
+        </div>
+
+        {/* Interactive overlay */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/20 backdrop-blur-sm transition-all duration-300">
+          <button className="px-4 py-2 border border-white/20 text-white/90 text-sm hover:bg-white/10 transition-colors">
+            EXPLORE
+          </button>
+        </div>
+      </motion.div>
+
+      {/* N.AURORA Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+        viewport={{ once: true }}
+        className="relative border border-white/10 p-6 group hover:border-white/30 transition-all duration-300 flex flex-col h-full"
+      >
+        {/* Dotted arch figure - aurora waves */}
+        <div className="relative h-40 mb-6 overflow-hidden">
+          <svg 
+            className="absolute inset-0 w-full"
+            viewBox="0 0 200 160" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* Wave lines */}
+            <motion.path 
+              d="M30 80 Q60 60, 100 80 Q140 100, 170 80" 
+              stroke="white" 
+              strokeOpacity="0.15" 
+              strokeWidth="1"
+              fill="none"
+              animate={{
+                d: [
+                  "M30 80 Q60 60, 100 80 Q140 100, 170 80",
+                  "M30 80 Q60 100, 100 80 Q140 60, 170 80",
+                  "M30 80 Q60 60, 100 80 Q140 100, 170 80"
+                ]
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+            <motion.path 
+              d="M30 90 Q60 70, 100 90 Q140 110, 170 90" 
+              stroke="white" 
+              strokeOpacity="0.2" 
+              strokeWidth="1"
+              fill="none"
+              animate={{
+                d: [
+                  "M30 90 Q60 70, 100 90 Q140 110, 170 90",
+                  "M30 90 Q60 110, 100 90 Q140 70, 170 90",
+                  "M30 90 Q60 70, 100 90 Q140 110, 170 90"
+                ]
+              }}
+              transition={{
+                duration: 4.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 0.1
+              }}
+            />
+            <motion.path 
+              d="M30 100 Q60 80, 100 100 Q140 120, 170 100" 
+              stroke="white" 
+              strokeOpacity="0.25" 
+              strokeWidth="1"
+              fill="none"
+              animate={{
+                d: [
+                  "M30 100 Q60 80, 100 100 Q140 120, 170 100",
+                  "M30 100 Q60 120, 100 100 Q140 80, 170 100",
+                  "M30 100 Q60 80, 100 100 Q140 120, 170 100"
+                ]
+              }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 0.2
+              }}
+            />
+            
+            {/* Animated particles along the waves */}
+            <motion.circle 
+              r="1.5" 
+              fill="white"
+              animate={{
+                cx: [30, 100, 170, 100, 30],
+                cy: [80, 80, 80, 80, 80],
+                opacity: [0, 1, 0, 1, 0]
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+            />
+            <motion.circle 
+              r="1.5" 
+              fill="white"
+              animate={{
+                cx: [30, 100, 170, 100, 30],
+                cy: [90, 90, 90, 90, 90],
+                opacity: [0, 1, 0, 1, 0]
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "linear",
+                delay: 1
+              }}
+            />
+            <motion.circle 
+              r="1.5" 
+              fill="white"
+              animate={{
+                cx: [30, 100, 170, 100, 30],
+                cy: [100, 100, 100, 100, 100],
+                opacity: [0, 1, 0, 1, 0]
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "linear",
+                delay: 2
+              }}
+            />
+            
+            {/* Aurora glow */}
+            <circle cx="100" cy="90" r="40" fill="url(#aurora-gradient)" fillOpacity="0.1" />
+            <defs>
+              <radialGradient id="aurora-gradient" cx="0.5" cy="0.5" r="0.5">
+                <stop offset="0%" stopColor="white" stopOpacity="0.3" />
+                <stop offset="100%" stopColor="white" stopOpacity="0" />
+              </radialGradient>
+            </defs>
+          </svg>
+        </div>
+
+        {/* Content */}
+        <div className="flex items-center mb-3">
+          <div className="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center mr-3 group-hover:border-white/40 transition-colors">
+            <span className="text-xs text-white/70">A</span>
+          </div>
+          <h3 className="text-xl font-light text-white/90">
+            N.AURORA
+          </h3>
+        </div>
+
+        <p className="text-white/60 mb-6 flex-grow text-sm">
+          AI-powered music generation platform creating unique compositions for the metaverse, 
+          with full NFT ownership rights for creators.
+        </p>
+
+        <div className="flex items-center mt-auto">
+          <div className="w-1 h-1 rounded-full bg-white animate-pulse mr-2"></div>
+          <div className="text-xs text-white/50 uppercase">
+            ACTIVE
+          </div>
+        </div>
+
+        {/* Interactive overlay */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/20 backdrop-blur-sm transition-all duration-300">
+          <button className="px-4 py-2 border border-white/20 text-white/90 text-sm hover:bg-white/10 transition-colors">
+            EXPLORE
+          </button>
+        </div>
+      </motion.div>
+
+      {/* N.DASHBOARD Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.5 }}
+        viewport={{ once: true }}
+        className="relative border border-white/10 p-6 group hover:border-white/30 transition-all duration-300 flex flex-col h-full"
+      >
+        {/* Dotted arch figure - dashboard metrics */}
+        <div className="relative h-40 mb-6 overflow-hidden">
+          <svg 
+            className="absolute inset-0 w-full"
+            viewBox="0 0 200 160" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* Dashboard frame */}
+            <rect x="40" y="40" width="120" height="80" rx="2" stroke="white" strokeOpacity="0.2" strokeWidth="1" strokeDasharray="2 2" fill="none" />
+            
+            {/* Top bar */}
+            <rect x="40" y="40" width="120" height="10" stroke="white" strokeOpacity="0.2" strokeWidth="1" fill="none" />
+            
+            {/* Dashboard elements */}
+            <rect x="50" y="60" width="30" height="20" rx="1" stroke="white" strokeOpacity="0.2" strokeWidth="1" fill="none" />
+            <rect x="85" y="60" width="30" height="20" rx="1" stroke="white" strokeOpacity="0.2" strokeWidth="1" fill="none" />
+            <rect x="120" y="60" width="30" height="20" rx="1" stroke="white" strokeOpacity="0.2" strokeWidth="1" fill="none" />
+            
+            {/* Chart elements */}
+            <rect x="50" y="90" width="100" height="20" rx="1" stroke="white" strokeOpacity="0.2" strokeWidth="1" fill="none" />
+            
+            {/* Animated chart line */}
+            <motion.path 
+              d="M55 100 L65 95 L75 98 L85 92 L95 97 L105 93 L115 96 L125 91 L135 94 L145 90" 
+              stroke="white" 
+              strokeOpacity="0.4" 
+              strokeWidth="1"
+              fill="none"
+              animate={{
+                d: [
+                  "M55 100 L65 95 L75 98 L85 92 L95 97 L105 93 L115 96 L125 91 L135 94 L145 90",
+                  "M55 98 L65 93 L75 96 L85 94 L95 91 L105 95 L115 92 L125 97 L135 93 L145 95",
+                  "M55 95 L65 97 L75 93 L85 97 L95 92 L105 98 L115 94 L125 96 L135 91 L145 93",
+                  "M55 100 L65 95 L75 98 L85 92 L95 97 L105 93 L115 96 L125 91 L135 94 L145 90"
+                ]
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+            />
+            
+            {/* Animated dot */}
+            <motion.circle 
+              r="2" 
+              fill="white"
+              animate={{
+                cx: [55, 75, 95, 115, 135, 145, 125, 105, 85, 65, 55],
+                cy: [100, 98, 97, 96, 94, 90, 91, 93, 92, 95, 100],
+              }}
+              transition={{
+                duration: 10,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+            />
+          </svg>
+        </div>
+
+        {/* Content */}
+        <div className="flex items-center mb-3">
+          <div className="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center mr-3 group-hover:border-white/40 transition-colors">
+            <span className="text-xs text-white/70">D</span>
+          </div>
+          <h3 className="text-xl font-light text-white/90">
+            N.DASHBOARD
+          </h3>
+        </div>
+
+        <p className="text-white/60 mb-6 flex-grow text-sm">
+          Complete analytics and management interface for your N.OVA assets, 
+          activities, and rewards, with real-time network metrics.
+        </p>
+
+        <div className="flex items-center mt-auto">
+          <div className="w-1 h-1 rounded-full bg-white animate-pulse mr-2"></div>
+          <div className="text-xs text-white/50 uppercase">
+            ACTIVE
+          </div>
+        </div>
+
+        {/* Interactive overlay */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/20 backdrop-blur-sm transition-all duration-300">
+          <button className="px-4 py-2 border border-white/20 text-white/90 text-sm hover:bg-white/10 transition-colors">
+            EXPLORE
+          </button>
+        </div>
+      </motion.div>
+
+      {/* N.DAO Card (Coming Soon) */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.6 }}
+        viewport={{ once: true }}
+        className="relative border border-white/10 p-6 group hover:border-white/30 transition-all duration-300 flex flex-col h-full bg-black/20"
+      >
+        {/* Dotted arch figure - governance/voting */}
+        <div className="relative h-40 mb-6 overflow-hidden">
+          <svg 
+            className="absolute inset-0 w-full"
+            viewBox="0 0 200 160" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* Governance circle with dots around circumference */}
+            <circle cx="100" cy="80" r="40" stroke="white" strokeOpacity="0.15" strokeWidth="1" strokeDasharray="2 2" fill="none" />
+            
+            {/* Nodes representing DAO participants */}
+            <circle cx="100" cy="40" r="3" fill="white" fillOpacity="0.15" />
+            <circle cx="140" cy="80" r="3" fill="white" fillOpacity="0.15" />
+            <circle cx="100" cy="120" r="3" fill="white" fillOpacity="0.15" />
+            <circle cx="60" cy="80" r="3" fill="white" fillOpacity="0.15" />
+            <circle cx="126" cy="54" r="3" fill="white" fillOpacity="0.15" />
+            <circle cx="126" cy="106" r="3" fill="white" fillOpacity="0.15" />
+            <circle cx="74" cy="106" r="3" fill="white" fillOpacity="0.15" />
+            <circle cx="74" cy="54" r="3" fill="white" fillOpacity="0.15" />
+            
+            {/* Center node */}
+            <circle cx="100" cy="80" r="5" fill="white" fillOpacity="0.25" />
+            
+            {/* Connection lines */}
+            <line x1="100" y1="80" x2="100" y2="40" stroke="white" strokeOpacity="0.1" strokeDasharray="2 2" />
+            <line x1="100" y1="80" x2="140" y2="80" stroke="white" strokeOpacity="0.1" strokeDasharray="2 2" />
+            <line x1="100" y1="80" x2="100" y2="120" stroke="white" strokeOpacity="0.1" strokeDasharray="2 2" />
+            <line x1="100" y1="80" x2="60" y2="80" stroke="white" strokeOpacity="0.1" strokeDasharray="2 2" />
+            <line x1="100" y1="80" x2="126" y2="54" stroke="white" strokeOpacity="0.1" strokeDasharray="2 2" />
+            <line x1="100" y1="80" x2="126" y2="106" stroke="white" strokeOpacity="0.1" strokeDasharray="2 2" />
+            <line x1="100" y1="80" x2="74" y2="106" stroke="white" strokeOpacity="0.1" strokeDasharray="2 2" />
+            <line x1="100" y1="80" x2="74" y2="54" stroke="white" strokeOpacity="0.1" strokeDasharray="2 2" />
+            
+            {/* Voting animation */}
+            <motion.circle 
+              r="2" 
+              fill="white"
+              animate={{
+                cx: [100, 74, 100, 126, 100],
+                cy: [80, 54, 80, 54, 80],
+                opacity: [0.3, 1, 0.3, 1, 0.3]
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+            />
+            <motion.circle 
+              r="2" 
+              fill="white"
+              animate={{
+                cx: [100, 60, 100, 140, 100],
+                cy: [80, 80, 80, 80, 80],
+                opacity: [0.3, 1, 0.3, 1, 0.3]
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "linear",
+                delay: 1
+              }}
+            />
+            <motion.circle 
+              r="2" 
+              fill="white"
+              animate={{
+                cx: [100, 74, 100, 126, 100],
+                cy: [80, 106, 80, 106, 80],
+                opacity: [0.3, 1, 0.3, 1, 0.3]
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "linear",
+                delay: 2
+              }}
+            />
+            <motion.circle 
+              r="2" 
+              fill="white"
+              animate={{
+                cx: [100, 100, 100, 100, 100],
+                cy: [80, 40, 80, 120, 80],
+                opacity: [0.3, 1, 0.3, 1, 0.3]
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "linear",
+                delay: 3
+              }}
+            />
+          </svg>
+        </div>
+
+        {/* Content */}
+        <div className="flex items-center mb-3">
+          <div className="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center mr-3 group-hover:border-white/40 transition-colors">
+            <span className="text-xs text-white/70">DAO</span>
+          </div>
+          <h3 className="text-xl font-light text-white/90">
+            N.DAO
+          </h3>
+        </div>
+
+        <p className="text-white/60 mb-6 flex-grow text-sm">
+          Decentralized governance system where humans and AI collaborate to guide the
+          future of the N.OVA ecosystem through transparent decision-making.
+        </p>
+
+        <div className="flex items-center mt-auto">
+          <div className="w-1 h-1 rounded-full bg-white animate-pulse mr-2"></div>
+          <div className="text-xs text-white/50 uppercase">
+            COMING Q2 2025
+          </div>
+        </div>
+
+        {/* Disabled interactive overlay */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/50 backdrop-blur-sm transition-all duration-300">
+          <div className="px-4 py-2 border border-white/20 text-white/40 text-sm cursor-not-allowed">
+            COMING SOON
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  </div>
+
+  {/* Minimal bottom info bar */}
+  <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 py-3 z-10">
+    <div className="container mx-auto px-4 md:px-6 flex justify-between items-center">
+      <div className="text-xs text-white/60 uppercase">
+        N.OVA Ecosystem
+      </div>
+      <div className="text-xs text-white/60 uppercase">
+        Integrated Products
+      </div>
+    </div>
+  </div>
+</section>
 
         {/* Partners Section */}
         <section className="py-24 relative border-t border-white/10 overflow-hidden">
@@ -1505,7 +1882,7 @@ export default function Home() {
         description: "NFT standard creator",
       },
       {
-        name: "Superteam",
+        name: "Superteam VN",
         logo: "/partners/superteam.jpg",
         description: "DAO & developer community",
       },
@@ -1667,237 +2044,297 @@ export default function Home() {
         </section>
 
         {/* CTA Section */}
-        {/* Enhanced CTA Section */}
         <section className="py-32 relative border-t border-white/10 overflow-hidden">
-          {/* Enhanced background elements */}
-          <div className="absolute inset-0 z-0">
-            {/* Grid pattern */}
-            <div
-              className="absolute inset-0 opacity-10"
-              style={{
-                backgroundImage:
-                  "linear-gradient(to right, rgba(139, 92, 246, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(139, 92, 246, 0.1) 1px, transparent 1px)",
-                backgroundSize: "40px 40px",
-              }}
-            />
+  {/* Minimalist background elements */}
+  <div className="absolute inset-0 z-0">
+    {/* Grid pattern */}
+    <div
+      className="absolute inset-0 opacity-10"
+      style={{
+        backgroundImage:
+          "linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px)",
+        backgroundSize: "40px 40px",
+      }}
+    />
 
-            {/* Radial gradient overlay with stronger effect */}
-            <div
-              className="absolute inset-0 opacity-30"
-              style={{
-                background:
-                  "radial-gradient(circle at center, rgba(139, 92, 246, 0.4) 0%, rgba(0, 0, 0, 0) 70%)",
-              }}
-            />
+    {/* Subtle radial gradient */}
+    <div
+      className="absolute inset-0 opacity-20"
+      style={{
+        background:
+          "radial-gradient(circle at center, rgba(255, 255, 255, 0.15) 0%, rgba(0, 0, 0, 0) 70%)",
+      }}
+    />
 
-            {/* Animated particles */}
-            <div className="absolute inset-0 pointer-events-none">
-              {Array(30)
-                .fill(0)
-                .map((_, i) => (
-                  <motion.div
-                    key={`particle-${i}`}
-                    className="absolute rounded-full"
-                    style={{
-                      width: i % 5 === 0 ? "3px" : "1px",
-                      height: i % 5 === 0 ? "3px" : "1px",
-                      backgroundColor:
-                        i % 7 === 0
-                          ? "rgba(139, 92, 246, 0.8)"
-                          : "rgba(255, 255, 255, 0.5)",
-                      boxShadow:
-                        i % 7 === 0
-                          ? "0 0 3px rgba(139, 92, 246, 0.8)"
-                          : "none",
-                      left: `${Math.random() * 100}%`,
-                      top: `${Math.random() * 100}%`,
-                    }}
-                    animate={{
-                      y: [0, -Math.random() * 50 - 20],
-                      opacity: [0, Math.random() * 0.7 + 0.3, 0],
-                    }}
-                    transition={{
-                      duration: Math.random() * 5 + 5,
-                      repeat: Infinity,
-                      delay: Math.random() * 5,
-                    }}
-                  />
-                ))}
-            </div>
-          </div>
+    {/* Animated particles - simplified and more elegant */}
+    <div className="absolute inset-0 pointer-events-none">
+      {Array(15)
+        .fill(0)
+        .map((_, i) => (
+          <motion.div
+            key={`particle-${i}`}
+            className="absolute rounded-full"
+            style={{
+              width: i % 5 === 0 ? "2px" : "1px",
+              height: i % 5 === 0 ? "2px" : "1px",
+              backgroundColor: "rgba(255, 255, 255, 0.5)",
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              y: [0, -Math.random() * 30 - 10],
+              opacity: [0, Math.random() * 0.5 + 0.3, 0],
+            }}
+            transition={{
+              duration: Math.random() * 5 + 5,
+              repeat: Infinity,
+              delay: Math.random() * 5,
+            }}
+          />
+        ))}
+    </div>
+    
+    {/* Minimal horizontal line animations */}
+    <motion.div
+      className="absolute w-full h-[1px] bg-white/5"
+      style={{ top: '30%' }}
+      animate={{
+        scaleX: [0, 1],
+        opacity: [0, 0.2, 0],
+        x: ['-100%', '100%'],
+      }}
+      transition={{
+        duration: 15,
+        repeat: Infinity,
+        ease: "linear",
+      }}
+    />
+    <motion.div
+      className="absolute w-full h-[1px] bg-white/5"
+      style={{ top: '70%' }}
+      animate={{
+        scaleX: [0, 1],
+        opacity: [0, 0.2, 0],
+        x: ['100%', '-100%'],
+      }}
+      transition={{
+        duration: 18,
+        repeat: Infinity,
+        ease: "linear",
+        delay: 2,
+      }}
+    />
+  </div>
 
-          <div className="container mx-auto px-4 md:px-6 relative z-10">
+  {/* Creative 3D text effect container */}
+  <div className="absolute inset-0 flex items-center justify-center z-0 opacity-5 overflow-hidden">
+    <div className="relative" style={{ transform: 'perspective(500px) rotateX(20deg)' }}>
+      <motion.div
+        animate={{
+          y: [0, -10, 0],
+        }}
+        transition={{
+          duration: 8,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+        className="text-[30vw] font-bold tracking-tighter text-white opacity-5"
+      >
+        N
+      </motion.div>
+    </div>
+  </div>
+
+  <div className="container mx-auto px-4 md:px-6 relative z-10">
+    <div className="max-w-5xl mx-auto">
+      {/* Minimalist decorative elements */}
+      <div className="relative mb-16 flex flex-col items-center">
+        <div className="h-[1px] w-16 bg-white/20 mb-10" />
+        <div className="text-xs uppercase tracking-widest text-white/60 mb-8">
+          Join the Future
+        </div>
+      </div>
+
+      {/* Main CTA content with cleaner animations */}
+      <div className="text-center">
+        <h2 className="text-7xl sm:text-8xl font-light tracking-tighter mb-8 leading-none">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.7 }}
+            viewport={{ once: true }}
+            className="relative inline-block"
+          >
+            BECOME
+          </motion.div>
+          <br />
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            viewport={{ once: true }}
+            className="relative inline-block"
+          >
+            <span>SOVEREIGN</span>
             <motion.div
-              className="max-w-4xl mx-auto"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.8 }}
+              className="absolute -bottom-2 left-0 right-0 h-[1px] bg-white/30"
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              transition={{ duration: 1, delay: 0.7 }}
               viewport={{ once: true }}
-            >
-              {/* Decorative element */}
-              <div className="relative mb-16 flex flex-col items-center">
-                <motion.div
-                  initial={{ width: 0 }}
-                  whileInView={{ width: "120px" }}
-                  transition={{ duration: 1, ease: "easeOut" }}
-                  viewport={{ once: true }}
-                  className="h-[1px] bg-gradient-to-r from-transparent via-purple-500 to-transparent mb-10"
-                />
+            />
+          </motion.div>
+        </h2>
 
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  viewport={{ once: true }}
-                  className="text-sm uppercase tracking-[0.3em] text-purple-400 font-light text-center mb-8"
-                >
-                  Begin Your Journey
-                </motion.div>
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          viewport={{ once: true }}
+          className="text-lg text-white/70 mb-16 max-w-2xl mx-auto leading-relaxed"
+        >
+          Join the vanguard of human-centered AI development. Our early 
+          members shape the future of integrated intelligence while 
+          gaining exclusive benefits and privileges.
+        </motion.p>
+
+        {/* Innovative CTA button with interaction */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          viewport={{ once: true }}
+          className="relative inline-block group"
+        >
+          <Link
+            href="#"
+            className="relative z-10 px-10 py-5 bg-white text-black text-lg uppercase tracking-widest group-hover:bg-white/90 transition-colors inline-block overflow-hidden"
+          >
+            <span className="relative z-10">Connect Wallet</span>
+
+            {/* Minimal scan line effect */}
+            <motion.div 
+              className="absolute top-0 -right-20 w-20 h-full bg-black/5 skew-x-12" 
+              animate={{
+                x: ['-100%', '200%'],
+              }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                repeatDelay: 3,
+              }}
+            />
+          </Link>
+
+          {/* Outline effect that expands on hover */}
+          <div className="absolute -inset-px border border-white/0 group-hover:border-white/30 transition-colors duration-300"></div>
+          <div className="absolute -inset-px border border-white/20 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+          <div className="absolute -inset-px border border-white/20 scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-top"></div>
+        </motion.div>
+      </div>
+
+      {/* Feature list with innovative design */}
+      <div className="relative mt-32 grid grid-cols-1 md:grid-cols-3 gap-1 max-w-5xl mx-auto">
+        {[
+          {
+            title: "Early Token Access",
+            description: "Priority allocation of governance tokens",
+            icon: "$",
+          },
+          {
+            title: "Ecosystem Governance",
+            description: "Direct input on feature development priorities",
+            icon: "◎",
+          },
+          {
+            title: "Exclusive Benefits",
+            description: "Premium access to all N.OVA products and services",
+            icon: "★",
+          },
+        ].map((feature, index) => (
+          <motion.div
+            key={`feature-${index}`}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.7 + (index * 0.1) }}
+            viewport={{ once: true }}
+            className="border-t border-l border-r border-b border-white/10 p-8 relative group hover:border-white/20 transition-colors"
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className="w-10 h-10 border border-white/20 flex items-center justify-center mb-6 group-hover:border-white/40 transition-colors">
+                <span className="text-white/80">{feature.icon}</span>
               </div>
+              <h3 className="text-xl font-light mb-3 text-white">
+                {feature.title}
+              </h3>
+              <p className="text-white/60 text-sm">
+                {feature.description}
+              </p>
+            </div>
+            
+            {/* Animated highlight on hover */}
+            <div className="absolute inset-0 bg-white/0 group-hover:bg-white/[0.02] transition-colors duration-300"></div>
+          </motion.div>
+        ))}
+      </div>
 
-              {/* Main CTA content with staggered animations */}
-              <div className="text-center">
-                <h2 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tighter mb-8">
-                  <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.7, delay: 0.3 }}
-                    viewport={{ once: true }}
-                    className="relative inline-block"
-                  >
-                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-white to-purple-300">
-                      JOIN THE
-                    </span>
-                  </motion.div>
-                  <br />
-                  <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.7, delay: 0.5 }}
-                    viewport={{ once: true }}
-                    className="relative inline-block"
-                  >
-                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-purple-200">
-                      REVOLUTION
-                    </span>
-                    <motion.div
-                      className="absolute bottom-2 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent"
-                      initial={{ scaleX: 0, opacity: 0 }}
-                      whileInView={{ scaleX: 1, opacity: 1 }}
-                      transition={{ duration: 1, delay: 1.2 }}
-                      viewport={{ once: true }}
-                    />
-                  </motion.div>
-                </h2>
+      {/* Membership statistics */}
+      <div className="mt-32 flex justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 1 }}
+          viewport={{ once: true }}
+          className="grid grid-cols-3 gap-12 border-t border-white/10 pt-10"
+        >
+          {[
+            { value: "7,500+", label: "MEMBERS" },
+            { value: "92", label: "COUNTRIES" },
+            { value: "Q2 2025", label: "LAUNCH" },
+          ].map((stat, index) => (
+            <div key={index} className="text-center">
+              <div className="text-2xl font-light text-white mb-1">{stat.value}</div>
+              <div className="text-xs text-white/50 uppercase">{stat.label}</div>
+            </div>
+          ))}
+        </motion.div>
+      </div>
 
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.7 }}
-                  viewport={{ once: true }}
-                  className="text-xl md:text-2xl text-white/80 mb-16 max-w-2xl mx-auto leading-relaxed"
-                >
-                  Be part of the future where sovereign intelligence empowers
-                  humanity. Sign up now for early access and help shape the dawn
-                  of a new era.
-                </motion.p>
+      {/* Final message with elegant design */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 1.2 }}
+        viewport={{ once: true }}
+        className="mt-32 text-center"
+      >
+        <div className="inline-block border-t border-white/10 pt-4">
+          <p className="text-sm text-white/60 uppercase tracking-wide">
+            Limited membership — Join the waitlist today
+          </p>
+        </div>
+      </motion.div>
+    </div>
+  </div>
 
-                {/* Enhanced CTA Button */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.9 }}
-                  viewport={{ once: true }}
-                  className="relative inline-block group"
-                >
-                  <Link
-                    href="#"
-                    className="relative z-10 px-10 py-5 bg-purple-600 text-white text-lg uppercase tracking-widest group-hover:bg-purple-700 transition-colors inline-block rounded-sm overflow-hidden"
-                  >
-                    <span className="relative z-10">Get Early Access</span>
-
-                    {/* Button animations */}
-                    <motion.div className="absolute inset-0 bg-gradient-to-r from-purple-700 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-                    {/* Light scan effect */}
-                    <motion.div className="absolute top-0 -right-40 w-32 h-full bg-white transform rotate-12 translate-x-0 -translate-y-0 opacity-20 group-hover:translate-x-80 transition-transform duration-1000" />
-                  </Link>
-
-                  {/* Button glow effect */}
-                  <motion.div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-sm blur-lg opacity-30 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
-
-                  {/* Pulse effect ring */}
-                  <motion.div
-                    className="absolute -inset-4 rounded-sm border border-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"
-                    animate={{ scale: [1, 1.05, 1], opacity: [0, 0.2, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                </motion.div>
-              </div>
-
-              {/* Additional features list */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 1.1 }}
-                viewport={{ once: true }}
-                className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto text-center"
-              >
-                {[
-                  {
-                    title: "Early Token Access",
-                    description: "Be first in line for $O token allocation",
-                  },
-                  {
-                    title: "Governance Rights",
-                    description: "Shape the future of sovereign intelligence",
-                  },
-                  {
-                    title: "Exclusive Benefits",
-                    description: "Special access to all N.OVA products",
-                  },
-                ].map((feature, index) => (
-                  <div
-                    key={`feature-${index}`}
-                    className="flex flex-col items-center p-4"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-black/60 border border-purple-500/30 flex items-center justify-center mb-4">
-                      <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                    </div>
-                    <h3 className="text-xl font-bold mb-2 text-white">
-                      {feature.title}
-                    </h3>
-                    <p className="text-white/70 text-sm">
-                      {feature.description}
-                    </p>
-                  </div>
-                ))}
-              </motion.div>
-
-              {/* Final message */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 1.3 }}
-                viewport={{ once: true }}
-                className="mt-16 text-center"
-              >
-                <div className="inline-block px-6 py-2 border border-white/10 rounded-sm bg-black/30 backdrop-blur-sm">
-                  <p className="text-sm text-white/60 font-mono tracking-wide">
-                    <span className="text-purple-400 mr-2">→</span>
-                    LIMITED SPOTS AVAILABLE FOR INITIAL ACCESS
-                  </p>
-                </div>
-              </motion.div>
-            </motion.div>
-          </div>
-
-          {/* Corner decorations */}
-          <div className="absolute top-10 left-10 w-16 h-16 border-l border-t border-white/10 z-10"></div>
-          <div className="absolute top-10 right-10 w-16 h-16 border-r border-t border-white/10 z-10"></div>
-          <div className="absolute bottom-10 left-10 w-16 h-16 border-l border-b border-white/10 z-10"></div>
-          <div className="absolute bottom-10 right-10 w-16 h-16 border-r border-b border-white/10 z-10"></div>
-        </section>
+  {/* Minimal corner elements */}
+  <div className="absolute top-12 left-12 w-12 h-12 border-l border-t border-white/10 z-10"></div>
+  <div className="absolute top-12 right-12 w-12 h-12 border-r border-t border-white/10 z-10"></div>
+  <div className="absolute bottom-12 left-12 w-12 h-12 border-l border-b border-white/10 z-10"></div>
+  <div className="absolute bottom-12 right-12 w-12 h-12 border-r border-b border-white/10 z-10"></div>
+  
+  {/* Simple bottom bar */}
+  <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 py-3 z-10">
+    <div className="container mx-auto px-4 flex justify-between items-center">
+      <div className="text-xs text-white/40 uppercase">
+        N.OVA
+      </div>
+      <div className="text-xs text-white/40 uppercase">
+        Join the Sovereign AI Revolution
+      </div>
+    </div>
+  </div>
+</section>
       </div>
 
       {/* Footer */}

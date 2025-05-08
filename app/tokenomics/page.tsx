@@ -13,6 +13,7 @@ import {
   X,
   AlertTriangle,
   Info,
+  Key,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
@@ -79,7 +80,9 @@ const NovaTokenomics = () => {
     connection,
   } = usePhantom();
 
-  const [localNovaBalance, setLocalNovaBalance] = useState<number>(novaBalance || 0);
+  const [localNovaBalance, setLocalNovaBalance] = useState<number>(
+    novaBalance || 0
+  );
 
   // State variables
   const [mounted, setMounted] = useState(false);
@@ -470,78 +473,192 @@ const NovaTokenomics = () => {
     }
   };
 
-  // Handle token claim - implements 100 N.OVA per 24h using direct transfer
-// Handle token claim - implements 100 N.OVA per 24h faucet
-const handleClaim = async () => {
-  if (!isConnected || !publicKey) {
-    return;
-  }
+  // Handle token claim - implements 10 N.OVA per 24h faucet
+  const handleClaim = async () => {
+    if (!isConnected || !publicKey) {
+      return;
+    }
 
-  setIsClaiming(true);
+    setIsClaiming(true);
 
-  try {
-    // Token mint address
-    const mintAddress = new PublicKey(TOKEN_ADDRESS);
-    
-    // Get the user's associated token account
-    const userTokenAccount = await token.getAssociatedTokenAddress(
-      mintAddress,
-      publicKey
-    );
-    
-    // Create transaction
-    const transaction = new Transaction();
-    
-    // Check if the user's token account exists
-    let userAccountExists = false;
     try {
-      await token.getAccount(connection, userTokenAccount);
-      userAccountExists = true;
-    } catch (error) {
-      // Account doesn't exist, we'll create it
-      userAccountExists = false;
-    }
-    
-    // If the user's token account doesn't exist, create it
-    if (!userAccountExists) {
-      transaction.add(
-        token.createAssociatedTokenAccountInstruction(
-          publicKey, // payer
-          userTokenAccount, // associated token account
-          publicKey, // owner
-          mintAddress // token mint
-        )
-      );
-    }
-    
-    // You can't directly transfer from the pool wallet since you don't have its private key
-    // Instead, we'll request the backend faucet API or simulate it
-    
-    // For now, we'll simulate the transaction for UI purposes:
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Save claim time to localStorage for 24h cooldown
-    localStorage.setItem(
-      `lastClaim_${walletAddress}`,
-      new Date().getTime().toString()
-    );
-    
-    // Increment the user's NOVA balance (simulated)
-    setLocalNovaBalance((prev) => prev + 100 * Math.pow(10, 9));
-    
-    setIsClaiming(false);
-    setClaimSuccess(true);
+      // Token mint address
+      const mintAddress = new PublicKey(TOKEN_ADDRESS);
 
-    // Reset success message after 5 seconds
-    setTimeout(() => {
-      setClaimSuccess(false);
-      setTimeRemaining(24);
-    }, 5000);
-  } catch (error) {
-    console.error("Error claiming tokens:", error);
-    setIsClaiming(false);
-  }
-};
+      // Get the user's associated token account
+      const userTokenAccount = await token.getAssociatedTokenAddress(
+        mintAddress,
+        publicKey
+      );
+
+      // Create transaction
+      const transaction = new Transaction();
+
+      // Check if the user's token account exists
+      let userAccountExists = false;
+      try {
+        await token.getAccount(connection, userTokenAccount);
+        userAccountExists = true;
+      } catch (error) {
+        // Account doesn't exist, we'll create it
+        userAccountExists = false;
+      }
+
+      // If the user's token account doesn't exist, create it
+      if (!userAccountExists) {
+        transaction.add(
+          token.createAssociatedTokenAccountInstruction(
+            publicKey, // payer
+            userTokenAccount, // associated token account
+            publicKey, // owner
+            mintAddress // token mint
+          )
+        );
+      }
+
+      // You can't directly transfer from the pool wallet since you don't have its private key
+      // Instead, we'll request the backend faucet API or simulate it
+
+      // For now, we'll simulate the transaction for UI purposes:
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Save claim time to localStorage for 24h cooldown
+      localStorage.setItem(
+        `lastClaim_${walletAddress}`,
+        new Date().getTime().toString()
+      );
+
+      // Increment the user's NOVA balance (simulated)
+      setLocalNovaBalance((prev) => prev + 100 * Math.pow(10, 9));
+
+      setIsClaiming(false);
+      setClaimSuccess(true);
+
+      // Reset success message after 5 seconds
+      setTimeout(() => {
+        setClaimSuccess(false);
+        setTimeRemaining(24);
+      }, 5000);
+    } catch (error) {
+      console.error("Error claiming tokens:", error);
+      setIsClaiming(false);
+    }
+  };
+
+  // Function to determine rank based on token balance
+  const determineRank = (novaBalance: string | number | null | undefined) => {
+    if (novaBalance === null || novaBalance === undefined)
+      return { name: "ECHO", color: "border-gray-500" };
+
+    // Convert raw balance by removing 9 decimals (standard for Solana tokens)
+    const convertedBalance =
+      typeof novaBalance === "number"
+        ? novaBalance / Math.pow(10, 9)
+        : parseFloat(novaBalance) / Math.pow(10, 9) || 0;
+
+    if (convertedBalance >= 100000)
+      return { name: "SOVEREIGN", color: "border-amber-500" };
+    if (convertedBalance >= 20000)
+      return { name: "ORACLE", color: "border-pink-500" };
+    if (convertedBalance >= 5000)
+      return { name: "NEXUS", color: "border-purple-500" };
+    if (convertedBalance >= 1500)
+      return { name: "CIPHER", color: "border-teal-500" };
+    if (convertedBalance >= 500)
+      return { name: "SIGNAL", color: "border-cyan-500" };
+    if (convertedBalance >= 100)
+      return { name: "PULSE", color: "border-blue-500" };
+    return { name: "ECHO", color: "border-gray-500" };
+  };
+
+  // Function to determine next rank and required tokens
+  const determineNextRank = (currentRank: string) => {
+    switch (currentRank) {
+      case "ECHO":
+        return { name: "PULSE", required: 100, color: "border-blue-500" };
+      case "PULSE":
+        return { name: "SIGNAL", required: 500, color: "border-cyan-500" };
+      case "SIGNAL":
+        return { name: "CIPHER", required: 1500, color: "border-teal-500" };
+      case "CIPHER":
+        return { name: "NEXUS", required: 5000, color: "border-purple-500" };
+      case "NEXUS":
+        return { name: "ORACLE", required: 20000, color: "border-pink-500" };
+      case "ORACLE":
+        return {
+          name: "SOVEREIGN",
+          required: 100000,
+          color: "border-amber-500",
+        };
+      case "SOVEREIGN":
+        return { name: "MAX RANK", required: null, color: "border-amber-500" };
+      default:
+        return { name: "PULSE", required: 100, color: "border-blue-500" };
+    }
+  };
+
+  // Replace the Current Status section in the Ranking System with this:
+  const renderCurrentRank = (novaBalance: number | null | undefined) => {
+    // Use the NOVA balance directly - the determineRank function already handles the conversion
+    // No need to convert here as it's done inside determineRank
+
+    // Determine current rank based on balance
+    const userRank = determineRank(novaBalance);
+
+    // Determine next rank and tokens needed
+    const nextRank = determineNextRank(userRank.name);
+
+    // Convert balance for display purposes only
+    const convertedBalance = novaBalance ? novaBalance / Math.pow(10, 9) : 0;
+
+    // Calculate tokens needed for next rank
+    const tokensForNextRank = nextRank.required
+      ? Math.max(0, nextRank.required - convertedBalance)
+      : null;
+
+    return (
+      <div className="flex justify-between items-center mb-12 border border-white/20 p-4">
+        <div className="flex items-center gap-4">
+          <div className="text-white/60 uppercase text-sm">Current:</div>
+          <div className="text-lg font-light">
+            {convertedBalance.toLocaleString(undefined, {
+              maximumFractionDigits: 2,
+            })}{" "}
+            NOVA
+          </div>
+          <div
+            className={`px-2 py-1 bg-black ${userRank.color}/30 text-xs uppercase border`}
+          >
+            {userRank.name}
+          </div>
+        </div>
+
+        {nextRank.required !== null ? (
+          <div className="flex items-center gap-4">
+            <div className="text-white/60 uppercase text-sm">Next:</div>
+            <div className="text-lg font-light">
+              {tokensForNextRank?.toLocaleString(undefined, {
+                maximumFractionDigits: 2,
+              })}{" "}
+              more NOVA
+            </div>
+            <div
+              className={`px-2 py-1 bg-black ${nextRank.color}/30 text-xs uppercase border`}
+            >
+              {nextRank.name}
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-4">
+            <div className="text-white/60 uppercase text-sm">Status:</div>
+            <div className="px-2 py-1 bg-black border border-amber-500 text-xs uppercase">
+              Maximum Rank Achieved
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // Function to copy text to clipboard
   const copyToClipboard = (text: string) => {
@@ -1231,7 +1348,7 @@ const handleClaim = async () => {
                         AVAILABLE TO CLAIM
                       </div>
                       <div className="flex items-baseline">
-                        <div className="text-7xl font-light">100</div>
+                        <div className="text-7xl font-light">10</div>
                         <div className="text-2xl text-purple-400 ml-2">
                           N.OVA
                         </div>
@@ -1239,7 +1356,7 @@ const handleClaim = async () => {
                     </div>
                     <div className="self-end">
                       <div className="px-4 py-2 border border-white/20 text-xs text-white/70 uppercase">
-                        100 N.OVA DAILY LIMIT
+                        10 N.OVA DAILY LIMIT
                       </div>
                     </div>
                   </div>
@@ -1339,7 +1456,261 @@ const handleClaim = async () => {
               </div>
             </div>
           </div>
-          {/* N.OVA Ecosystem Section */}
+
+          {/* Ranking System Section - Add after the Get Tokens Section */}
+          <div className="border border-white/30 p-0.5 mb-8">
+            <div className="border border-white/10 bg-black p-8">
+              <h2 className="text-5xl font-light mb-8">N.OVA Ranking System</h2>
+
+              <div className="mb-12">
+                <p className="text-white/70 uppercase text-center">
+                  YOUR ON-CHAIN IDENTITY EVOLVES AS YOUR $NOVA BALANCE INCREASES
+                </p>
+              </div>
+
+              {/* Rank Cards - Minimal Row with current rank highlighted */}
+              <div className="grid grid-cols-7 gap-px mb-12 border border-white/10">
+                {[
+                  { name: "ECHO", tokens: "0–99", color: "border-gray-500" },
+                  { name: "PULSE", tokens: "100+", color: "border-blue-500" },
+                  { name: "SIGNAL", tokens: "500+", color: "border-cyan-500" },
+                  {
+                    name: "CIPHER",
+                    tokens: "1,500+",
+                    color: "border-teal-500",
+                  },
+                  {
+                    name: "NEXUS",
+                    tokens: "5,000+",
+                    color: "border-purple-500",
+                  },
+                  {
+                    name: "ORACLE",
+                    tokens: "20,000+",
+                    color: "border-pink-500",
+                  },
+                  {
+                    name: "SOVEREIGN",
+                    tokens: "100,000+",
+                    color: "border-amber-500",
+                  },
+                ].map((rank, index) => {
+                  const currentRank = determineRank(novaBalance);
+                  const isCurrentRank = rank.name === currentRank.name;
+
+                  return (
+                    <div
+                      key={index}
+                      className={`${
+                        index > 0 ? "border-l" : ""
+                      } border-white/10 p-4 flex flex-col items-center 
+                   bg-black hover:bg-white/5 transition-all
+                   ${isCurrentRank ? "bg-white/5 border border-white/30" : ""}`}
+                    >
+                      <div
+                        className={`uppercase font-bold mb-2 ${rank.color} border-b-2 pb-1 text-center`}
+                      >
+                        {rank.name}
+                        {isCurrentRank && (
+                          <span className="ml-1 text-xs">•</span>
+                        )}
+                      </div>
+                      <div className="text-white/90 text-center text-sm">
+                        {rank.tokens}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {renderCurrentRank(novaBalance)}
+
+              {/* Rank Benefits - Elegant Table */}
+              <div className="mb-6">
+                <div className="uppercase text-white/80 text-sm mb-4 flex items-center">
+                  <div className="w-1 h-1 bg-white mr-2"></div>
+                  RANK BENEFITS
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr>
+                        <th className="text-left py-3 px-4 border-b border-t border-white/10 text-white/60 uppercase text-xs font-normal">
+                          Feature
+                        </th>
+                        {[
+                          "ECHO",
+                          "PULSE",
+                          "SIGNAL",
+                          "CIPHER",
+                          "NEXUS",
+                          "ORACLE",
+                          "SOVEREIGN",
+                        ].map((rank, i) => (
+                          <th
+                            key={i}
+                            className="text-center py-3 px-3 border-b border-t border-white/10 text-white/60 uppercase text-xs font-normal"
+                          >
+                            {rank}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        {
+                          feature: "N.IDENTITY Creation",
+                          levels: [true, true, true, true, true, true, true],
+                        },
+                        {
+                          feature: "Daily Token Claims",
+                          levels: [true, true, true, true, true, true, true],
+                        },
+                        {
+                          feature: "N.AI Basic Access",
+                          levels: [false, true, true, true, true, true, true],
+                        },
+                        {
+                          feature: "Advanced Analytics",
+                          levels: [false, false, true, true, true, true, true],
+                        },
+                        {
+                          feature: "Custom Identity Cards",
+                          levels: [false, false, false, true, true, true, true],
+                        },
+                        {
+                          feature: "N.AI Premium Features",
+                          levels: [
+                            false,
+                            false,
+                            false,
+                            false,
+                            true,
+                            true,
+                            true,
+                          ],
+                        },
+                        {
+                          feature: "DAO Voting Rights",
+                          levels: [
+                            false,
+                            false,
+                            false,
+                            false,
+                            false,
+                            true,
+                            true,
+                          ],
+                        },
+                        {
+                          feature: "Full Ecosystem Control",
+                          levels: [
+                            false,
+                            false,
+                            false,
+                            false,
+                            false,
+                            false,
+                            true,
+                          ],
+                        },
+                      ].map((benefit, index) => (
+                        <tr
+                          key={index}
+                          className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                        >
+                          <td className="py-4 px-4">{benefit.feature}</td>
+                          {benefit.levels.map((available, i) => (
+                            <td key={i} className="py-4 text-center">
+                              {available ? (
+                                <div className="inline-flex">•</div>
+                              ) : (
+                                <div className="inline-block text-white/20">
+                                  –
+                                </div>
+                              )}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Rank Descriptions - Minimal */}
+              <div className="border-t border-white/10 pt-8 mt-8">
+                <div className="uppercase text-white/80 text-sm mb-4 flex items-center">
+                  <div className="w-1 h-1 bg-white mr-2"></div>
+                  RANK DESCRIPTIONS
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <ul className="space-y-4">
+                      {[
+                        {
+                          name: "ECHO",
+                          description: "Entry level, identity is forming",
+                        },
+                        {
+                          name: "PULSE",
+                          description: "Wallet activity begins",
+                        },
+                        {
+                          name: "SIGNAL",
+                          description: "Behavior patterns emerge",
+                        },
+                        {
+                          name: "CIPHER",
+                          description: "Deeper meaning becomes visible",
+                        },
+                      ].map((rank, index) => (
+                        <li key={index} className="flex items-start">
+                          <div className="font-bold uppercase min-w-24">
+                            {rank.name}:
+                          </div>
+                          <div className="text-white/70">
+                            {rank.description}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <ul className="space-y-4">
+                      {[
+                        {
+                          name: "NEXUS",
+                          description: "Identity stabilizes across mediums",
+                        },
+                        {
+                          name: "ORACLE",
+                          description: "Insights and foresight appear",
+                        },
+                        {
+                          name: "SOVEREIGN",
+                          description: "Complete identity mastery",
+                        },
+                      ].map((rank, index) => (
+                        <li key={index} className="flex items-start">
+                          <div className="font-bold uppercase min-w-24">
+                            {rank.name}:
+                          </div>
+                          <div className="text-white/70">
+                            {rank.description}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Revised N.OVA Ecosystem Section */}
           <div className="border border-white/30 p-0.5 mt-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -1349,84 +1720,242 @@ const handleClaim = async () => {
             >
               <h2 className="text-5xl font-light mb-10">N.OVA Ecosystem</h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* N.TOKENOMICS Card */}
+                <div className="border border-white/20 p-6 bg-black hover:bg-black/80 transition-colors">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 flex items-center justify-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-4 w-4"
+                      >
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
+                        <path d="M12 18V6"></path>
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-light">N.TOKENOMICS</h3>
+                  </div>
+                  <p className="text-white/70 text-sm mb-4">
+                    Manage your NOVA tokens, view market data, and participate
+                    in token swaps.
+                  </p>
+                  <div className="flex justify-between items-center border-t border-white/10 pt-3 text-xs">
+                    <span className="text-white/60">RANK ACCESS</span>
+                    <span className="text-blue-400">ECHO+</span>
+                  </div>
+                </div>
+
                 {/* N.AI Card */}
-                <div className="border border-white/30 p-0.5 group">
-                  <div className="border border-white/10 p-8 h-full bg-black group-hover:border-blue-500/30 transition-colors duration-300">
-                    <div className="flex items-center gap-4 mb-5">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 flex items-center justify-center">
-                        <Sparkles className="h-6 w-6" />
-                      </div>
-                      <h3 className="text-2xl font-light">N.AI</h3>
+                <div className="border border-white/20 p-6 bg-black hover:bg-black/80 transition-colors">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-400 flex items-center justify-center">
+                      <Sparkles className="h-4 w-4" />
                     </div>
-                    <p className="text-white/70 mb-8 h-24">
-                      Advanced AI assistant that analyzes on-chain data and
-                      provides personalized insights for your crypto portfolio.
-                    </p>
-                    <div className="flex flex-col gap-4">
-                      <div className="flex justify-between items-center border-t border-white/10 pt-4">
-                        <span className="text-white/60">REWARD BOOST</span>
-                        <span className="font-medium text-blue-400">
-                          3x TOKENS
-                        </span>
-                      </div>
-                      <button className="bg-white text-black py-3 w-full uppercase hover:bg-white/90 transition-colors">
-                        Try N.AI
-                      </button>
+                    <h3 className="text-lg font-light">N.AI</h3>
+                  </div>
+                  <p className="text-white/70 text-sm mb-4">
+                    AI assistant that analyzes on-chain data and provides
+                    personalized insights for your portfolio.
+                  </p>
+                  <div className="flex justify-between items-center border-t border-white/10 pt-3 text-xs">
+                    <span className="text-white/60">RANK ACCESS</span>
+                    <span className="text-purple-400">PULSE+</span>
+                  </div>
+                </div>
+
+                {/* N.AURORA Card */}
+                <div className="border border-white/20 p-6 bg-black hover:bg-black/80 transition-colors">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-teal-500 to-green-400 flex items-center justify-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-4 w-4"
+                      >
+                        <path d="M3 11h18"></path>
+                        <path d="M5 11v4h2v-4z"></path>
+                        <path d="M9 11v6h2v-6z"></path>
+                        <path d="M13 11v2h2v-2z"></path>
+                        <path d="M17 11v4h2v-4z"></path>
+                      </svg>
                     </div>
+                    <h3 className="text-lg font-light">N.AURORA</h3>
+                  </div>
+                  <p className="text-white/70 text-sm mb-4">
+                    Music discovery platform with exclusive releases and
+                    personalized playlists for token holders.
+                  </p>
+                  <div className="flex justify-between items-center border-t border-white/10 pt-3 text-xs">
+                    <span className="text-white/60">RANK ACCESS</span>
+                    <span className="text-teal-400">SIGNAL+</span>
                   </div>
                 </div>
 
                 {/* N.IDENTITY Card */}
-                <div className="border border-white/30 p-0.5 group">
-                  <div className="border border-white/10 p-8 h-full bg-black group-hover:border-purple-500/30 transition-colors duration-300">
-                    <div className="flex items-center gap-4 mb-5">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-blue-400 flex items-center justify-center">
-                        <CheckCircle2 className="h-6 w-6" />
-                      </div>
-                      <h3 className="text-2xl font-light">N.IDENTITY</h3>
+                <div className="border border-white/20 p-6 bg-black hover:bg-black/80 transition-colors">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-blue-400 flex items-center justify-center">
+                      <CheckCircle2 className="h-4 w-4" />
                     </div>
-                    <p className="text-white/70 mb-8 h-24">
-                      Generate a unique visual representation of your Web3
-                      identity based on your on-chain activity and wallet
-                      behavior.
-                    </p>
-                    <div className="flex flex-col gap-4">
-                      <div className="flex justify-between items-center border-t border-white/10 pt-4">
-                        <span className="text-white/60">REWARD BOOST</span>
-                        <span className="font-medium text-purple-400">
-                          2x TOKENS
-                        </span>
-                      </div>
-                      <button className="bg-white text-black py-3 w-full uppercase hover:bg-white/90 transition-colors">
-                        Generate ID
-                      </button>
-                    </div>
+                    <h3 className="text-lg font-light">N.IDENTITY</h3>
+                  </div>
+                  <p className="text-white/70 text-sm mb-4">
+                    Generate unique visual representation of your Web3 identity
+                    based on your on-chain activity.
+                  </p>
+                  <div className="flex justify-between items-center border-t border-white/10 pt-3 text-xs">
+                    <span className="text-white/60">RANK ACCESS</span>
+                    <span className="text-indigo-400">ECHO+</span>
                   </div>
                 </div>
 
                 {/* N.DAO Card */}
-                <div className="border border-white/30 p-0.5 group">
-                  <div className="border border-white/10 p-8 h-full bg-black group-hover:border-amber-500/30 transition-colors duration-300">
-                    <div className="flex items-center gap-4 mb-5">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-r from-amber-500 to-pink-400 flex items-center justify-center">
-                        <Info className="h-6 w-6" />
-                      </div>
-                      <h3 className="text-2xl font-light">N.DAO</h3>
+                <div className="border border-white/20 p-6 bg-black hover:bg-black/80 transition-colors">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-orange-400 flex items-center justify-center">
+                      <Info className="h-4 w-4" />
                     </div>
-                    <p className="text-white/70 mb-8 h-24">
-                      Participate in governance decisions and vote on future
-                      developments. Stake your tokens for additional rewards.
-                    </p>
-                    <div className="flex flex-col gap-4">
-                      <div className="flex justify-between items-center border-t border-white/10 pt-4">
-                        <span className="text-white/60">STATUS</span>
-                        <span className="font-medium text-amber-400 border border-amber-500/30 px-2 py-1 text-xs">
-                          COMING SOON
+                    <h3 className="text-lg font-light">N.DAO</h3>
+                  </div>
+                  <p className="text-white/70 text-sm mb-4">
+                    Participate in governance decisions and vote on the future
+                    development of the NOVA ecosystem.
+                  </p>
+                  <div className="flex justify-between items-center border-t border-white/10 pt-3 text-xs">
+                    <span className="text-white/60">RANK ACCESS</span>
+                    <span className="text-amber-400">ORACLE+</span>
+                  </div>
+                </div>
+
+                {/* N.TRANSFER Card */}
+                <div className="border border-white/20 p-6 bg-black hover:bg-black/80 transition-colors">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-rose-500 to-pink-400 flex items-center justify-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-4 w-4"
+                      >
+                        <path d="M17 3L22 7L17 11"></path>
+                        <path d="M22 7H9"></path>
+                        <path d="M7 21L2 17L7 13"></path>
+                        <path d="M2 17H15"></path>
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-light">N.TRANSFER</h3>
+                  </div>
+                  <p className="text-white/70 text-sm mb-4">
+                    Fee-optimized token transfer system with cross-chain
+                    capabilities and transaction tracking.
+                  </p>
+                  <div className="flex justify-between items-center border-t border-white/10 pt-3 text-xs">
+                    <span className="text-white/60">RANK ACCESS</span>
+                    <span className="text-rose-400">CIPHER+</span>
+                  </div>
+                </div>
+
+                {/* N.DASHBOARD Card */}
+                <div className="border border-white/20 p-6 bg-black hover:bg-black/80 transition-colors">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-sky-500 to-blue-400 flex items-center justify-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-4 w-4"
+                      >
+                        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                        <path d="M3 9h18"></path>
+                        <path d="M9 21V9"></path>
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-light">N.DASHBOARD</h3>
+                  </div>
+                  <p className="text-white/70 text-sm mb-4">
+                    Comprehensive analytics dashboard with portfolio tracking,
+                    performance metrics, and market insights.
+                  </p>
+                  <div className="flex justify-between items-center border-t border-white/10 pt-3 text-xs">
+                    <span className="text-white/60">RANK ACCESS</span>
+                    <span className="text-sky-400">NEXUS+</span>
+                  </div>
+                </div>
+
+                {/* Ecosystem Control - Only for SOVEREIGN */}
+                <div className="border border-amber-500/30 p-6 bg-black hover:bg-black/80 transition-colors">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 flex items-center justify-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-4 w-4"
+                      >
+                        <path d="M15 5l4 4l-4 4"></path>
+                        <path d="M5 19l4-4l-4-4"></path>
+                        <path d="M19 9l-4-4H9l4 4l-4 4h6l4-4z"></path>
+                        <path d="M5 15l4 4h6l-4-4l4-4H9l-4 4z"></path>
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-light">ECOSYSTEM CONTROL</h3>
+                  </div>
+                  <p className="text-white/70 text-sm mb-4">
+                    Full access to all ecosystem features, protocol parameters,
+                    and administrative functions.
+                  </p>
+                  <div className="flex justify-between items-center border-t border-white/10 pt-3 text-xs">
+                    <span className="text-white/60">RANK ACCESS</span>
+                    <span className="text-amber-400">SOVEREIGN ONLY</span>
+                  </div>
+                </div>
+
+                {/* Ecosystem access banner */}
+                <div className="lg:col-span-3 border border-white/20 p-6 bg-black mt-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
+                        <Key className="h-3 w-3 text-white/80" />
+                      </div>
+                      <span className="text-white/80 text-sm">
+                        YOUR ECOSYSTEM ACCESS
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="flex items-center gap-1">
+                        <span className="text-white/60 text-sm">
+                          CURRENT RANK:
+                        </span>
+                        <span className="text-white text-sm px-2 py-0.5 border border-white/20">
+                          {determineRank(novaBalance).name}
                         </span>
                       </div>
-                      <button className="border border-white/30 text-white py-3 w-full uppercase hover:bg-white/10 transition-colors">
-                        Coming Soon
+                      <button className="ml-4 px-3 py-1 border border-white/20 text-xs text-white/80 hover:bg-white/10 transition-colors">
+                        UPGRADE RANK
                       </button>
                     </div>
                   </div>
@@ -1638,6 +2167,29 @@ const handleClaim = async () => {
 
         .animate-scaleIn {
           animation: scaleIn 0.3s ease-out forwards;
+        }
+        .shadow-glow {
+          box-shadow: 0 0 8px currentColor;
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes scaleIn {
+          from {
+            transform: scale(0.95);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
+            opacity: 1;
+          }
         }
       `}</style>
     </main>
