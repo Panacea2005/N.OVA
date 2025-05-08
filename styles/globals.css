@@ -113,3 +113,162 @@ body {
 .animate-marquee:hover {
   animation-play-state: paused;
 }
+
+
+body .wallet-adapter-modal-wrapper {
+  background-color: black !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 0 !important;
+  /* other styles */
+}
+.wallet-adapter-modal-wrapper {
+  background-color: black !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 0 !important;
+  max-width: 400px !important;
+  padding: 0 !important;
+}
+
+.wallet-adapter-modal-wrapper .wallet-adapter-modal-container {
+  padding: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.wallet-adapter-modal-wrapper .wallet-adapter-modal-title {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  font-weight: 300 !important;
+  letter-spacing: 0.5px !important;
+  margin: 0 !important;
+  padding: 1.5rem !important;
+  font-size: 1.25rem !important;
+  text-transform: uppercase !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.wallet-adapter-modal-wrapper .wallet-adapter-modal-list {
+  padding: 1rem !important;
+  margin: 0 !important;
+}
+
+.wallet-adapter-modal-wrapper .wallet-adapter-modal-list li {
+  padding: 0 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.wallet-adapter-modal-wrapper .wallet-adapter-button {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  background-color: black !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 0 !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-weight: 400 !important;
+  transition: all 0.2s ease !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 0.875rem !important;
+  height: auto !important;
+  text-transform: uppercase !important;
+}
+
+.wallet-adapter-modal-wrapper .wallet-adapter-button:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: white !important;
+}
+
+.wallet-adapter-modal-wrapper .wallet-adapter-button-start-icon {
+  margin-right: 0.75rem !important;
+}
+
+.wallet-adapter-modal-wrapper .wallet-adapter-modal-button-close {
+  background-color: transparent !important;
+  margin: 1rem !important;
+  padding: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  width: 2rem !important;
+  height: 2rem !important;
+}
+
+.wallet-adapter-modal-wrapper .wallet-adapter-modal-button-close:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* LazorKit button styling */
+#lazorkit-wallet-option {
+  background-color: black !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 0 !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  font-weight: 400 !important;
+  font-size: 0.875rem !important;
+  text-transform: uppercase !important;
+  padding: 0.75rem 1rem !important;
+  display: flex !important;
+  align-items: center !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  margin-top: 0.5rem !important;
+}
+
+#lazorkit-wallet-option:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  color: white !important;
+}
+
+/* Wallet Button (in Navigation) */
+.wallet-adapter-button {
+  background-color: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: white !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  font-size: 0.75rem !important;
+  border-radius: 0 !important;
+  padding: 0.5rem 1rem !important;
+  transition: all 0.2s ease !important;
+  text-transform: uppercase !important;
+  height: auto !important;
+}
+
+.wallet-adapter-button:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.wallet-adapter-button:active {
+  transform: scale(0.98) !important;
+}
+
+.wallet-adapter-button-trigger {
+  background-color: transparent !important;
+}
+
+.wallet-adapter-button-end-icon,
+.wallet-adapter-button-start-icon,
+.wallet-adapter-button-end-icon img,
+.wallet-adapter-button-start-icon img {
+  width: 1rem !important;
+  height: 1rem !important;
+  margin: 0 0.5rem !important;
+}
+
+/* Dropdown menu styling */
+.wallet-adapter-dropdown-list {
+  background-color: black !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 0 !important;
+}
+
+.wallet-adapter-dropdown-list-item {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+  border-radius: 0 !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.wallet-adapter-dropdown-list-item:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: white !important;
+}
