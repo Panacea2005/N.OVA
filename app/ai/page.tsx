@@ -70,17 +70,17 @@ const modelOptions: Record<
   { name: string; tag: string; gradient: string }
 > = {
   "llama3-8b-8192": {
-    name: "llama3-8b-8192",
+    name: "N.ECHO",
     tag: "Balanced & Fast",
     gradient: "bg-gradient-to-r from-yellow-500 to-orange-500",
   },
   "mistral-saba-24b": {
-    name: "mistral-saba-24b",
+    name: "N.CIPHER",
     tag: "Blazing Fast UX",
     gradient: "bg-gradient-to-r from-pink-500 to-red-500",
   },
   "llama3-70b-8192": {
-    name: "llama3-70b-8192",
+    name: "N.ORACLE",
     tag: "Advanced Reasoning",
     gradient: "bg-gradient-to-r from-blue-500 to-purple-500",
   },
@@ -1187,7 +1187,7 @@ export default function AIPage() {
               >
                 <ambientLight intensity={0.6} />
                 <DynamicDotArchVisualization
-                  greeting="//Hi, I'm N.OVA."
+                  greeting="//Hi, I'm N.OVA AI."
                   dotSize={0.02}
                   dotOpacity={0.8}
                   dotColor="#FFFFFF" // Pure white dots

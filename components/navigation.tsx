@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Canvas } from "@react-three/fiber";
@@ -18,7 +18,8 @@ const HolographicSphere = dynamic(
 export default function Navigation() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [activeItem, setActiveItem] = useState<number | null>(null);
+  const [activeGroup, setActiveGroup] = useState<number | null>(0);
+  const [activeItem, setActiveItem] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -51,17 +52,38 @@ export default function Navigation() {
     setMenuOpen((prevState) => !prevState);
   };
 
-  const navItems = [
-    { name: "N.OVA", href: "/" },
-    { name: "N.ABOUT", href: "/about" },
-    { name: "N.TOKENOMICS", href: "/tokenomics" },
-    { name: "N.AI", href: "/ai" },
-    { name: "N.AURORA", href: "/music" },
-    { name: "N.IDENTITY", href: "/nft" },
-    { name: "N.DAO", href: "/dao" },
-    { name: "N.TRANSFER", href: "/transfer" },
-    { name: "N.DASHBOARD", href: "/dashboard" },
-    { name: "N.PROFILE", href: "/profile" },
+  // Grouped navigation items
+  const navGroups = [
+    {
+      name: "N.OVA",
+      items: [
+        { name: "N.OVA", href: "/" },
+        { name: "N.ABOUT", href: "/about" }
+      ]
+    },
+    {
+      name: "N.AI",
+      items: [
+        { name: "N.CHATBOT", href: "/ai" },
+        { name: "N.MUSIC", href: "/music" },
+        { name: "N.IDENTITY", href: "/nft" }
+      ]
+    },
+    {
+      name: "N.DEFI",
+      items: [
+        { name: "N.TOKENOMICS", href: "/tokenomics" },
+        { name: "N.DAO", href: "/dao" },
+        { name: "N.TRANSFER", href: "/transfer" }
+      ]
+    },
+    {
+      name: "N.USER",
+      items: [
+        { name: "N.DASHBOARD", href: "/dashboard" },
+        { name: "N.PROFILE", href: "/profile" }
+      ]
+    }
   ];
 
   return (
@@ -69,9 +91,7 @@ export default function Navigation() {
       {/* Fixed Navigation Bar */}
       <motion.nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled
-            ? "bg-black border-b border-white/10"
-            : ""
+          scrolled ? "bg-black border-b border-white/10" : ""
         }`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
@@ -151,7 +171,7 @@ export default function Navigation() {
         </div>
       </motion.nav>
 
-      {/* Full Screen Menu */}
+      {/* Full Screen Menu with Grouped Navigation */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -172,36 +192,85 @@ export default function Navigation() {
             {/* Menu Content - Split into two columns for desktop */}
             <div className="w-full md:w-1/2 h-full flex flex-col justify-start items-start p-8 md:p-16 relative overflow-auto">
               <div className="w-full flex flex-col mt-12">
-                {navItems.map((item, i) => (
+                {navGroups.map((group, groupIndex) => (
                   <motion.div
-                    key={item.name}
+                    key={group.name}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="mb-6 relative group"
-                    onMouseEnter={() => setActiveItem(i)}
-                    onMouseLeave={() => setActiveItem(null)}
+                    transition={{ delay: groupIndex * 0.1 }}
+                    className="mb-12 relative"
                   >
-                    <Link
-                      href={item.href}
-                      className="group flex items-center"
-                      onClick={() => setMenuOpen(false)}
+                    <div 
+                      className="flex items-center mb-4 cursor-pointer group"
+                      onClick={() => setActiveGroup(activeGroup === groupIndex ? null : groupIndex)}
                     >
-                      <span className="text-sm font-mono uppercase text-white/40 mr-4 w-8 group-hover:text-white transition-colors duration-300">
-                        {`0${i + 1}`.slice(-2)}
+                      <span className="text-sm font-mono uppercase text-white/60 mr-4 w-8 group-hover:text-white/80 transition-colors">
+                        {`0${groupIndex + 1}`.slice(-2)}
                       </span>
-                      <div className="flex flex-col">
-                        <span className="text-7xl md:text-8xl font-light tracking-tighter text-white/90 group-hover:text-white transition-all duration-300">
-                          {item.name}
-                        </span>
-                        <div 
-                          className={`w-0 group-hover:w-full h-px bg-white transition-all duration-500 mt-1 ${
-                            activeItem === i ? "w-full" : "w-0"
-                          }`}
-                        ></div>
+                      <div className="flex flex-col flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-3xl font-light tracking-tighter text-white/70 group-hover:text-white transition-colors">
+                            {group.name}
+                          </span>
+                          <div className="flex items-center justify-center w-6 h-6">
+                            <svg 
+                              width="12" 
+                              height="12" 
+                              viewBox="0 0 12 12" 
+                              fill="none" 
+                              xmlns="http://www.w3.org/2000/svg"
+                              className={`transition-transform duration-300 ${activeGroup === groupIndex ? 'rotate-45' : 'rotate-0'}`}
+                            >
+                              <path d="M6 0V12M0 6H12" stroke="white" strokeWidth="1" strokeOpacity="0.6" />
+                            </svg>
+                          </div>
+                        </div>
+                        <div className="w-full h-px bg-white/20 mt-1"></div>
                       </div>
-                    </Link>
+                    </div>
+
+                    <AnimatePresence>
+                      {activeGroup === groupIndex && (
+                        <motion.div 
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="overflow-hidden ml-12"
+                        >
+                          {group.items.map((item, itemIndex) => (
+                            <motion.div
+                              key={item.name}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0, x: -10 }}
+                              transition={{ delay: itemIndex * 0.05 }}
+                              className="mb-6 relative group"
+                              onMouseEnter={() => setActiveItem(item.name)}
+                              onMouseLeave={() => setActiveItem(null)}
+                            >
+                              <Link
+                                href={item.href}
+                                className="group flex items-center"
+                                onClick={() => setMenuOpen(false)}
+                              >
+                                <div className="flex flex-col">
+                                  <span className="text-6xl md:text-7xl font-light tracking-tighter text-white/90 group-hover:text-white transition-all duration-300">
+                                    {item.name}
+                                  </span>
+                                  <div 
+                                    className={`w-0 group-hover:w-full h-px bg-white transition-all duration-500 mt-1 ${
+                                      activeItem === item.name ? "w-full" : "w-0"
+                                    }`}
+                                  ></div>
+                                </div>
+                              </Link>
+                            </motion.div>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 ))}
               </div>
@@ -218,10 +287,8 @@ export default function Navigation() {
               {/* Simple sphere container */}
               <div className="absolute inset-0 z-10">
                 <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
-                  <Suspense fallback={null}>
-                    <HolographicSphere />
-                    <Environment preset="night" />
-                  </Suspense>
+                  <HolographicSphere />
+                  <Environment preset="night" />
                 </Canvas>
               </div>
               
