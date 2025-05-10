@@ -26,24 +26,31 @@ const NAuroraBanner = dynamic(() => import("@/components/3d/naurora-banner"), {
   ssr: false,
 });
 
-// IMPORTANT: Create a custom hook for safe localStorage usage
+// FIXED: Properly handle localStorage with SSR safety
 function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val: T) => T)) => void] {
-  // State to store our value - initialized with initial value
+  // Use state to store our value
+  // Pass initial state function to useState so logic is only executed once
   const [storedValue, setStoredValue] = useState<T>(initialValue);
-
-  // Only load from localStorage once component is mounted
+  
+  // FIXED: Use isMounted flag to ensure localStorage is only accessed after mounting
+  const [isMounted, setIsMounted] = useState(false);
+  
   useEffect(() => {
-    try {
-      // Get from local storage by key
-      const item = localStorage.getItem(key);
-      // Parse stored json or if none return initialValue
-      setStoredValue(item ? JSON.parse(item) : initialValue);
-    } catch (error) {
-      // If error also return initialValue
-      console.error("Error loading from localStorage:", error);
+    setIsMounted(true);
+    
+    // Only attempt to get from localStorage after component is mounted
+    if (typeof window !== 'undefined') {
+      try {
+        const item = localStorage.getItem(key);
+        if (item) {
+          setStoredValue(JSON.parse(item));
+        }
+      } catch (error) {
+        console.error("Error loading from localStorage:", error);
+      }
     }
-  }, [key, initialValue]);
-
+  }, [key]);
+  
   // Return a wrapped version of useState's setter function that persists the new value to localStorage
   const setValue = (value: T | ((val: T) => T)) => {
     try {
@@ -51,12 +58,12 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val
       const valueToStore = value instanceof Function ? value(storedValue) : value;
       // Save state
       setStoredValue(valueToStore);
-      // Save to local storage
-      if (typeof window !== "undefined") {
+      
+      // Only save to localStorage if component is mounted and window is available
+      if (isMounted && typeof window !== 'undefined') {
         localStorage.setItem(key, JSON.stringify(valueToStore));
       }
     } catch (error) {
-      // A more advanced implementation would handle the error case
       console.error("Error saving to localStorage:", error);
     }
   };
@@ -228,6 +235,12 @@ export default function MusicPageContent() {
   const [currentTime, setCurrentTime] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+
+  // FIXED: Use isMounted pattern for client-side only code
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // When adding a new track, set the current index to 0 (the newest track)
   useEffect(() => {
@@ -460,10 +473,10 @@ export default function MusicPageContent() {
     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
+  // FIXED: Use isMounted check for localStorage operations
   const saveTrack = (track: Track) => {
     try {
-      // IMPORTANT: Use browser check before accessing localStorage
-      if (typeof window === 'undefined') return;
+      if (!isMounted || typeof window === 'undefined') return;
       
       // Get current saved tracks or initialize empty array
       const savedTracksJson = localStorage.getItem('savedTracks');
