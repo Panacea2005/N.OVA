@@ -1,4 +1,7 @@
-"use client";
+'use client';
+
+// Your existing MusicPageContent component (from document #6)
+// This component will only be loaded via client-side code and will never be server-rendered
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -156,8 +159,7 @@ const PixelArtCover = ({
   );
 };
 
-// Main component function with client-side data loading
-function MusicPageContent() {
+export default function MusicPageContent() {
   const [prompt, setPrompt] = useState("");
   const [title, setTitle] = useState("");
   const [negativeTags, setNegativeTags] = useState("");
@@ -197,18 +199,9 @@ function MusicPageContent() {
   const [currentTime, setCurrentTime] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  const [isMounted, setIsMounted] = useState(false);
 
-  // Set mounted state once component mounts on client side
+  // Load saved tracks from localStorage
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  // Only run client-side code after component is mounted
-  useEffect(() => {
-    if (!isMounted) return;
-    
-    // Try to load saved tracks from localStorage
     try {
       const savedTracksJson = localStorage.getItem('generatedTracks');
       if (savedTracksJson) {
@@ -223,12 +216,10 @@ function MusicPageContent() {
     } catch (error) {
       console.error('Error loading from localStorage:', error);
     }
-  }, [isMounted]);
+  }, []);
 
+  // Save tracks to localStorage when they change
   useEffect(() => {
-    if (!isMounted) return;
-    
-    // Save tracks to localStorage when they change
     if (generatedTracks.length > 0) {
       try {
         localStorage.setItem('generatedTracks', JSON.stringify(generatedTracks));
@@ -236,12 +227,10 @@ function MusicPageContent() {
         console.error('Error saving to localStorage:', error);
       }
     }
-  }, [generatedTracks, isMounted]);
+  }, [generatedTracks]);
 
+  // Save history to localStorage when it changes
   useEffect(() => {
-    if (!isMounted) return;
-    
-    // Save history to localStorage when it changes
     if (generationHistory.length > 0) {
       try {
         localStorage.setItem('generationHistory', JSON.stringify(generationHistory));
@@ -249,11 +238,10 @@ function MusicPageContent() {
         console.error('Error saving history to localStorage:', error);
       }
     }
-  }, [generationHistory, isMounted]);
+  }, [generationHistory]);
 
+  // Handle audio playback
   useEffect(() => {
-    if (!isMounted) return;
-    
     const audio = audioRef.current;
     if (!audio) return;
 
@@ -273,16 +261,14 @@ function MusicPageContent() {
       audio.removeEventListener("timeupdate", updateTime);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, [currentTrack, isMounted]);
+  }, [currentTrack]);
 
+  // When adding a new track, set the current index to 0 (the newest track)
   useEffect(() => {
-    if (!isMounted) return;
-    
-    // When adding a new track, set the current index to 0 (the newest track)
     if (generatedTracks.length > 0) {
       setCurrentTrackIndex(0);
     }
-  }, [generatedTracks.length, isMounted]);
+  }, [generatedTracks.length]);
 
   const handleGenerate = async () => {
     if (!prompt.trim() && !instrumental) return;
@@ -508,8 +494,6 @@ function MusicPageContent() {
     audioUrl?: string;
     instrumental?: boolean;
   }) => {
-    if (!isMounted) return;
-    
     try {
       // Get current saved tracks or initialize empty array
       const savedTracksJson = localStorage.getItem('savedTracks');
@@ -701,35 +685,6 @@ function MusicPageContent() {
       </div>
     );
   };
-
-  // Show a loading state until the component is safely mounted on the client
-  if (!isMounted) {
-    return (
-      <main className="relative min-h-screen bg-black text-white font-mono">
-        <div className="fixed inset-0 bg-black z-0" />
-        <div
-          className="fixed inset-0 z-0 opacity-10"
-          style={{
-            backgroundImage:
-              "linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px)",
-            backgroundSize: "40px 40px",
-          }}
-        />
-        <Navigation />
-        
-        <div className="container mx-auto px-2 pt-24 pb-16 relative z-10 flex items-center justify-center h-screen">
-          <div className="text-center">
-            <div className="w-16 h-16 border-t-2 border-b-2 border-white rounded-full animate-spin mb-4 mx-auto" />
-            <div className="text-white/70 uppercase">
-              Loading N.AURORA Music Generator...
-            </div>
-          </div>
-        </div>
-        
-        <Footer />
-      </main>
-    );
-  }
   
   return (
     <main className="relative min-h-screen bg-black text-white font-mono">
@@ -1069,7 +1024,7 @@ function MusicPageContent() {
                       <audio 
                         ref={audioRef} 
                         onError={(e) => {
-                          console.error('Audio error:', e);
+                          console.error('Error playing audio:', e);
                           setIsPlaying(false);
                           setErrorMessage("Error playing audio. Please try again.");
                         }}
@@ -1188,6 +1143,3 @@ function MusicPageContent() {
     </main>
   );
 }
-
-// Export the component
-export default MusicPageContent;
