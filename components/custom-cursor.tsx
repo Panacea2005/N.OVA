@@ -34,9 +34,9 @@ const MinimalCustomCursor = () => {
         setIsVisible(true);
       }
     };
-    
+
     checkDevice();
-    
+
     return () => {
       // Restore default cursor on unmount
       document.body.style.cursor = "auto";
@@ -46,42 +46,42 @@ const MinimalCustomCursor = () => {
   // Track cursor position and interactions
   useEffect(() => {
     if (isMobile) return; // Don't run on mobile
-    
+
     const handleMouseMove = (e: MouseEvent) => {
       setPosition({ x: e.clientX, y: e.clientY });
-      
+
       // Check if hovering over clickable elements
       const target = e.target as HTMLElement;
-      const isClickable = 
-        target.tagName === "A" || 
-        target.tagName === "BUTTON" || 
+      const isClickable =
+        target.tagName === "A" ||
+        target.tagName === "BUTTON" ||
         target.onclick !== null ||
-        target.closest("a") !== null || 
+        target.closest("a") !== null ||
         target.closest("button") !== null ||
         window.getComputedStyle(target).cursor === "pointer";
-      
+
       setIsHovered(isClickable);
     };
 
     const handleMouseDown = () => {
       setIsClicked(true);
-      
+
       // Create a tracer effect on click
       const newPoint = {
         id: nextId,
         x: position.x,
         y: position.y
       };
-      
+
       setTracerPoints(prev => [...prev, newPoint]);
       setNextId(prev => prev + 1);
-      
+
       // Remove the tracer point after animation completes
       setTimeout(() => {
         setTracerPoints(prev => prev.filter(point => point.id !== newPoint.id));
       }, 800);
     };
-    
+
     const handleMouseUp = () => setIsClicked(false);
     const handleMouseEnter = () => setIsVisible(true);
     const handleMouseLeave = () => setIsVisible(false);
@@ -122,7 +122,7 @@ const MinimalCustomCursor = () => {
           cursor: text !important;
         }
       `}</style>
-      
+
       {/* Main cursor elements */}
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 9999 }}>
         {/* Dot cursor */}
@@ -148,7 +148,7 @@ const MinimalCustomCursor = () => {
             pointerEvents: "none",
           }}
         />
-        
+
         {/* Ring cursor */}
         <motion.div
           animate={{
@@ -173,20 +173,20 @@ const MinimalCustomCursor = () => {
             pointerEvents: "none",
           }}
         />
-        
+
         {/* Click tracer effects */}
         <AnimatePresence>
           {tracerPoints.map(point => (
             <motion.div
               key={point.id}
-              initial={{ 
-                opacity: 0.7, 
+              initial={{
+                opacity: 0.7,
                 scale: 0.3,
-                x: point.x - 15, 
+                x: point.x - 15,
                 y: point.y - 15
               }}
-              animate={{ 
-                opacity: 0, 
+              animate={{
+                opacity: 0,
                 scale: 1
               }}
               exit={{ opacity: 0 }}

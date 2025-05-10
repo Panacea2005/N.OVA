@@ -5,9 +5,9 @@ import { Connection, PublicKey, Transaction, clusterApiUrl, LAMPORTS_PER_SOL } f
 import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress, getAccount } from '@solana/spl-token';
 
 // Define your token addresses - Replace with actual addresses
-const NOVA_TOKEN_ADDRESS = new PublicKey('H2LhfTsiT2RWKpbyDLstZALcvVyUcaZmM2T7GtQoGJCu'); 
-const POOL_ID = new PublicKey('4Kp5kkpSjcxk2cKKJu1SLS6mev6AL5PZxy1a4MWjkRV7'); 
-const POOL_AUTHORITY = new PublicKey('GZN35rw1vVgPgdGB5xsK1ZxsNm49RbMxdcw92PnJGfXZ'); 
+const NOVA_TOKEN_ADDRESS = new PublicKey('H2LhfTsiT2RWKpbyDLstZALcvVyUcaZmM2T7GtQoGJCu');
+const POOL_ID = new PublicKey('4Kp5kkpSjcxk2cKKJu1SLS6mev6AL5PZxy1a4MWjkRV7');
+const POOL_AUTHORITY = new PublicKey('GZN35rw1vVgPgdGB5xsK1ZxsNm49RbMxdcw92PnJGfXZ');
 
 declare global {
     interface Window {
@@ -32,7 +32,7 @@ export const usePhantom = () => {
                     NOVA_TOKEN_ADDRESS,
                     walletPublicKey
                 );
-                
+
                 try {
                     const tokenAccountInfo = await getAccount(connection, tokenAccount);
                     setNovaBalance(Number(tokenAccountInfo.amount));
@@ -53,11 +53,11 @@ export const usePhantom = () => {
     const fetchBalances = async (walletPublicKey: PublicKey) => {
         try {
             setIsLoading(true);
-            
+
             // Get SOL balance
             const solBalance = await connection.getBalance(walletPublicKey);
             setBalance(solBalance / LAMPORTS_PER_SOL);
-            
+
             // Get NOVA token balance
             await fetchNovaBalance(walletPublicKey);
         } catch (error) {
@@ -76,11 +76,11 @@ export const usePhantom = () => {
                 if (solana && solana.isPhantom) {
                     const response = await solana.connect({ onlyIfTrusted: true });
                     const publicKeyObj = new PublicKey(response.publicKey.toString());
-                    
+
                     setWalletAddress(response.publicKey.toString());
                     setPublicKey(publicKeyObj);
                     setIsConnected(true);
-                    
+
                     // Fetch balances
                     await fetchBalances(publicKeyObj);
                 }
@@ -127,14 +127,14 @@ export const usePhantom = () => {
             if (solana && solana.isPhantom) {
                 const response = await solana.connect();
                 const publicKeyObj = new PublicKey(response.publicKey.toString());
-                
+
                 setWalletAddress(response.publicKey.toString());
                 setPublicKey(publicKeyObj);
                 setIsConnected(true);
-                
+
                 // Fetch balances
                 await fetchBalances(publicKeyObj);
-                
+
                 return response.publicKey.toString();
             } else {
                 window.open('https://phantom.app/', '_blank');
@@ -183,24 +183,24 @@ export const usePhantom = () => {
     const signAndSendTransaction = async (transaction: Transaction): Promise<string> => {
         try {
             if (!publicKey) throw new Error('Wallet not connected');
-            
+
             const { solana } = window;
             if (solana && solana.isPhantom) {
                 transaction.feePayer = publicKey;
                 transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-                
+
                 // Sign the transaction
                 const signedTransaction = await solana.signTransaction(transaction);
-                
+
                 // Send the transaction
                 const signature = await connection.sendRawTransaction(signedTransaction.serialize());
-                
+
                 // Wait for confirmation
                 await connection.confirmTransaction(signature);
-                
+
                 // Refresh balances after transaction
                 await fetchBalances(publicKey);
-                
+
                 return signature;
             } else {
                 throw new Error('Phantom wallet not installed');

@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "backend": "cd backend && npm run dev",
+    "dev:all": "concurrently \"npm run dev\" \"npm run backend\""
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",
@@ -99,6 +101,7 @@
     "@types/react-dom": "^18",
     "@types/three": "^0.161.2",
     "autoprefixer": "^10.4.21",
+    "concurrently": "^9.1.2",
     "eslint": "^8",
     "eslint-config-next": "14.1.0",
     "postcss": "^8.5.3",

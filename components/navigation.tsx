@@ -90,9 +90,8 @@ export default function Navigation() {
     <>
       {/* Fixed Navigation Bar */}
       <motion.nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? "bg-black border-b border-white/10" : ""
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-black border-b border-white/10" : ""
+          }`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.5 }}
@@ -102,7 +101,7 @@ export default function Navigation() {
           <Link href="/" className="relative group">
             <div className="flex items-center">
               <span className="text-xl font-mono font-light">N.OVA</span>
-              <motion.div 
+              <motion.div
                 className="absolute -bottom-1 left-0 h-px bg-white w-0 group-hover:w-full transition-all duration-300"
                 initial={{ width: 0 }}
                 animate={{ width: "0%" }}
@@ -114,7 +113,7 @@ export default function Navigation() {
           <div className="flex items-center gap-4">
             {/* Connect Wallet Button */}
             <ConnectWalletButton />
-            
+
             {/* Menu Button */}
             <button
               ref={menuButtonRef}
@@ -201,7 +200,7 @@ export default function Navigation() {
                     transition={{ delay: groupIndex * 0.1 }}
                     className="mb-12 relative"
                   >
-                    <div 
+                    <div
                       className="flex items-center mb-4 cursor-pointer group"
                       onClick={() => setActiveGroup(activeGroup === groupIndex ? null : groupIndex)}
                     >
@@ -214,11 +213,11 @@ export default function Navigation() {
                             {group.name}
                           </span>
                           <div className="flex items-center justify-center w-6 h-6">
-                            <svg 
-                              width="12" 
-                              height="12" 
-                              viewBox="0 0 12 12" 
-                              fill="none" 
+                            <svg
+                              width="12"
+                              height="12"
+                              viewBox="0 0 12 12"
+                              fill="none"
                               xmlns="http://www.w3.org/2000/svg"
                               className={`transition-transform duration-300 ${activeGroup === groupIndex ? 'rotate-45' : 'rotate-0'}`}
                             >
@@ -232,7 +231,7 @@ export default function Navigation() {
 
                     <AnimatePresence>
                       {activeGroup === groupIndex && (
-                        <motion.div 
+                        <motion.div
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
@@ -259,10 +258,9 @@ export default function Navigation() {
                                   <span className="text-6xl md:text-7xl font-light tracking-tighter text-white/90 group-hover:text-white transition-all duration-300">
                                     {item.name}
                                   </span>
-                                  <div 
-                                    className={`w-0 group-hover:w-full h-px bg-white transition-all duration-500 mt-1 ${
-                                      activeItem === item.name ? "w-full" : "w-0"
-                                    }`}
+                                  <div
+                                    className={`w-0 group-hover:w-full h-px bg-white transition-all duration-500 mt-1 ${activeItem === item.name ? "w-full" : "w-0"
+                                      }`}
                                   ></div>
                                 </div>
                               </Link>
@@ -275,7 +273,7 @@ export default function Navigation() {
                 ))}
               </div>
             </div>
-            
+
             {/* Holographic Sphere Area - Only visible on desktop */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -291,7 +289,7 @@ export default function Navigation() {
                   <Environment preset="night" />
                 </Canvas>
               </div>
-              
+
               {/* Minimalist circles */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-64 h-64 border border-white/10 rounded-full"></div>
