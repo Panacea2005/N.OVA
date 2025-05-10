@@ -1,71 +1,61 @@
-export const dynamic = 'force-dynamic';
+"use client";
 
-export default function MusicPageShell() {
+import { useState, useEffect } from 'react';
+import Navigation from "@/components/navigation";
+import Footer from "@/components/footer";
+
+export default function MusicPage() {
+  const [isClient, setIsClient] = useState(false);
+
+  // This effect runs only in the browser, after hydration
+  useEffect(() => {
+    setIsClient(true);
+    
+    // Load the music component dynamically (only in browser)
+    import('./components/MusicPageContent')
+      .then(module => {
+        const MusicPageContent = module.default;
+        const appRoot = document.getElementById('music-app-root');
+        
+        if (appRoot) {
+          // Create a new React root and render the music component
+          const { createRoot } = require('react-dom/client');
+          const root = createRoot(appRoot);
+          root.render(<MusicPageContent />);
+        }
+      })
+      .catch(error => {
+        console.error('Failed to load music component:', error);
+      });
+  }, []);
+
   return (
-    <div className="min-h-screen bg-black text-white font-mono flex items-center justify-center">
-      <div id="music-app-root">
-        {/* This is intentionally empty - the client script will mount the app here */}
-        <noscript>
-          <div className="text-center p-8">
-            <div className="mb-4">JavaScript is required to use the Music Generator</div>
-            <div className="text-sm opacity-70">Please enable JavaScript in your browser</div>
-          </div>
-        </noscript>
-      </div>
-      
-      {/* Client-side script to inject the app once hydrated */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            (function() {
-              // Only run in the browser
-              if (typeof window === 'undefined') return;
-              
-              function loadApp() {
-                const root = document.getElementById('music-app-root');
-                if (!root) return;
-                
-                // First, show loading state
-                root.innerHTML = \`
-                  <div class="text-center">
-                    <div class="w-16 h-16 border-t-2 border-b-2 border-white rounded-full animate-spin mb-4 mx-auto"></div>
-                    <div class="text-white/70 uppercase">Loading N.AURORA Music Generator...</div>
-                  </div>
-                \`;
-                
-                // Dynamic import the app component
-                import('/music/components/client')
-                  .then(module => {
-                    const App = module.default;
-                    // Create a container for the app
-                    const appContainer = document.createElement('div');
-                    root.innerHTML = '';
-                    root.appendChild(appContainer);
-                    
-                    // Render the app
-                    App(appContainer);
-                  })
-                  .catch(error => {
-                    console.error('Failed to load music app:', error);
-                    root.innerHTML = \`
-                      <div class="text-center text-red-500 p-8">
-                        <div class="mb-4">Failed to load the Music Generator</div>
-                        <div class="text-sm opacity-70">Please try refreshing the page</div>
-                      </div>
-                    \`;
-                  });
-              }
-              
-              // Load app when DOM is ready
-              if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', loadApp);
-              } else {
-                loadApp();
-              }
-            })();
-          `,
+    <main className="relative min-h-screen bg-black text-white font-mono">
+      <div className="fixed inset-0 bg-black z-0" />
+      <div
+        className="fixed inset-0 z-0 opacity-10"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
         }}
       />
+      <Navigation />
+
+      {/* Container for the dynamically loaded music component */}
+      <div id="music-app-root" className="container mx-auto px-2 pt-24 pb-16 relative z-10">
+        {!isClient && (
+          <div className="flex items-center justify-center min-h-[70vh]">
+            <div className="text-center">
+              <div className="w-16 h-16 border-t-2 border-b-2 border-white rounded-full animate-spin mb-4 mx-auto" />
+              <div className="text-white/70 uppercase">Loading N.AURORA Music Generator...</div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <Footer />
+
       <style jsx global>{`
         @keyframes spin {
           to { transform: rotate(360deg); }
@@ -73,7 +63,30 @@ export default function MusicPageShell() {
         .animate-spin {
           animation: spin 1s linear infinite;
         }
+        
+        ::-webkit-scrollbar {
+          width: 6px;
+          height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+          background-color: rgba(255, 255, 255, 0.3);
+          border-radius: 0;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+          background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        * {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+        }
       `}</style>
-    </div>
+    </main>
   );
 }

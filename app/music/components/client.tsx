@@ -1,6 +1,6 @@
 import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
-import MusicPageContent from './page';
+import MusicPageContent from './MusicPageContent';
 
 /**
  * This function creates and mounts the Music app component
