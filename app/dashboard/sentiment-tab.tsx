@@ -1,13 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,13 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BarChart from "@/components/charts/bar-chart";
 import PieChart from "@/components/charts/pie-chart";
 import { motion } from "framer-motion";
-import { getNewsAndSentiment, analyzeSentiment, getTokenSentimentData, detectEvents, createOrderBookWebSocket, OrderBookData, OrderBookEntry } from "./api-service";
-import { ExternalLink, Clock, ThumbsUp, ThumbsDown, MessageSquare, BarChart3, Filter } from "lucide-react";
-import { format, formatDistanceToNow } from "date-fns";
+import { getNewsAndSentiment, analyzeSentiment, getTokenSentimentData, detectEvents, createOrderBookWebSocket, OrderBookData } from "./api-service";
+import { ExternalLink, Clock, ThumbsUp, ThumbsDown, MessageSquare, Filter } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Toggle } from "@/components/ui/toggle";
 import { cn } from "@/lib/utils";
+import { Toggle } from "@/components/ui/toggle";
 
 // Types for news items from CryptoPanic
 interface NewsItem {
@@ -57,13 +49,6 @@ interface NewsItem {
         slug: string;
         url: string;
     }>;
-}
-
-interface CryptoPanicResponse {
-    count: number;
-    next: string | null;
-    previous: string | null;
-    results: NewsItem[];
 }
 
 // Types for sentiment data
@@ -127,37 +112,37 @@ function OrderBook({ market = "SOL/USDC" }: { market?: string }) {
     };
 
     return (
-        <Card className="glassmorphic border-glow h-full">
-            <CardHeader className="pb-2">
-                <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg">Market Depth: {market}</CardTitle>
+        <div className="border border-white/30 p-0.5 h-full">
+            <div className="border border-white/10 p-5 h-full">
+                <div className="flex justify-between items-center mb-4">
+                    <div>
+                        <h2 className="text-xl font-light uppercase">Market Depth: {market}</h2>
+                        <p className="text-white/60 text-sm uppercase">Real-time order book data</p>
+                    </div>
                     {isConnected && (
                         <div className="flex items-center">
                             <span className="inline-block w-2 h-2 bg-green-400 rounded-full animate-pulse mr-1"></span>
-                            <span className="text-xs text-gray-400">Live</span>
+                            <span className="text-xs text-white/60">LIVE</span>
                         </div>
                     )}
                 </div>
-                <CardDescription>Real-time order book data</CardDescription>
-            </CardHeader>
-            <CardContent>
                 {!orderBookData ? (
                     <div className="h-[200px] flex items-center justify-center">
-                        <div className="animate-pulse text-purple-400">Connecting to order book...</div>
+                        <div className="animate-pulse text-white/60">Connecting to order book...</div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-0">
                         {/* Asks (Sell Orders) */}
-                        <div>
-                            <div className="text-sm text-red-400 mb-1 font-semibold">Asks (Sellers)</div>
-                            <div className="space-y-1 max-h-[200px] overflow-y-auto pr-2">
+                        <div className="border border-white/20 p-5">
+                            <div className="text-sm text-red-400 mb-3 uppercase">Asks (Sellers)</div>
+                            <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2">
                                 {orderBookData.asks.slice(0, 10).map((ask, index) => (
                                     <div key={`ask-${index}`} className="flex items-center text-xs">
                                         <div className="w-20 text-red-300">${formatPrice(ask.price)}</div>
-                                        <div className="w-20 text-gray-400">{ask.size.toFixed(3)}</div>
-                                        <div className="flex-grow h-1 bg-gray-800 rounded-full overflow-hidden">
+                                        <div className="w-20 text-white/60">{ask.size.toFixed(3)}</div>
+                                        <div className="flex-grow h-1 bg-white/10 overflow-hidden">
                                             <div
-                                                className="h-full bg-red-500/30 rounded-full"
+                                                className="h-full bg-red-500/30"
                                                 style={{ width: `${(ask.size / maxVolume) * 100}%` }}
                                             ></div>
                                         </div>
@@ -167,16 +152,16 @@ function OrderBook({ market = "SOL/USDC" }: { market?: string }) {
                         </div>
 
                         {/* Bids (Buy Orders) */}
-                        <div>
-                            <div className="text-sm text-green-400 mb-1 font-semibold">Bids (Buyers)</div>
-                            <div className="space-y-1 max-h-[200px] overflow-y-auto pr-2">
+                        <div className="border border-white/20 p-5">
+                            <div className="text-sm text-green-400 mb-3 uppercase">Bids (Buyers)</div>
+                            <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2">
                                 {orderBookData.bids.slice(0, 10).map((bid, index) => (
                                     <div key={`bid-${index}`} className="flex items-center text-xs">
                                         <div className="w-20 text-green-300">${formatPrice(bid.price)}</div>
-                                        <div className="w-20 text-gray-400">{bid.size.toFixed(3)}</div>
-                                        <div className="flex-grow h-1 bg-gray-800 rounded-full overflow-hidden">
+                                        <div className="w-20 text-white/60">{bid.size.toFixed(3)}</div>
+                                        <div className="flex-grow h-1 bg-white/10 overflow-hidden">
                                             <div
-                                                className="h-full bg-green-500/30 rounded-full"
+                                                className="h-full bg-green-500/30"
                                                 style={{ width: `${(bid.size / maxVolume) * 100}%` }}
                                             ></div>
                                         </div>
@@ -187,19 +172,19 @@ function OrderBook({ market = "SOL/USDC" }: { market?: string }) {
 
                         {/* Middle indicator - spread */}
                         {orderBookData.asks.length > 0 && orderBookData.bids.length > 0 && (
-                            <div className="col-span-2 mt-2 flex justify-between items-center text-xs">
-                                <div className="text-gray-400">
+                            <div className="col-span-2 mt-4 flex justify-between items-center text-xs border-t border-white/10 pt-4">
+                                <div className="text-white/60 uppercase">
                                     Spread: ${(orderBookData.asks[0].price - orderBookData.bids[0].price).toFixed(2)}
                                 </div>
-                                <div className="text-gray-400">
+                                <div className="text-white/60 uppercase">
                                     {((orderBookData.asks[0].price - orderBookData.bids[0].price) / orderBookData.asks[0].price * 100).toFixed(2)}%
                                 </div>
                             </div>
                         )}
                     </div>
                 )}
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }
 
@@ -684,17 +669,17 @@ export default function SentimentTab() {
     const getSentimentBadge = (status: string) => {
         switch (status.toLowerCase()) {
             case "very bullish":
-                return <Badge className="bg-green-600">Very Bullish</Badge>;
+                return <Badge className="border border-green-600 text-green-400 bg-transparent">Very Bullish</Badge>;
             case "bullish":
-                return <Badge className="bg-green-400">Bullish</Badge>;
+                return <Badge className="border border-green-400 text-green-400 bg-transparent">Bullish</Badge>;
             case "neutral":
-                return <Badge className="bg-yellow-400 text-black">Neutral</Badge>;
+                return <Badge className="border border-yellow-400 text-yellow-400 bg-transparent">Neutral</Badge>;
             case "bearish":
-                return <Badge className="bg-red-400">Bearish</Badge>;
+                return <Badge className="border border-red-400 text-red-400 bg-transparent">Bearish</Badge>;
             case "very bearish":
-                return <Badge className="bg-red-600">Very Bearish</Badge>;
+                return <Badge className="border border-red-600 text-red-400 bg-transparent">Very Bearish</Badge>;
             default:
-                return <Badge className="bg-yellow-400 text-black">Neutral</Badge>;
+                return <Badge className="border border-yellow-400 text-yellow-400 bg-transparent">Neutral</Badge>;
         }
     };
 
@@ -724,37 +709,35 @@ export default function SentimentTab() {
             {/* Top row with sentiment search and market depth */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 {/* Sentiment Analysis Card */}
-                <Card className="glassmorphic border-glow">
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
+                <div className="border border-white/30 p-0.5">
+                    <div className="border border-white/10 p-5">
+                        <div className="flex items-center justify-between mb-4">
                             <div>
-                                <CardTitle>Sentiment Analysis</CardTitle>
-                                <CardDescription>
-                                    Track market sentiment and news across the Solana ecosystem
-                                </CardDescription>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Input
-                                    type="text"
-                                    placeholder="Analyze any token or topic..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-[250px] bg-black/50"
-                                    onKeyDown={(e) => {
-                                        if (e.key === "Enter") handleSearch();
-                                    }}
-                                />
-                                <Button
-                                    onClick={handleSearch}
-                                    disabled={isSearching}
-                                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                                >
-                                    {isSearching ? "Analyzing..." : "Analyze"}
-                                </Button>
+                                <h2 className="text-xl font-light uppercase">Sentiment Analysis</h2>
+                                <p className="text-white/60 text-sm uppercase">Track market sentiment across the Solana ecosystem</p>
                             </div>
                         </div>
-                    </CardHeader>
-                </Card>
+                        <div className="flex items-center space-x-2">
+                            <Input
+                                type="text"
+                                placeholder="Analyze any token or topic..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="bg-black border-white/20 text-white/80"
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") handleSearch();
+                                }}
+                            />
+                            <Button
+                                onClick={handleSearch}
+                                disabled={isSearching}
+                                className="bg-white text-black hover:bg-white/90 uppercase"
+                            >
+                                {isSearching ? "Analyzing..." : "Analyze"}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
 
                 {/* Real-time Order Book */}
                 <OrderBook market="SOL/USDC" />
@@ -767,225 +750,231 @@ export default function SentimentTab() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
                 >
-                    <Card className="glassmorphic border-glow">
-                        <CardHeader>
-                            <CardTitle>Sentiment Analysis: {searchTerm}</CardTitle>
-                            <CardDescription>
-                                Based on recent social media, news, and on-chain data
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="space-y-2">
-                                    <div className="text-sm text-gray-400">Sentiment Score</div>
-                                    <div className={`text-3xl font-bold ${getSentimentColor(searchResults.score)}`}>
+                    <div className="border border-white/30 p-0.5 mb-8">
+                        <div className="border border-white/10 p-5">
+                            <div className="mb-4">
+                                <h2 className="text-xl font-light uppercase">Sentiment Analysis: {searchTerm}</h2>
+                                <p className="text-white/60 text-sm uppercase">Based on recent social media, news, and on-chain data</p>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
+                                <div className="border border-white/20 p-5">
+                                    <div className="text-sm text-white/60 mb-1 uppercase">Sentiment Score</div>
+                                    <div className={`text-3xl font-light ${getSentimentColor(searchResults.score)}`}>
                                         {searchResults.score}/100
                                     </div>
-                                    <div>{getSentimentBadge(searchResults.trend)}</div>
+                                    <div className="mt-2">{getSentimentBadge(searchResults.trend)}</div>
                                 </div>
-                                <div className="space-y-2">
-                                    <div className="text-sm text-gray-400">Mentions</div>
-                                    <div className="text-3xl font-bold">{searchResults.mentions.toLocaleString()}</div>
-                                    <div className="text-sm text-gray-400">across platforms</div>
+                                <div className="border border-white/20 p-5">
+                                    <div className="text-sm text-white/60 mb-1 uppercase">Mentions</div>
+                                    <div className="text-3xl font-light">{searchResults.mentions.toLocaleString()}</div>
+                                    <div className="text-sm text-white/60 mt-2 uppercase">across platforms</div>
                                 </div>
-                                <div className="space-y-2">
-                                    <div className="text-sm text-gray-400">Last Updated</div>
-                                    <div className="text-lg">{getTimeDisplay(searchResults.timestamp)}</div>
+                                <div className="border border-white/20 p-5">
+                                    <div className="text-sm text-white/60 mb-1 uppercase">Last Updated</div>
+                                    <div className="text-xl font-light">{getTimeDisplay(searchResults.timestamp)}</div>
                                 </div>
                             </div>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </div>
                 </motion.div>
             )}
 
             {/* Main Sentiment Tabs */}
-            <Tabs defaultValue="tokens" className="w-full">
-                <TabsList className="grid grid-cols-4 mb-6">
-                    <TabsTrigger value="tokens">Tokens</TabsTrigger>
-                    <TabsTrigger value="nfts">NFTs</TabsTrigger>
-                    <TabsTrigger value="news">News & Events</TabsTrigger>
-                    <TabsTrigger value="community">Community</TabsTrigger>
-                </TabsList>
+            <div className="border border-white/30 p-0.5 mb-8">
+                <div className="border border-white/10 p-5">
+                    <Tabs defaultValue="tokens" className="w-full">
+                        <TabsList className="grid grid-cols-4 mb-6">
+                            <TabsTrigger 
+                                value="tokens" 
+                                className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white uppercase"
+                            >
+                                Tokens
+                            </TabsTrigger>
+                            <TabsTrigger 
+                                value="nfts" 
+                                className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white uppercase"
+                            >
+                                NFTs
+                            </TabsTrigger>
+                            <TabsTrigger 
+                                value="news" 
+                                className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white uppercase"
+                            >
+                                News & Events
+                            </TabsTrigger>
+                            <TabsTrigger 
+                                value="community" 
+                                className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white uppercase"
+                            >
+                                Community
+                            </TabsTrigger>
+                        </TabsList>
 
-                {/* Token Sentiment Tab */}
-                <TabsContent value="tokens">
-                    {loading ? (
-                        <div className="h-[400px] flex items-center justify-center">
-                            <div className="animate-pulse text-purple-400">Loading token sentiment data...</div>
-                        </div>
-                    ) : tokenSentiment.length === 0 ? (
-                        <div className="h-[400px] flex items-center justify-center">
-                            <div className="text-purple-400">No token sentiment data available</div>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {Array.isArray(tokenSentiment) ? tokenSentiment.map((token) => (
-                                <Card key={token.name} className="glassmorphic border-glow">
-                                    <CardHeader className="pb-2">
-                                        <div className="flex justify-between items-center">
-                                            <CardTitle>{token.name}</CardTitle>
-                                            {getSentimentBadge(token.status)}
-                                        </div>
-                                        <CardDescription>
-                                            {token.mentions.toLocaleString()} mentions, {token.change} last 24h
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div className="space-y-1">
-                                                <div className="text-sm text-gray-400">Sentiment Score</div>
-                                                <div className={`text-2xl font-bold ${getSentimentColor(token.score)}`}>
-                                                    {token.score}/100
+                        {/* Token Sentiment Tab */}
+                        <TabsContent value="tokens">
+                            {loading ? (
+                                <div className="h-[400px] flex items-center justify-center">
+                                    <div className="animate-pulse text-white/60">Loading token sentiment data...</div>
+                                </div>
+                            ) : tokenSentiment.length === 0 ? (
+                                <div className="h-[400px] flex items-center justify-center">
+                                    <div className="text-white/60">No token sentiment data available</div>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {Array.isArray(tokenSentiment) ? tokenSentiment.map((token) => (
+                                        <div key={token.name} className="border border-white/30 p-0.5">
+                                            <div className="border border-white/10 p-5">
+                                                <div className="flex justify-between items-center mb-4">
+                                                    <h3 className="text-lg font-light uppercase">{token.name}</h3>
+                                                    {getSentimentBadge(token.status)}
                                                 </div>
-                                            </div>
-                                            <div className="h-[100px] w-full max-w-[200px]">
-                                                <BarChart data={token.chartData} />
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            )) : <div className="col-span-2 h-[400px] flex items-center justify-center">
-                                <div className="text-purple-400">Invalid token sentiment data format</div>
-                            </div>}
-                        </div>
-                    )}
-                </TabsContent>
-
-                {/* NFT Sentiment Tab */}
-                <TabsContent value="nfts">
-                    {loading ? (
-                        <div className="h-[400px] flex items-center justify-center">
-                            <div className="animate-pulse text-purple-400">Loading NFT sentiment data...</div>
-                        </div>
-                    ) : nftSentiment.length === 0 ? (
-                        <div className="h-[400px] flex items-center justify-center">
-                            <div className="text-purple-400">No NFT sentiment data available</div>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {Array.isArray(nftSentiment) ? nftSentiment.map((nft) => (
-                                <Card key={nft.name} className="glassmorphic border-glow">
-                                    <CardHeader className="pb-2">
-                                        <div className="flex justify-between items-center">
-                                            <CardTitle>{nft.name}</CardTitle>
-                                            {getSentimentBadge(nft.status)}
-                                        </div>
-                                        <CardDescription>
-                                            {nft.mentions.toLocaleString()} mentions, {nft.change} last 24h
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div className="space-y-1">
-                                                <div className="text-sm text-gray-400">Sentiment Score</div>
-                                                <div className={`text-2xl font-bold ${getSentimentColor(nft.score)}`}>
-                                                    {nft.score}/100
-                                                </div>
-                                            </div>
-                                            <div className="h-[100px] w-full max-w-[200px]">
-                                                <BarChart data={nft.chartData} />
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            )) : <div className="col-span-2 h-[400px] flex items-center justify-center">
-                                <div className="text-purple-400">Invalid NFT sentiment data format</div>
-                            </div>}
-                        </div>
-                    )}
-                </TabsContent>
-
-                {/* News & Events Tab */}
-                <TabsContent value="news">
-                    <div className="space-y-6">
-                        {/* News Filter */}
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                                <Filter className="h-4 w-4 text-gray-400" />
-                                <span className="text-gray-400">Filter:</span>
-                            </div>
-                            <div className="flex space-x-2">
-                                <Toggle
-                                    className={cn(
-                                        newsFilter === "trending" ? "bg-purple-500/20 text-purple-300" : "",
-                                        "data-[state=on]:bg-purple-500/20 data-[state=on]:text-purple-300"
-                                    )}
-                                    pressed={newsFilter === "trending"}
-                                    onPressedChange={() => handleFilterChange("trending")}
-                                >
-                                    Trending
-                                </Toggle>
-                                <Toggle
-                                    className={cn(
-                                        newsFilter === "hot" ? "bg-purple-500/20 text-purple-300" : "",
-                                        "data-[state=on]:bg-purple-500/20 data-[state=on]:text-purple-300"
-                                    )}
-                                    pressed={newsFilter === "hot"}
-                                    onPressedChange={() => handleFilterChange("hot")}
-                                >
-                                    Hot
-                                </Toggle>
-                                <Toggle
-                                    className={cn(
-                                        newsFilter === "bullish" ? "bg-purple-500/20 text-purple-300" : "",
-                                        "data-[state=on]:bg-purple-500/20 data-[state=on]:text-purple-300"
-                                    )}
-                                    pressed={newsFilter === "bullish"}
-                                    onPressedChange={() => handleFilterChange("bullish")}
-                                >
-                                    Bullish
-                                </Toggle>
-                                <Toggle
-                                    className={cn(
-                                        newsFilter === "bearish" ? "bg-purple-500/20 text-purple-300" : "",
-                                        "data-[state=on]:bg-purple-500/20 data-[state=on]:text-purple-300"
-                                    )}
-                                    pressed={newsFilter === "bearish"}
-                                    onPressedChange={() => handleFilterChange("bearish")}
-                                >
-                                    Bearish
-                                </Toggle>
-                            </div>
-                        </div>
-
-                        {/* News Cards */}
-                        {loading ? (
-                            <div className="h-[400px] flex items-center justify-center">
-                                <div className="animate-pulse text-purple-400">Loading news data...</div>
-                            </div>
-                        ) : newsData.length === 0 ? (
-                            <div className="h-[400px] flex items-center justify-center">
-                                <div className="text-purple-400">No news data available</div>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 gap-4">
-                                {newsData.slice(0, 10).map((item) => (
-                                    <Card key={item.id} className="glassmorphic border-glow">
-                                        <CardContent className="p-4">
-                                            <div className="flex items-start gap-4">
-                                                {item.metadata?.image && (
-                                                    <div className="w-24 h-24 rounded-md overflow-hidden flex-shrink-0 bg-gray-800">
-                                                        <div className="relative w-full h-full">
-                                                            <Image
-                                                                src={item.metadata.image}
-                                                                alt={item.title}
-                                                                fill
-                                                                style={{ objectFit: "cover" }}
-                                                                className="rounded-md"
-                                                            />
+                                                <p className="text-white/60 text-sm uppercase mb-4">
+                                                    {token.mentions.toLocaleString()} mentions, {token.change} last 24h
+                                                </p>
+                                                <div className="flex items-center justify-between">
+                                                    <div className="space-y-1">
+                                                        <div className="text-sm text-white/60 uppercase">Sentiment Score</div>
+                                                        <div className={`text-2xl font-light ${getSentimentColor(token.score)}`}>
+                                                            {token.score}/100
                                                         </div>
                                                     </div>
+                                                    <div className="h-[100px] w-full max-w-[200px] border border-white/10 p-2">
+                                                        <BarChart data={token.chartData} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )) : <div className="col-span-2 h-[400px] flex items-center justify-center">
+                                        <div className="text-white/60">Invalid token sentiment data format</div>
+                                    </div>}
+                                </div>
+                            )}
+                        </TabsContent>
+
+                        {/* NFT Sentiment Tab */}
+                        <TabsContent value="nfts">
+                            {loading ? (
+                                <div className="h-[400px] flex items-center justify-center">
+                                    <div className="animate-pulse text-white/60">Loading NFT sentiment data...</div>
+                                </div>
+                            ) : nftSentiment.length === 0 ? (
+                                <div className="h-[400px] flex items-center justify-center">
+                                    <div className="text-white/60">No NFT sentiment data available</div>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {Array.isArray(nftSentiment) ? nftSentiment.map((nft) => (
+                                        <div key={nft.name} className="border border-white/30 p-0.5">
+                                            <div className="border border-white/10 p-5">
+                                                <div className="flex justify-between items-center mb-4">
+                                                    <h3 className="text-lg font-light uppercase">{nft.name}</h3>
+                                                    {getSentimentBadge(nft.status)}
+                                                </div>
+                                                <p className="text-white/60 text-sm uppercase mb-4">
+                                                    {nft.mentions.toLocaleString()} mentions, {nft.change} last 24h
+                                                </p>
+                                                <div className="flex items-center justify-between">
+                                                    <div className="space-y-1">
+                                                        <div className="text-sm text-white/60 uppercase">Sentiment Score</div>
+                                                        <div className={`text-2xl font-light ${getSentimentColor(nft.score)}`}>
+                                                            {nft.score}/100
+                                                        </div>
+                                                    </div>
+                                                    <div className="h-[100px] w-full max-w-[200px] border border-white/10 p-2">
+                                                        <BarChart data={nft.chartData} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )) : <div className="col-span-2 h-[400px] flex items-center justify-center">
+                                        <div className="text-white/60">Invalid NFT sentiment data format</div>
+                                    </div>}
+                                </div>
+                            )}
+                        </TabsContent>
+
+                        {/* News & Events Tab */}
+                        <TabsContent value="news">
+                            <div className="space-y-6">
+                                {/* News Filter */}
+                                <div className="border border-white/30 p-0.5 mb-4">
+                                    <div className="border border-white/10 p-4 flex justify-between items-center">
+                                        <div className="flex items-center space-x-2">
+                                            <Filter className="h-4 w-4 text-white/60" />
+                                            <span className="text-white/60 uppercase">Filter:</span>
+                                        </div>
+                                        <div className="flex space-x-2">
+                                            <Toggle
+                                                className={cn(
+                                                    newsFilter === "trending" ? "border-white text-white" : "border-white/20",
+                                                    "uppercase text-xs"
                                                 )}
-                                                <div className="flex-1 space-y-2">
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="text-sm text-gray-400">{item.source.title}</div>
-                                                        <div className="flex items-center space-x-1 text-gray-400">
+                                                pressed={newsFilter === "trending"}
+                                                onPressedChange={() => handleFilterChange("trending")}
+                                            >
+                                                Trending
+                                            </Toggle>
+                                            <Toggle
+                                                className={cn(
+                                                    newsFilter === "hot" ? "border-white text-white" : "border-white/20",
+                                                    "uppercase text-xs"
+                                                )}
+                                                pressed={newsFilter === "hot"}
+                                                onPressedChange={() => handleFilterChange("hot")}
+                                            >
+                                                Hot
+                                            </Toggle>
+                                            <Toggle
+                                                className={cn(
+                                                    newsFilter === "bullish" ? "border-white text-white" : "border-white/20",
+                                                    "uppercase text-xs"
+                                                )}
+                                                pressed={newsFilter === "bullish"}
+                                                onPressedChange={() => handleFilterChange("bullish")}
+                                            >
+                                                Bullish
+                                            </Toggle>
+                                            <Toggle
+                                                className={cn(
+                                                    newsFilter === "bearish" ? "border-white text-white" : "border-white/20",
+                                                    "uppercase text-xs"
+                                                )}
+                                                pressed={newsFilter === "bearish"}
+                                                onPressedChange={() => handleFilterChange("bearish")}
+                                            >
+                                                Bearish
+                                            </Toggle>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* News Cards */}
+                                {loading ? (
+                                    <div className="h-[400px] flex items-center justify-center">
+                                        <div className="animate-pulse text-white/60">Loading news data...</div>
+                                    </div>
+                                ) : newsData.length === 0 ? (
+                                    <div className="h-[400px] flex items-center justify-center">
+                                        <div className="text-white/60">No news data available</div>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {newsData.slice(0, 10).map((item) => (
+                                            <div key={item.id} className="border border-white/30 p-0.5">
+                                                <div className="border border-white/10 p-5">
+                                                    <div className="flex justify-between items-center mb-3">
+                                                        <div className="text-sm text-white/60 uppercase">{item.source.title}</div>
+                                                        <div className="flex items-center space-x-1 text-white/60">
                                                             <Clock className="h-3 w-3" />
-                                                            <span className="text-xs">{getTimeDisplay(item.published_at)}</span>
+                                                            <span className="text-xs uppercase">{getTimeDisplay(item.published_at)}</span>
                                                         </div>
                                                     </div>
-                                                    <h3 className="font-medium text-lg">{item.title}</h3>
-                                                    <div className="flex items-center justify-between">
+                                                    <h3 className="text-xl font-light mb-3">{item.title}</h3>
+                                                    <p className="text-white/80 text-sm mb-4">
+                                                        {item.metadata?.description || "No description available."}
+                                                    </p>
+                                                    <div className="flex justify-between items-center border-t border-white/10 pt-3">
                                                         <div className="flex items-center space-x-3">
                                                             <div className="flex items-center space-x-1">
                                                                 <ThumbsUp className="h-3 w-3 text-green-400" />
@@ -1004,158 +993,153 @@ export default function SentimentTab() {
                                                             href={item.url}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="text-sm text-purple-400 hover:text-purple-300 flex items-center space-x-1"
+                                                            className="text-xs uppercase text-white hover:text-white/80 flex items-center space-x-1 border border-white/20 px-3 py-1 hover:bg-white/5 transition-colors"
                                                         >
                                                             <span>Read</span>
-                                                            <ExternalLink className="h-3 w-3" />
+                                                            <ExternalLink className="h-3 w-3 ml-1" />
                                                         </a>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </CardContent>
-                                    </Card>
-                                ))}
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
-                </TabsContent>
+                        </TabsContent>
 
-                {/* Community Tab */}
-                <TabsContent value="community">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Platform Sentiment */}
-                        <div className="md:col-span-2">
-                            <Card className="glassmorphic border-glow h-full">
-                                <CardHeader>
-                                    <CardTitle>Platform Sentiment Analysis</CardTitle>
-                                    <CardDescription>
-                                        Sentiment breakdown across major social platforms
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    {loading ? (
-                                        <div className="h-[300px] flex items-center justify-center">
-                                            <div className="animate-pulse text-purple-400">Loading platform data...</div>
-                                        </div>
-                                    ) : platformSentiment.length === 0 ? (
-                                        <div className="h-[300px] flex items-center justify-center">
-                                            <div className="text-purple-400">No platform data available</div>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-6">
-                                            {platformSentiment.map((platform) => (
-                                                <div key={platform.name} className="space-y-2">
-                                                    <div className="flex items-center justify-between">
-                                                        <h3 className="font-medium">{platform.name}</h3>
-                                                        <div className="text-sm text-gray-400">
-                                                            {platform.positive + platform.neutral + platform.negative} posts
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex h-4 rounded-full overflow-hidden">
-                                                        <div
-                                                            className="bg-green-500"
-                                                            style={{
-                                                                width: `${(platform.positive /
-                                                                    (platform.positive + platform.neutral + platform.negative)) *
-                                                                    100
-                                                                    }%`,
-                                                            }}
-                                                        />
-                                                        <div
-                                                            className="bg-yellow-500"
-                                                            style={{
-                                                                width: `${(platform.neutral /
-                                                                    (platform.positive + platform.neutral + platform.negative)) *
-                                                                    100
-                                                                    }%`,
-                                                            }}
-                                                        />
-                                                        <div
-                                                            className="bg-red-500"
-                                                            style={{
-                                                                width: `${(platform.negative /
-                                                                    (platform.positive + platform.neutral + platform.negative)) *
-                                                                    100
-                                                                    }%`,
-                                                            }}
-                                                        />
-                                                    </div>
-                                                    <div className="flex text-xs justify-between">
-                                                        <div className="text-green-400">
-                                                            Positive: {platform.positive}
-                                                        </div>
-                                                        <div className="text-yellow-400">
-                                                            Neutral: {platform.neutral}
-                                                        </div>
-                                                        <div className="text-red-400">
-                                                            Negative: {platform.negative}
-                                                        </div>
-                                                    </div>
+                        {/* Community Tab */}
+                        <TabsContent value="community">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {/* Platform Sentiment */}
+                                <div className="md:col-span-2">
+                                    <div className="border border-white/30 p-0.5 h-full">
+                                        <div className="border border-white/10 p-5 h-full">
+                                            <div className="mb-6">
+                                                <h3 className="text-xl font-light uppercase">Platform Sentiment Analysis</h3>
+                                                <p className="text-white/60 text-sm uppercase">Sentiment breakdown across major social platforms</p>
+                                            </div>
+                                            {loading ? (
+                                                <div className="h-[300px] flex items-center justify-center">
+                                                    <div className="animate-pulse text-white/60">Loading platform data...</div>
                                                 </div>
-                                            ))}
+                                            ) : platformSentiment.length === 0 ? (
+                                                <div className="h-[300px] flex items-center justify-center">
+                                                    <div className="text-white/60">No platform data available</div>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-0">
+                                                    {platformSentiment.map((platform) => (
+                                                        <div key={platform.name} className="border border-white/20 p-5">
+                                                            <div className="flex items-center justify-between mb-3">
+                                                                <h4 className="font-mono uppercase text-white/80">{platform.name}</h4>
+                                                                <div className="text-sm text-white/60 uppercase">
+                                                                    {platform.positive + platform.neutral + platform.negative} posts
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex h-4 bg-white/10 overflow-hidden mb-2">
+                                                                <div
+                                                                    className="bg-green-500"
+                                                                    style={{
+                                                                        width: `${(platform.positive /
+                                                                            (platform.positive + platform.neutral + platform.negative)) *
+                                                                            100
+                                                                            }%`,
+                                                                    }}
+                                                                />
+                                                                <div
+                                                                    className="bg-yellow-500"
+                                                                    style={{
+                                                                        width: `${(platform.neutral /
+                                                                            (platform.positive + platform.neutral + platform.negative)) *
+                                                                            100
+                                                                            }%`,
+                                                                    }}
+                                                                />
+                                                                <div
+                                                                    className="bg-red-500"
+                                                                    style={{
+                                                                        width: `${(platform.negative /
+                                                                            (platform.positive + platform.neutral + platform.negative)) *
+                                                                            100
+                                                                            }%`,
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                            <div className="flex text-xs justify-between">
+                                                                <div className="text-green-400">
+                                                                    Positive: {platform.positive}
+                                                                </div>
+                                                                <div className="text-yellow-400">
+                                                                    Neutral: {platform.neutral}
+                                                                </div>
+                                                                <div className="text-red-400">
+                                                                    Negative: {platform.negative}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </div>
+                                    </div>
+                                </div>
 
-                        {/* Upcoming Events */}
-                        <div className="md:col-span-1">
-                            <Card className="glassmorphic border-glow h-full">
-                                <CardHeader>
-                                    <CardTitle>Upcoming Events</CardTitle>
-                                    <CardDescription>
-                                        Community events and announcements
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    {loading ? (
-                                        <div className="h-[300px] flex items-center justify-center">
-                                            <div className="animate-pulse text-purple-400">Loading events...</div>
-                                        </div>
-                                    ) : events.length === 0 ? (
-                                        <div className="h-[300px] flex items-center justify-center">
-                                            <div className="text-purple-400">No upcoming events found</div>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-4">
-                                            {events.map((event, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="p-3 rounded-lg bg-purple-900/20 border border-purple-500/20"
-                                                >
-                                                    <div className="flex items-start justify-between">
-                                                        <h3 className="font-medium text-purple-300">{event.title}</h3>
-                                                        <Badge
-                                                            variant="outline"
-                                                            className={
-                                                                event.impact === "High"
-                                                                    ? "bg-green-900/20 text-green-400 border-green-400/30"
-                                                                    : event.impact === "Medium"
-                                                                        ? "bg-yellow-900/20 text-yellow-400 border-yellow-400/30"
-                                                                        : "bg-blue-900/20 text-blue-400 border-blue-400/30"
-                                                            }
+                                {/* Upcoming Events */}
+                                <div className="md:col-span-1">
+                                    <div className="border border-white/30 p-0.5 h-full">
+                                        <div className="border border-white/10 p-5 h-full">
+                                            <div className="mb-6">
+                                                <h3 className="text-xl font-light uppercase">Upcoming Events</h3>
+                                                <p className="text-white/60 text-sm uppercase">Community events and announcements</p>
+                                            </div>
+                                            {loading ? (
+                                                <div className="h-[300px] flex items-center justify-center">
+                                                    <div className="animate-pulse text-white/60">Loading events...</div>
+                                                </div>
+                                            ) : events.length === 0 ? (
+                                                <div className="h-[300px] flex items-center justify-center">
+                                                    <div className="text-white/60">No upcoming events found</div>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-0">
+                                                    {events.map((event, index) => (
+                                                        <div
+                                                            key={index}
+                                                            className="border border-white/20 p-4"
                                                         >
-                                                            {event.impact}
-                                                        </Badge>
-                                                    </div>
-                                                    <p className="text-sm text-gray-400 mt-1">
-                                                        {event.description}
-                                                    </p>
-                                                    <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
-                                                        <span>{getTimeDisplay(event.timestamp)}</span>
-                                                        <span>{event.source}</span>
-                                                    </div>
+                                                            <div className="flex items-start justify-between mb-2">
+                                                                <h4 className="font-mono uppercase text-white/80">{event.title}</h4>
+                                                                <Badge
+                                                                    className={
+                                                                        event.impact === "High"
+                                                                            ? "border border-green-400 text-green-400 bg-transparent"
+                                                                            : event.impact === "Medium"
+                                                                                ? "border border-yellow-400 text-yellow-400 bg-transparent"
+                                                                                : "border border-blue-400 text-blue-400 bg-transparent"
+                                                                    }
+                                                                >
+                                                                    {event.impact}
+                                                                </Badge>
+                                                            </div>
+                                                            <p className="text-sm text-white/70 mb-3">
+                                                                {event.description}
+                                                            </p>
+                                                            <div className="flex items-center justify-between text-xs text-white/50 border-t border-white/10 pt-2">
+                                                                <span className="uppercase">{getTimeDisplay(event.timestamp)}</span>
+                                                                <span className="uppercase">{event.source}</span>
+                                                            </div>
+                                                        </div>
+                                                    ))}
                                                 </div>
-                                            ))}
+                                            )}
                                         </div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </div>
-                </TabsContent>
-            </Tabs>
+                                    </div>
+                                </div>
+                            </div>
+                        </TabsContent>
+                    </Tabs>
+                </div>
+            </div>
         </motion.div>
     );
 }

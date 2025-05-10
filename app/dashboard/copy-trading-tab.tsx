@@ -1,13 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
 import { TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import LineChart from "@/components/charts/line-chart";
 import { motion } from "framer-motion";
 import { getTopTraders, setupCopyTrading, stopCopyTrading } from "./api-service";
@@ -144,51 +136,50 @@ export default function CopyTradingTab() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Top Traders Section */}
                 <div className="md:col-span-2">
-                    <Card className="glassmorphic border-glow">
-                        <CardHeader>
-                            <CardTitle>Top Solana Traders</CardTitle>
-                            <CardDescription>
-                                Select a trader to copy their trades in real-time
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
+                    <div className="border border-white/30 p-0.5">
+                        <div className="border border-white/10 p-5">
+                            <div className="mb-4">
+                                <h2 className="text-xl font-light uppercase">Top Solana Traders</h2>
+                                <p className="text-white/60 text-sm uppercase">
+                                    Select a trader to copy their trades in real-time
+                                </p>
+                            </div>
                             {isLoading ? (
                                 <div className="h-[300px] flex items-center justify-center">
-                                    <div className="animate-pulse text-purple-400">Loading trader data...</div>
+                                    <div className="animate-pulse text-white/60">Loading trader data...</div>
                                 </div>
                             ) : topTraders.length === 0 ? (
                                 <div className="h-[300px] flex items-center justify-center">
-                                    <div className="text-purple-400">No traders available at the moment</div>
+                                    <div className="text-white/60">No traders available at the moment</div>
                                 </div>
                             ) : (
-                                <div className="overflow-x-auto">
+                                <div className="overflow-x-auto border border-white/10">
                                     <Table>
                                         <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Trader</TableHead>
-                                                <TableHead>Profit</TableHead>
-                                                <TableHead>Win Rate</TableHead>
-                                                <TableHead>Strategy</TableHead>
-                                                <TableHead>Risk</TableHead>
-                                                <TableHead>Action</TableHead>
+                                            <TableRow className="border-b border-white/10 hover:bg-transparent">
+                                                <TableHead className="text-white/60 uppercase text-xs font-normal">Trader</TableHead>
+                                                <TableHead className="text-white/60 uppercase text-xs font-normal">Profit</TableHead>
+                                                <TableHead className="text-white/60 uppercase text-xs font-normal">Win Rate</TableHead>
+                                                <TableHead className="text-white/60 uppercase text-xs font-normal">Strategy</TableHead>
+                                                <TableHead className="text-white/60 uppercase text-xs font-normal">Risk</TableHead>
+                                                <TableHead className="text-white/60 uppercase text-xs font-normal">Action</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             {topTraders.map((trader) => (
-                                                <TableRow key={trader.address} className={selectedTrader === trader.address ? "bg-purple-950/30" : ""}>
-                                                    <TableCell className="font-medium">{trader.displayAddress}</TableCell>
+                                                <TableRow key={trader.address} className={`border-b border-white/10 hover:bg-white/5 ${selectedTrader === trader.address ? "bg-white/5" : ""}`}>
+                                                    <TableCell className="font-mono">{trader.displayAddress}</TableCell>
                                                     <TableCell className="text-green-400">+${trader.totalProfit.toLocaleString()}</TableCell>
                                                     <TableCell>{trader.winRate}%</TableCell>
                                                     <TableCell>{trader.strategy}</TableCell>
                                                     <TableCell>
                                                         <Badge
-                                                            variant="outline"
                                                             className={
                                                                 trader.riskScore === "Low"
-                                                                    ? "bg-green-900/20 text-green-400 border-green-400/30"
+                                                                    ? "border border-green-500 text-green-400 bg-transparent uppercase text-xs"
                                                                     : trader.riskScore === "Medium"
-                                                                        ? "bg-yellow-900/20 text-yellow-400 border-yellow-400/30"
-                                                                        : "bg-red-900/20 text-red-400 border-red-400/30"
+                                                                        ? "border border-yellow-500 text-yellow-400 bg-transparent uppercase text-xs"
+                                                                        : "border border-red-500 text-red-400 bg-transparent uppercase text-xs"
                                                             }
                                                         >
                                                             {trader.riskScore}
@@ -198,7 +189,7 @@ export default function CopyTradingTab() {
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
-                                                            className={selectedTrader === trader.address ? "bg-purple-500/20 text-purple-300" : ""}
+                                                            className={`uppercase text-xs ${selectedTrader === trader.address ? "bg-white/5 border-white" : "border-white/20"}`}
                                                             onClick={() => handleTraderSelect(trader.address)}
                                                         >
                                                             {selectedTrader === trader.address ? "Selected" : "Select"}
@@ -210,88 +201,97 @@ export default function CopyTradingTab() {
                                     </Table>
                                 </div>
                             )}
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Trade Settings Section */}
                 <div className="md:col-span-1">
-                    <Card className="glassmorphic border-glow h-full">
-                        <CardHeader>
-                            <CardTitle>Copy Trade Settings</CardTitle>
-                            <CardDescription>
-                                Configure your copy trading parameters
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="allocation">Allocation (% of portfolio)</Label>
-                                <div className="flex items-center space-x-2">
-                                    <Slider
-                                        id="allocation"
-                                        defaultValue={[25]}
-                                        max={100}
-                                        step={5}
-                                        onValueChange={(value) => setTradeSize(value[0])}
-                                        disabled={!selectedTrader || isActive}
-                                        className="flex-1"
-                                    />
-                                    <span className="w-12 text-center">{tradeSize}%</span>
+                    <div className="border border-white/30 p-0.5 h-full">
+                        <div className="border border-white/10 p-5 h-full">
+                            <div className="mb-4">
+                                <h2 className="text-xl font-light uppercase">Copy Trade Settings</h2>
+                                <p className="text-white/60 text-sm uppercase">
+                                    Configure your copy trading parameters
+                                </p>
+                            </div>
+                            <div className="space-y-6">
+                                <div className="border border-white/20 p-4">
+                                    <Label htmlFor="allocation" className="text-white/60 uppercase text-xs mb-2 block">
+                                        Allocation (% of portfolio)
+                                    </Label>
+                                    <div className="flex items-center space-x-2">
+                                        <Slider
+                                            id="allocation"
+                                            defaultValue={[25]}
+                                            max={100}
+                                            step={5}
+                                            onValueChange={(value) => setTradeSize(value[0])}
+                                            disabled={!selectedTrader || isActive}
+                                            className="flex-1"
+                                        />
+                                        <span className="w-12 text-center">{tradeSize}%</span>
+                                    </div>
+                                </div>
+
+                                <div className="border border-white/20 p-4">
+                                    <Label htmlFor="stopLoss" className="text-white/60 uppercase text-xs mb-2 block">
+                                        Stop Loss (%)
+                                    </Label>
+                                    <div className="flex items-center space-x-2">
+                                        <Slider
+                                            id="stopLoss"
+                                            defaultValue={[15]}
+                                            max={50}
+                                            step={1}
+                                            onValueChange={(value) => setStopLoss(value[0])}
+                                            disabled={!selectedTrader || isActive}
+                                            className="flex-1"
+                                        />
+                                        <span className="w-12 text-center">{stopLoss}%</span>
+                                    </div>
+                                </div>
+
+                                <div className="border border-white/20 p-4">
+                                    <Label htmlFor="takeProfit" className="text-white/60 uppercase text-xs mb-2 block">
+                                        Take Profit (%)
+                                    </Label>
+                                    <div className="flex items-center space-x-2">
+                                        <Slider
+                                            id="takeProfit"
+                                            defaultValue={[30]}
+                                            max={100}
+                                            step={5}
+                                            onValueChange={(value) => setTakeProfit(value[0])}
+                                            disabled={!selectedTrader || isActive}
+                                            className="flex-1"
+                                        />
+                                        <span className="w-12 text-center">{takeProfit}%</span>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col space-y-3 pt-4">
+                                    <Button
+                                        onClick={handleSimulate}
+                                        disabled={!selectedTrader || isSimulating}
+                                        variant="outline"
+                                        className="w-full border-white/20 text-white/70 uppercase hover:bg-white/5"
+                                    >
+                                        {isSimulating ? "Simulating..." : "Simulate Returns"}
+                                    </Button>
+
+                                    <Button
+                                        onClick={handleActivate}
+                                        disabled={!selectedTrader}
+                                        variant={isActive ? "destructive" : "default"}
+                                        className={!isActive ? "w-full bg-white text-black hover:bg-white/90 uppercase" : "w-full uppercase"}
+                                    >
+                                        {isActive ? "Stop Copy Trading" : "Activate Copy Trading"}
+                                    </Button>
                                 </div>
                             </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="stopLoss">Stop Loss (%)</Label>
-                                <div className="flex items-center space-x-2">
-                                    <Slider
-                                        id="stopLoss"
-                                        defaultValue={[15]}
-                                        max={50}
-                                        step={1}
-                                        onValueChange={(value) => setStopLoss(value[0])}
-                                        disabled={!selectedTrader || isActive}
-                                        className="flex-1"
-                                    />
-                                    <span className="w-12 text-center">{stopLoss}%</span>
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="takeProfit">Take Profit (%)</Label>
-                                <div className="flex items-center space-x-2">
-                                    <Slider
-                                        id="takeProfit"
-                                        defaultValue={[30]}
-                                        max={100}
-                                        step={5}
-                                        onValueChange={(value) => setTakeProfit(value[0])}
-                                        disabled={!selectedTrader || isActive}
-                                        className="flex-1"
-                                    />
-                                    <span className="w-12 text-center">{takeProfit}%</span>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col space-y-4 pt-4">
-                                <Button
-                                    onClick={handleSimulate}
-                                    disabled={!selectedTrader || isSimulating}
-                                    variant="outline"
-                                >
-                                    {isSimulating ? "Simulating..." : "Simulate Returns"}
-                                </Button>
-
-                                <Button
-                                    onClick={handleActivate}
-                                    disabled={!selectedTrader}
-                                    variant={isActive ? "destructive" : "default"}
-                                    className={!isActive ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700" : ""}
-                                >
-                                    {isActive ? "Stop Copy Trading" : "Activate Copy Trading"}
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -302,43 +302,43 @@ export default function CopyTradingTab() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
                 >
-                    <Card className="glassmorphic border-glow">
-                        <CardHeader>
-                            <CardTitle>Simulated Performance</CardTitle>
-                            <CardDescription>
-                                Historical performance simulation based on your settings
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="h-[300px]">
+                    <div className="border border-white/30 p-0.5">
+                        <div className="border border-white/10 p-5">
+                            <div className="mb-4">
+                                <h2 className="text-xl font-light uppercase">Simulated Performance</h2>
+                                <p className="text-white/60 text-sm uppercase">
+                                    Historical performance simulation based on your settings
+                                </p>
+                            </div>
+                            <div className="h-[300px] border border-white/10 p-4 mb-6">
                                 <LineChart data={simulationData} />
                             </div>
-                            <div className="mt-4 grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <p className="text-sm text-gray-400">Initial Investment</p>
-                                    <p className="text-lg">${simulationData[0]?.value.toLocaleString()}</p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-0">
+                                <div className="border border-white/20 p-4">
+                                    <div className="text-sm text-white/60 uppercase mb-1">Initial Investment</div>
+                                    <div className="text-xl font-light">${simulationData[0]?.value.toLocaleString()}</div>
                                 </div>
-                                <div className="space-y-1">
-                                    <p className="text-sm text-gray-400">Current Value</p>
-                                    <p className="text-lg text-green-400">
+                                <div className="border border-white/20 p-4">
+                                    <div className="text-sm text-white/60 uppercase mb-1">Current Value</div>
+                                    <div className="text-xl font-light text-green-400">
                                         ${simulationData[simulationData.length - 1]?.value.toLocaleString()}
-                                    </p>
+                                    </div>
                                 </div>
-                                <div className="space-y-1">
-                                    <p className="text-sm text-gray-400">Total Profit</p>
-                                    <p className="text-lg text-green-400">
+                                <div className="border border-white/20 p-4">
+                                    <div className="text-sm text-white/60 uppercase mb-1">Total Profit</div>
+                                    <div className="text-xl font-light text-green-400">
                                         +${(simulationData[simulationData.length - 1]?.value - simulationData[0]?.value).toLocaleString()}
-                                    </p>
+                                    </div>
                                 </div>
-                                <div className="space-y-1">
-                                    <p className="text-sm text-gray-400">ROI</p>
-                                    <p className="text-lg text-green-400">
+                                <div className="border border-white/20 p-4">
+                                    <div className="text-sm text-white/60 uppercase mb-1">ROI</div>
+                                    <div className="text-xl font-light text-green-400">
                                         +{((simulationData[simulationData.length - 1]?.value / simulationData[0]?.value - 1) * 100).toFixed(2)}%
-                                    </p>
+                                    </div>
                                 </div>
                             </div>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </div>
                 </motion.div>
             )}
 
@@ -349,32 +349,32 @@ export default function CopyTradingTab() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
                 >
-                    <Card className="glassmorphic border-glow border-green-500/30">
-                        <CardHeader>
-                            <CardTitle className="text-green-400">Copy Trading Active</CardTitle>
-                            <CardDescription>
-                                You are currently copying trades from {topTraders.find(t => t.address === selectedTrader)?.displayAddress}
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-3 gap-4">
-                                <div className="space-y-1">
-                                    <p className="text-sm text-gray-400">Allocation</p>
-                                    <p className="text-lg">{tradeSize}%</p>
+                    <div className="border border-white/30 border-green-500/30 p-0.5">
+                        <div className="border border-white/10 p-5">
+                            <div className="mb-4">
+                                <h2 className="text-xl font-light uppercase text-green-400">Copy Trading Active</h2>
+                                <p className="text-white/60 text-sm uppercase">
+                                    You are currently copying trades from {topTraders.find(t => t.address === selectedTrader)?.displayAddress}
+                                </p>
+                            </div>
+                            <div className="grid grid-cols-3 gap-0">
+                                <div className="border border-white/20 p-4">
+                                    <div className="text-sm text-white/60 uppercase mb-1">Allocation</div>
+                                    <div className="text-xl font-light">{tradeSize}%</div>
                                 </div>
-                                <div className="space-y-1">
-                                    <p className="text-sm text-gray-400">Stop Loss</p>
-                                    <p className="text-lg">{stopLoss}%</p>
+                                <div className="border border-white/20 p-4">
+                                    <div className="text-sm text-white/60 uppercase mb-1">Stop Loss</div>
+                                    <div className="text-xl font-light">{stopLoss}%</div>
                                 </div>
-                                <div className="space-y-1">
-                                    <p className="text-sm text-gray-400">Take Profit</p>
-                                    <p className="text-lg">{takeProfit}%</p>
+                                <div className="border border-white/20 p-4">
+                                    <div className="text-sm text-white/60 uppercase mb-1">Take Profit</div>
+                                    <div className="text-xl font-light">{takeProfit}%</div>
                                 </div>
                             </div>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </div>
                 </motion.div>
             )}
         </motion.div>
     );
-} 
+}

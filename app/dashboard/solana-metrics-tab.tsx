@@ -1,14 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-    CardFooter,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import LineChart from "@/components/charts/line-chart";
@@ -107,42 +99,40 @@ function SolanaNetworkStatus() {
     };
 
     return (
-        <Card className="glassmorphic border-glow">
-            <CardHeader className="pb-2">
-                <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg">Solana Network Status</CardTitle>
+        <div className="border border-white/30 p-0.5 mb-8">
+            <div className="border border-white/10 p-5">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-light uppercase">Solana Network Status</h2>
                     {isConnected && (
                         <div className="flex items-center">
                             <span className="inline-block w-2 h-2 bg-green-400 rounded-full animate-pulse mr-1"></span>
-                            <span className="text-xs text-gray-400">Live</span>
+                            <span className="text-xs text-white/60">LIVE</span>
                         </div>
                     )}
                 </div>
-            </CardHeader>
-            <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-black/30 p-3 rounded-lg border border-purple-900/30">
-                        <div className="text-sm text-gray-400">TPS</div>
-                        <div className="text-2xl font-bold">{networkStats.tps.toLocaleString()}</div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-0">
+                    <div className="border border-white/20 p-5">
+                        <div className="text-sm text-white/60 mb-1 uppercase">TPS</div>
+                        <div className="text-2xl font-light">{networkStats.tps.toLocaleString()}</div>
                     </div>
-                    <div className="bg-black/30 p-3 rounded-lg border border-purple-900/30">
-                        <div className="text-sm text-gray-400">Current Slot</div>
-                        <div className="text-2xl font-bold">{networkStats.slot.toLocaleString()}</div>
+                    <div className="border border-white/20 p-5">
+                        <div className="text-sm text-white/60 mb-1 uppercase">Current Slot</div>
+                        <div className="text-2xl font-light">{networkStats.slot.toLocaleString()}</div>
                     </div>
-                    <div className="bg-black/30 p-3 rounded-lg border border-purple-900/30">
-                        <div className="text-sm text-gray-400">Latency</div>
-                        <div className="text-2xl font-bold">{networkStats.latency.toFixed(2)}s</div>
+                    <div className="border border-white/20 p-5">
+                        <div className="text-sm text-white/60 mb-1 uppercase">Latency</div>
+                        <div className="text-2xl font-light">{networkStats.latency.toFixed(2)}s</div>
                     </div>
-                    <div className="bg-black/30 p-3 rounded-lg border border-purple-900/30">
-                        <div className="text-sm text-gray-400">Status</div>
-                        <div className={`text-2xl font-bold ${getStatusColor(networkStats.status)}`}>
+                    <div className="border border-white/20 p-5">
+                        <div className="text-sm text-white/60 mb-1 uppercase">Status</div>
+                        <div className={`text-2xl font-light ${getStatusColor(networkStats.status)}`}>
                             {networkStats.status === 'up' ? 'Healthy' :
                                 networkStats.status === 'degraded' ? 'Degraded' : 'Down'}
                         </div>
                     </div>
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }
 
@@ -190,51 +180,51 @@ function TokenTracker() {
     }, []);
 
     return (
-        <Card className="glassmorphic border-glow">
-            <CardHeader className="pb-2">
-                <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg">Solana Ecosystem Tokens</CardTitle>
+        <div className="border border-white/30 p-0.5 mb-8">
+            <div className="border border-white/10 p-5">
+                <div className="flex justify-between items-center mb-4">
+                    <div>
+                        <h2 className="text-xl font-light uppercase">Solana Ecosystem Tokens</h2>
+                        <p className="text-white/60 text-sm uppercase">Real-time price data for top Solana tokens</p>
+                    </div>
                     {isConnected && (
                         <div className="flex items-center">
                             <span className="inline-block w-2 h-2 bg-green-400 rounded-full animate-pulse mr-1"></span>
-                            <span className="text-xs text-gray-400">Live</span>
+                            <span className="text-xs text-white/60">LIVE</span>
                         </div>
                     )}
                 </div>
-                <CardDescription>Real-time price data for top Solana tokens</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-0">
                     {tokens.map(symbol => {
                         const data = tokenPrices[symbol];
                         const changeColor = data?.change24h > 0 ? "text-green-400" :
-                            data?.change24h < 0 ? "text-red-400" : "text-gray-400";
+                            data?.change24h < 0 ? "text-red-400" : "text-white/60";
                         const changeArrow = data?.change24h > 0 ? "↑" :
                             data?.change24h < 0 ? "↓" : "";
 
                         return (
-                            <div key={symbol} className="bg-black/30 p-3 rounded-lg border border-purple-900/30">
+                            <div key={symbol} className="border border-white/20 p-5">
                                 <div className="flex justify-between">
-                                    <div className="font-bold">{symbol}</div>
+                                    <div className="font-mono uppercase text-white/80">{symbol}</div>
                                     {data?.price > 0 && (
                                         <div className={changeColor}>
                                             {changeArrow} {Math.abs(data?.change24h || 0).toFixed(2)}%
                                         </div>
                                     )}
                                 </div>
-                                <div className="text-xl mt-1 font-bold">
+                                <div className="text-2xl mt-1 font-light">
                                     {data?.price > 0 ?
                                         `$${data.price.toLocaleString(undefined, {
                                             minimumFractionDigits: 2,
                                             maximumFractionDigits: 4
                                         })}` :
                                         <div className="h-6 flex items-center">
-                                            <div className="animate-pulse text-purple-400 text-sm">Loading...</div>
+                                            <div className="animate-pulse text-white/60 text-sm">Loading...</div>
                                         </div>
                                     }
                                 </div>
                                 {data?.volume24h > 0 && (
-                                    <div className="text-xs text-gray-400 mt-1">
+                                    <div className="text-xs text-white/60 mt-1 uppercase">
                                         Vol: ${(data.volume24h / 1000000).toFixed(2)}M
                                     </div>
                                 )}
@@ -242,8 +232,8 @@ function TokenTracker() {
                         );
                     })}
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }
 
@@ -298,17 +288,17 @@ function TransactionActivity() {
     }, []);
 
     return (
-        <Card className="glassmorphic border-glow">
-            <CardHeader>
-                <CardTitle>Transaction Activity</CardTitle>
-                <CardDescription>Transactions per second over time</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="h-80">
+        <div className="border border-white/30 p-0.5 mb-8">
+            <div className="border border-white/10 p-5">
+                <div className="mb-4">
+                    <h2 className="text-xl font-light uppercase">Transaction Activity</h2>
+                    <p className="text-white/60 text-sm uppercase">Transactions per second over time</p>
+                </div>
+                <div className="h-80 border border-white/10 p-4">
                     <LineChart data={txData} />
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }
 
@@ -323,51 +313,70 @@ export default function SolanaMetricsTab() {
                 <TransactionActivity />
             </div>
 
-            <Card className="glassmorphic border-glow">
-                <CardHeader>
-                    <CardTitle>Solana Ecosystem Health</CardTitle>
-                    <CardDescription>Key metrics for the Solana blockchain</CardDescription>
-                </CardHeader>
-                <CardContent>
+            <div className="border border-white/30 p-0.5 mb-8">
+                <div className="border border-white/10 p-5">
+                    <div className="mb-6">
+                        <h2 className="text-xl font-light uppercase">Solana Ecosystem Health</h2>
+                        <p className="text-white/60 text-sm uppercase">Key metrics for the Solana blockchain</p>
+                    </div>
                     <Tabs defaultValue="validators">
-                        <TabsList className="mb-4">
-                            <TabsTrigger value="validators">Validators</TabsTrigger>
-                            <TabsTrigger value="programs">Programs</TabsTrigger>
-                            <TabsTrigger value="accounts">Accounts</TabsTrigger>
+                        <TabsList className="grid grid-cols-3 gap-0 mb-6">
+                            <TabsTrigger 
+                                value="validators" 
+                                className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white"
+                            >
+                                VALIDATORS
+                            </TabsTrigger>
+                            <TabsTrigger 
+                                value="programs" 
+                                className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white"
+                            >
+                                PROGRAMS
+                            </TabsTrigger>
+                            <TabsTrigger 
+                                value="accounts" 
+                                className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white"
+                            >
+                                ACCOUNTS
+                            </TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="validators">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <h3 className="text-lg font-medium mb-2">Validator Distribution</h3>
-                                    <div className="h-60">
-                                        <PieChart data={[
-                                            { name: 'Stake Labs', value: 15 },
-                                            { name: 'Chorus One', value: 12 },
-                                            { name: 'Everstake', value: 10 },
-                                            { name: 'Figment', value: 8 },
-                                            { name: 'Other', value: 55 },
-                                        ]} />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="border border-white/30 p-0.5">
+                                    <div className="border border-white/10 p-5">
+                                        <h3 className="text-lg font-light uppercase mb-4">Validator Distribution</h3>
+                                        <div className="h-60 border border-white/10 p-4">
+                                            <PieChart data={[
+                                                { name: 'Stake Labs', value: 15 },
+                                                { name: 'Chorus One', value: 12 },
+                                                { name: 'Everstake', value: 10 },
+                                                { name: 'Figment', value: 8 },
+                                                { name: 'Other', value: 55 },
+                                            ]} />
+                                        </div>
                                     </div>
                                 </div>
-                                <div>
-                                    <h3 className="text-lg font-medium mb-2">Validator Stats</h3>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="bg-black/30 p-3 rounded-lg border border-purple-900/30">
-                                            <div className="text-sm text-gray-400">Active</div>
-                                            <div className="text-2xl font-bold">1,782</div>
-                                        </div>
-                                        <div className="bg-black/30 p-3 rounded-lg border border-purple-900/30">
-                                            <div className="text-sm text-gray-400">Total</div>
-                                            <div className="text-2xl font-bold">2,105</div>
-                                        </div>
-                                        <div className="bg-black/30 p-3 rounded-lg border border-purple-900/30">
-                                            <div className="text-sm text-gray-400">Delinquent</div>
-                                            <div className="text-2xl font-bold text-yellow-400">32</div>
-                                        </div>
-                                        <div className="bg-black/30 p-3 rounded-lg border border-purple-900/30">
-                                            <div className="text-sm text-gray-400">Stake</div>
-                                            <div className="text-2xl font-bold">456M SOL</div>
+                                <div className="border border-white/30 p-0.5">
+                                    <div className="border border-white/10 p-5">
+                                        <h3 className="text-lg font-light uppercase mb-4">Validator Stats</h3>
+                                        <div className="grid grid-cols-2 gap-0">
+                                            <div className="border border-white/20 p-5">
+                                                <div className="text-sm text-white/60 mb-1 uppercase">Active</div>
+                                                <div className="text-2xl font-light">1,782</div>
+                                            </div>
+                                            <div className="border border-white/20 p-5">
+                                                <div className="text-sm text-white/60 mb-1 uppercase">Total</div>
+                                                <div className="text-2xl font-light">2,105</div>
+                                            </div>
+                                            <div className="border border-white/20 p-5">
+                                                <div className="text-sm text-white/60 mb-1 uppercase">Delinquent</div>
+                                                <div className="text-2xl font-light text-yellow-400">32</div>
+                                            </div>
+                                            <div className="border border-white/20 p-5">
+                                                <div className="text-sm text-white/60 mb-1 uppercase">Stake</div>
+                                                <div className="text-2xl font-light">456M SOL</div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -375,46 +384,46 @@ export default function SolanaMetricsTab() {
                         </TabsContent>
 
                         <TabsContent value="programs">
-                            <div className="space-y-4">
-                                <h3 className="text-lg font-medium">Top Programs by Transactions</h3>
-                                <div className="h-60">
-                                    <BarChart data={[
-                                        { name: 'Jupiter', value: 42 },
-                                        { name: 'Mango', value: 28 },
-                                        { name: 'Marinade', value: 15 },
-                                        { name: 'Solend', value: 12 },
-                                        { name: 'Raydium', value: 10 },
-                                        { name: 'Drift', value: 9 },
-                                        { name: 'Orca', value: 8 },
-                                    ]} />
+                            <div className="border border-white/30 p-0.5">
+                                <div className="border border-white/10 p-5">
+                                    <h3 className="text-lg font-light uppercase mb-4">Top Programs by Transactions</h3>
+                                    <div className="h-60 border border-white/10 p-4">
+                                        <BarChart data={[
+                                            { name: 'Jupiter', value: 42 },
+                                            { name: 'Mango', value: 28 },
+                                            { name: 'Marinade', value: 15 },
+                                            { name: 'Solend', value: 12 },
+                                            { name: 'Raydium', value: 10 },
+                                            { name: 'Drift', value: 9 },
+                                            { name: 'Orca', value: 8 },
+                                        ]} />
+                                    </div>
                                 </div>
                             </div>
                         </TabsContent>
 
                         <TabsContent value="accounts">
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div className="bg-black/30 p-4 rounded-lg border border-purple-900/30">
-                                        <div className="text-sm text-gray-400">Total Accounts</div>
-                                        <div className="text-3xl font-bold">218.4M</div>
-                                        <div className="text-xs text-green-400 mt-1">+142,567 (24h)</div>
-                                    </div>
-                                    <div className="bg-black/30 p-4 rounded-lg border border-purple-900/30">
-                                        <div className="text-sm text-gray-400">Active Wallets (24h)</div>
-                                        <div className="text-3xl font-bold">1.7M</div>
-                                        <div className="text-xs text-green-400 mt-1">+12.4% (vs last week)</div>
-                                    </div>
-                                    <div className="bg-black/30 p-4 rounded-lg border border-purple-900/30">
-                                        <div className="text-sm text-gray-400">New Wallets (24h)</div>
-                                        <div className="text-3xl font-bold">24.5K</div>
-                                        <div className="text-xs text-green-400 mt-1">+8.2% (vs last week)</div>
-                                    </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
+                                <div className="border border-white/20 p-5">
+                                    <div className="text-sm text-white/60 mb-1 uppercase">Total Accounts</div>
+                                    <div className="text-3xl font-light">218.4M</div>
+                                    <div className="text-xs text-green-400 mt-1 uppercase">+142,567 (24h)</div>
+                                </div>
+                                <div className="border border-white/20 p-5">
+                                    <div className="text-sm text-white/60 mb-1 uppercase">Active Wallets (24h)</div>
+                                    <div className="text-3xl font-light">1.7M</div>
+                                    <div className="text-xs text-green-400 mt-1 uppercase">+12.4% (vs last week)</div>
+                                </div>
+                                <div className="border border-white/20 p-5">
+                                    <div className="text-sm text-white/60 mb-1 uppercase">New Wallets (24h)</div>
+                                    <div className="text-3xl font-light">24.5K</div>
+                                    <div className="text-xs text-green-400 mt-1 uppercase">+8.2% (vs last week)</div>
                                 </div>
                             </div>
                         </TabsContent>
                     </Tabs>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
         </div>
     );
-} 
+}
