@@ -13,6 +13,7 @@ import {
   TorusWalletAdapter,
   LedgerWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
+import { LazorKitWalletAdapter } from './lazorkit-wallet-adapter';
 import { clusterApiUrl } from '@solana/web3.js';
 import { useMemo, ReactNode } from 'react';
 
@@ -38,7 +39,6 @@ export function WalletContextProvider({
     new CoinbaseWalletAdapter(),
     new TorusWalletAdapter(),
     new LedgerWalletAdapter(),
-    // Add any other wallet adapters you want to support
   ], []);
 
   return (

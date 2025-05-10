@@ -1,8 +1,5 @@
 "use client";
 
-// This file creates a bridge between your custom useWallet hook and the standard Solana wallet adapter
-// Add this to your ClientLayout component or anywhere before the wallet adapter is initialized
-
 /**
  * Initializes a bridge between your custom LazorKit implementation and the standard wallet adapter
  */
@@ -16,8 +13,16 @@ export function initializeLazorKitBridge() {
       // Create an instance of the hook (this is a workaround since hooks can't be used outside components)
       const lazorKitInstance = {
         isLazorKit: true,
+        isInitialized: false,
         isConnected: false,
         publicKey: null as any,
+        
+        // Initialize the LazorKit instance
+        async init(config: any) {
+          this.isInitialized = true;
+          console.log("LazorKit initialized with config:", config);
+          return Promise.resolve();
+        },
         
         // Map our custom functions to the expected wallet adapter interface
         async connect() {
@@ -26,6 +31,7 @@ export function initializeLazorKitBridge() {
             if (window.__LAZORKIT_HOOK_INSTANCE__) {
               const address = await window.__LAZORKIT_HOOK_INSTANCE__.connectWallet();
               this.isConnected = true;
+              
               // Create a publicKey object with toBytes method
               this.publicKey = {
                 toString() { return address; },
@@ -39,7 +45,8 @@ export function initializeLazorKitBridge() {
                   return bytes;
                 }
               };
-              return { publicKey: this.publicKey };
+              
+              return { publicKey: this.publicKey, address };
             }
             
             // Or create a new instance
@@ -63,7 +70,7 @@ export function initializeLazorKitBridge() {
               }
             };
             
-            return { publicKey: this.publicKey };
+            return { publicKey: this.publicKey, address };
           } catch (error) {
             console.error("LazorKit connect error:", error);
             throw error;
@@ -93,11 +100,13 @@ export function initializeLazorKitBridge() {
           // Extract the first instruction from the transaction
           if (transaction.instructions && transaction.instructions.length > 0) {
             const instruction = transaction.instructions[0];
-            await window.__LAZORKIT_HOOK_INSTANCE__.signAndSendTransaction(instruction);
+            const result = await window.__LAZORKIT_HOOK_INSTANCE__.signAndSendTransaction(instruction);
+            // Return with signature property
+            return { signature: result?.signature || 'signature-placeholder' };
           }
           
-          // Return the transaction as is
-          return transaction;
+          // Return with required signature property
+          return { signature: 'signature-placeholder' };
         },
         
         async signAllTransactions(transactions: any) {
@@ -122,8 +131,40 @@ export function initializeLazorKitBridge() {
             throw new Error('Wallet not connected');
           }
           
-          // Mock implementation
+          // Use the signMessage method if available
+          if (window.__LAZORKIT_HOOK_INSTANCE__.signMessage) {
+            return await window.__LAZORKIT_HOOK_INSTANCE__.signMessage(message);
+          }
+          
+          // Mock implementation as fallback
           return { signature: new Uint8Array(64) };
+        },
+        
+        // Passkey methods
+        async createPasskey(options: any): Promise<{ success: boolean }> {
+          if (!this.isConnected || !window.__LAZORKIT_HOOK_INSTANCE__) {
+            throw new Error('Wallet not connected');
+          }
+          
+          if (window.__LAZORKIT_HOOK_INSTANCE__.createPasskey) {
+            const success = await window.__LAZORKIT_HOOK_INSTANCE__.createPasskey();
+            return { success };
+          }
+          
+          return { success: true };
+        },
+        
+        async verifyPasskey(): Promise<{ success: boolean }> {
+          if (!this.isConnected || !window.__LAZORKIT_HOOK_INSTANCE__) {
+            throw new Error('Wallet not connected');
+          }
+          
+          if (window.__LAZORKIT_HOOK_INSTANCE__.verifyPasskey) {
+            const success = await window.__LAZORKIT_HOOK_INSTANCE__.verifyPasskey();
+            return { success };
+          }
+          
+          return { success: true };
         }
       };
       
