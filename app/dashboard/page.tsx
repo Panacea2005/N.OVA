@@ -42,6 +42,7 @@ const SolanaMetricsTab = dynamic(() => import("@/app/dashboard/solana-metrics-ta
 export default function Dashboard() {
     const [mounted, setMounted] = useState(false);
     const { isConnected } = usePhantom();
+    const [activeTab, setActiveTab] = useState("solana-metrics");
 
     useEffect(() => {
         setMounted(true);
@@ -70,6 +71,10 @@ export default function Dashboard() {
             </main>
         );
     }
+
+    const handleTabChange = (value: string) => {
+        setActiveTab(value);
+    };
 
     return (
         <main className="relative min-h-screen bg-black text-white font-mono">
@@ -106,52 +111,59 @@ export default function Dashboard() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.7, delay: 0.2 }}
-                            className="border border-white/10 px-6 py-8"
+                            className="border border-white/10 p-0"
                         >
-                            <Tabs defaultValue="solana-metrics" className="w-full">
-                                <TabsList className="grid grid-cols-4 mb-8">
-                                    <TabsTrigger 
-                                        value="solana-metrics" 
-                                        className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white"
-                                    >
-                                        SOLANA METRICS
-                                    </TabsTrigger>
-                                    <TabsTrigger 
-                                        value="sentiment" 
-                                        className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white"
-                                    >
-                                        MARKET SENTIMENT
-                                    </TabsTrigger>
-                                    <TabsTrigger 
-                                        value="ai-insights" 
-                                        className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white"
-                                    >
-                                        AI INSIGHTS
-                                    </TabsTrigger>
-                                    <TabsTrigger 
-                                        value="copy-trading" 
-                                        className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white"
-                                    >
-                                        COPY TRADING
-                                    </TabsTrigger>
-                                </TabsList>
+                            {/* Custom Tab Navigation - Elegant Minimal Style */}
+                            <div className="flex border-b border-white/10">
+                                <button
+                                    className={`px-6 py-4 text-sm font-mono relative ${
+                                        activeTab === "solana-metrics"
+                                            ? "text-white border-b border-white"
+                                            : "text-white/40 hover:text-white/60"
+                                    }`}
+                                    onClick={() => handleTabChange("solana-metrics")}
+                                >
+                                    SOLANA METRICS
+                                </button>
+                                <button
+                                    className={`px-6 py-4 text-sm font-mono relative ${
+                                        activeTab === "sentiment"
+                                            ? "text-white border-b border-white"
+                                            : "text-white/40 hover:text-white/60"
+                                    }`}
+                                    onClick={() => handleTabChange("sentiment")}
+                                >
+                                    MARKET SENTIMENT
+                                </button>
+                                <button
+                                    className={`px-6 py-4 text-sm font-mono relative ${
+                                        activeTab === "ai-insights"
+                                            ? "text-white border-b border-white"
+                                            : "text-white/40 hover:text-white/60"
+                                    }`}
+                                    onClick={() => handleTabChange("ai-insights")}
+                                >
+                                    AI INSIGHTS
+                                </button>
+                                <button
+                                    className={`px-6 py-4 text-sm font-mono relative ${
+                                        activeTab === "copy-trading"
+                                            ? "text-white border-b border-white"
+                                            : "text-white/40 hover:text-white/60"
+                                    }`}
+                                    onClick={() => handleTabChange("copy-trading")}
+                                >
+                                    COPY TRADING
+                                </button>
+                            </div>
 
-                                <TabsContent value="solana-metrics" className="mt-0">
-                                    <SolanaMetricsTab />
-                                </TabsContent>
-
-                                <TabsContent value="sentiment" className="mt-0">
-                                    <SentimentTab />
-                                </TabsContent>
-
-                                <TabsContent value="ai-insights" className="mt-0">
-                                    <AIInsightsTab />
-                                </TabsContent>
-
-                                <TabsContent value="copy-trading" className="mt-0">
-                                    <CopyTradingTab />
-                                </TabsContent>
-                            </Tabs>
+                            {/* Tab Content */}
+                            <div className="p-6">
+                                {activeTab === "solana-metrics" && <SolanaMetricsTab />}
+                                {activeTab === "sentiment" && <SentimentTab />}
+                                {activeTab === "ai-insights" && <AIInsightsTab />}
+                                {activeTab === "copy-trading" && <CopyTradingTab />}
+                            </div>
                         </motion.div>
                     </div>
 

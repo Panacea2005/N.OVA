@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import LineChart from "@/components/charts/line-chart";
 import BarChart from "@/components/charts/bar-chart";
 import PieChart from "@/components/charts/pie-chart";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import {
     getSolanaData,
@@ -302,6 +301,144 @@ function TransactionActivity() {
     );
 }
 
+// Ecosystem Health Component with Custom Tabs
+function EcosystemHealth() {
+    const [activeTab, setActiveTab] = useState("validators");
+
+    const handleTabChange = (tab: string) => {
+        setActiveTab(tab);
+    };
+
+    return (
+        <div className="border border-white/30 p-0.5 mb-8">
+            <div className="border border-white/10 p-0">
+                <div className="p-5 border-b border-white/10">
+                    <h2 className="text-xl font-light uppercase">Solana Ecosystem Health</h2>
+                    <p className="text-white/60 text-sm uppercase">Key metrics for the Solana blockchain</p>
+                </div>
+                
+                {/* Custom Tab Navigation */}
+                <div className="flex border-b border-white/10">
+                    <button
+                        className={`px-6 py-4 text-sm font-mono relative ${
+                            activeTab === "validators"
+                                ? "text-white border-b border-white"
+                                : "text-white/40 hover:text-white/60"
+                        }`}
+                        onClick={() => handleTabChange("validators")}
+                    >
+                        VALIDATORS
+                    </button>
+                    <button
+                        className={`px-6 py-4 text-sm font-mono relative ${
+                            activeTab === "programs"
+                                ? "text-white border-b border-white"
+                                : "text-white/40 hover:text-white/60"
+                        }`}
+                        onClick={() => handleTabChange("programs")}
+                    >
+                        PROGRAMS
+                    </button>
+                    <button
+                        className={`px-6 py-4 text-sm font-mono relative ${
+                            activeTab === "accounts"
+                                ? "text-white border-b border-white"
+                                : "text-white/40 hover:text-white/60"
+                        }`}
+                        onClick={() => handleTabChange("accounts")}
+                    >
+                        ACCOUNTS
+                    </button>
+                </div>
+
+                {/* Tab Content */}
+                <div className="p-6">
+                    {activeTab === "validators" && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="border border-white/30 p-0.5">
+                                <div className="border border-white/10 p-5">
+                                    <h3 className="text-lg font-light uppercase mb-4">Validator Distribution</h3>
+                                    <div className="h-60 border border-white/10 p-4">
+                                        <PieChart data={[
+                                            { name: 'Stake Labs', value: 15 },
+                                            { name: 'Chorus One', value: 12 },
+                                            { name: 'Everstake', value: 10 },
+                                            { name: 'Figment', value: 8 },
+                                            { name: 'Other', value: 55 },
+                                        ]} />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="border border-white/30 p-0.5">
+                                <div className="border border-white/10 p-5">
+                                    <h3 className="text-lg font-light uppercase mb-4">Validator Stats</h3>
+                                    <div className="grid grid-cols-2 gap-0">
+                                        <div className="border border-white/20 p-5">
+                                            <div className="text-sm text-white/60 mb-1 uppercase">Active</div>
+                                            <div className="text-2xl font-light">1,782</div>
+                                        </div>
+                                        <div className="border border-white/20 p-5">
+                                            <div className="text-sm text-white/60 mb-1 uppercase">Total</div>
+                                            <div className="text-2xl font-light">2,105</div>
+                                        </div>
+                                        <div className="border border-white/20 p-5">
+                                            <div className="text-sm text-white/60 mb-1 uppercase">Delinquent</div>
+                                            <div className="text-2xl font-light text-yellow-400">32</div>
+                                        </div>
+                                        <div className="border border-white/20 p-5">
+                                            <div className="text-sm text-white/60 mb-1 uppercase">Stake</div>
+                                            <div className="text-2xl font-light">456M SOL</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === "programs" && (
+                        <div className="border border-white/30 p-0.5">
+                            <div className="border border-white/10 p-5">
+                                <h3 className="text-lg font-light uppercase mb-4">Top Programs by Transactions</h3>
+                                <div className="h-60 border border-white/10 p-4">
+                                    <BarChart data={[
+                                        { name: 'Jupiter', value: 42 },
+                                        { name: 'Mango', value: 28 },
+                                        { name: 'Marinade', value: 15 },
+                                        { name: 'Solend', value: 12 },
+                                        { name: 'Raydium', value: 10 },
+                                        { name: 'Drift', value: 9 },
+                                        { name: 'Orca', value: 8 },
+                                    ]} />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === "accounts" && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
+                            <div className="border border-white/20 p-5">
+                                <div className="text-sm text-white/60 mb-1 uppercase">Total Accounts</div>
+                                <div className="text-3xl font-light">218.4M</div>
+                                <div className="text-xs text-green-400 mt-1 uppercase">+142,567 (24h)</div>
+                            </div>
+                            <div className="border border-white/20 p-5">
+                                <div className="text-sm text-white/60 mb-1 uppercase">Active Wallets (24h)</div>
+                                <div className="text-3xl font-light">1.7M</div>
+                                <div className="text-xs text-green-400 mt-1 uppercase">+12.4% (vs last week)</div>
+                            </div>
+                            <div className="border border-white/20 p-5">
+                                <div className="text-sm text-white/60 mb-1 uppercase">New Wallets (24h)</div>
+                                <div className="text-3xl font-light">24.5K</div>
+                                <div className="text-xs text-green-400 mt-1 uppercase">+8.2% (vs last week)</div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 // Main component export
 export default function SolanaMetricsTab() {
     return (
@@ -313,117 +450,7 @@ export default function SolanaMetricsTab() {
                 <TransactionActivity />
             </div>
 
-            <div className="border border-white/30 p-0.5 mb-8">
-                <div className="border border-white/10 p-5">
-                    <div className="mb-6">
-                        <h2 className="text-xl font-light uppercase">Solana Ecosystem Health</h2>
-                        <p className="text-white/60 text-sm uppercase">Key metrics for the Solana blockchain</p>
-                    </div>
-                    <Tabs defaultValue="validators">
-                        <TabsList className="grid grid-cols-3 gap-0 mb-6">
-                            <TabsTrigger 
-                                value="validators" 
-                                className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white"
-                            >
-                                VALIDATORS
-                            </TabsTrigger>
-                            <TabsTrigger 
-                                value="programs" 
-                                className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white"
-                            >
-                                PROGRAMS
-                            </TabsTrigger>
-                            <TabsTrigger 
-                                value="accounts" 
-                                className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white"
-                            >
-                                ACCOUNTS
-                            </TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="validators">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="border border-white/30 p-0.5">
-                                    <div className="border border-white/10 p-5">
-                                        <h3 className="text-lg font-light uppercase mb-4">Validator Distribution</h3>
-                                        <div className="h-60 border border-white/10 p-4">
-                                            <PieChart data={[
-                                                { name: 'Stake Labs', value: 15 },
-                                                { name: 'Chorus One', value: 12 },
-                                                { name: 'Everstake', value: 10 },
-                                                { name: 'Figment', value: 8 },
-                                                { name: 'Other', value: 55 },
-                                            ]} />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="border border-white/30 p-0.5">
-                                    <div className="border border-white/10 p-5">
-                                        <h3 className="text-lg font-light uppercase mb-4">Validator Stats</h3>
-                                        <div className="grid grid-cols-2 gap-0">
-                                            <div className="border border-white/20 p-5">
-                                                <div className="text-sm text-white/60 mb-1 uppercase">Active</div>
-                                                <div className="text-2xl font-light">1,782</div>
-                                            </div>
-                                            <div className="border border-white/20 p-5">
-                                                <div className="text-sm text-white/60 mb-1 uppercase">Total</div>
-                                                <div className="text-2xl font-light">2,105</div>
-                                            </div>
-                                            <div className="border border-white/20 p-5">
-                                                <div className="text-sm text-white/60 mb-1 uppercase">Delinquent</div>
-                                                <div className="text-2xl font-light text-yellow-400">32</div>
-                                            </div>
-                                            <div className="border border-white/20 p-5">
-                                                <div className="text-sm text-white/60 mb-1 uppercase">Stake</div>
-                                                <div className="text-2xl font-light">456M SOL</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </TabsContent>
-
-                        <TabsContent value="programs">
-                            <div className="border border-white/30 p-0.5">
-                                <div className="border border-white/10 p-5">
-                                    <h3 className="text-lg font-light uppercase mb-4">Top Programs by Transactions</h3>
-                                    <div className="h-60 border border-white/10 p-4">
-                                        <BarChart data={[
-                                            { name: 'Jupiter', value: 42 },
-                                            { name: 'Mango', value: 28 },
-                                            { name: 'Marinade', value: 15 },
-                                            { name: 'Solend', value: 12 },
-                                            { name: 'Raydium', value: 10 },
-                                            { name: 'Drift', value: 9 },
-                                            { name: 'Orca', value: 8 },
-                                        ]} />
-                                    </div>
-                                </div>
-                            </div>
-                        </TabsContent>
-
-                        <TabsContent value="accounts">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
-                                <div className="border border-white/20 p-5">
-                                    <div className="text-sm text-white/60 mb-1 uppercase">Total Accounts</div>
-                                    <div className="text-3xl font-light">218.4M</div>
-                                    <div className="text-xs text-green-400 mt-1 uppercase">+142,567 (24h)</div>
-                                </div>
-                                <div className="border border-white/20 p-5">
-                                    <div className="text-sm text-white/60 mb-1 uppercase">Active Wallets (24h)</div>
-                                    <div className="text-3xl font-light">1.7M</div>
-                                    <div className="text-xs text-green-400 mt-1 uppercase">+12.4% (vs last week)</div>
-                                </div>
-                                <div className="border border-white/20 p-5">
-                                    <div className="text-sm text-white/60 mb-1 uppercase">New Wallets (24h)</div>
-                                    <div className="text-3xl font-light">24.5K</div>
-                                    <div className="text-xs text-green-400 mt-1 uppercase">+8.2% (vs last week)</div>
-                                </div>
-                            </div>
-                        </TabsContent>
-                    </Tabs>
-                </div>
-            </div>
+            <EcosystemHealth />
         </div>
     );
 }

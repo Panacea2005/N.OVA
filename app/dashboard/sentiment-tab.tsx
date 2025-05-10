@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BarChart from "@/components/charts/bar-chart";
 import PieChart from "@/components/charts/pie-chart";
 import { motion } from "framer-motion";
@@ -204,6 +203,7 @@ export default function SentimentTab() {
     } | null>(null);
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState("tokens");
 
     // Function to fetch platform sentiment data from news data
     const calculatePlatformSentiment = useCallback((newsItems: NewsItem[]) => {
@@ -658,6 +658,10 @@ export default function SentimentTab() {
         setNewsFilter(filter);
     };
 
+    const handleTabChange = (value: string) => {
+        setActiveTab(value);
+    };
+
     const getSentimentColor = (score: number) => {
         if (score >= 75) return "text-green-500";
         if (score >= 60) return "text-green-400";
@@ -781,121 +785,143 @@ export default function SentimentTab() {
 
             {/* Main Sentiment Tabs */}
             <div className="border border-white/30 p-0.5 mb-8">
-                <div className="border border-white/10 p-5">
-                    <Tabs defaultValue="tokens" className="w-full">
-                        <TabsList className="grid grid-cols-4 mb-6">
-                            <TabsTrigger 
-                                value="tokens" 
-                                className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white uppercase"
-                            >
-                                Tokens
-                            </TabsTrigger>
-                            <TabsTrigger 
-                                value="nfts" 
-                                className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white uppercase"
-                            >
-                                NFTs
-                            </TabsTrigger>
-                            <TabsTrigger 
-                                value="news" 
-                                className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white uppercase"
-                            >
-                                News & Events
-                            </TabsTrigger>
-                            <TabsTrigger 
-                                value="community" 
-                                className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white uppercase"
-                            >
-                                Community
-                            </TabsTrigger>
-                        </TabsList>
+                <div className="border border-white/10 p-0">
+                    {/* Custom Tab Navigation */}
+                    <div className="flex border-b border-white/10">
+                        <button
+                            className={`px-6 py-4 text-sm font-mono relative ${
+                                activeTab === "tokens"
+                                    ? "text-white border-b border-white"
+                                    : "text-white/40 hover:text-white/60"
+                            }`}
+                            onClick={() => handleTabChange("tokens")}
+                        >
+                            TOKENS
+                        </button>
+                        <button
+                            className={`px-6 py-4 text-sm font-mono relative ${
+                                activeTab === "nfts"
+                                    ? "text-white border-b border-white"
+                                    : "text-white/40 hover:text-white/60"
+                            }`}
+                            onClick={() => handleTabChange("nfts")}
+                        >
+                            NFTS
+                        </button>
+                        <button
+                            className={`px-6 py-4 text-sm font-mono relative ${
+                                activeTab === "news"
+                                    ? "text-white border-b border-white"
+                                    : "text-white/40 hover:text-white/60"
+                            }`}
+                            onClick={() => handleTabChange("news")}
+                        >
+                            NEWS & EVENTS
+                        </button>
+                        <button
+                            className={`px-6 py-4 text-sm font-mono relative ${
+                                activeTab === "community"
+                                    ? "text-white border-b border-white"
+                                    : "text-white/40 hover:text-white/60"
+                            }`}
+                            onClick={() => handleTabChange("community")}
+                        >
+                            COMMUNITY
+                        </button>
+                    </div>
 
+                    {/* Tab Content */}
+                    <div className="p-6">
                         {/* Token Sentiment Tab */}
-                        <TabsContent value="tokens">
-                            {loading ? (
-                                <div className="h-[400px] flex items-center justify-center">
-                                    <div className="animate-pulse text-white/60">Loading token sentiment data...</div>
-                                </div>
-                            ) : tokenSentiment.length === 0 ? (
-                                <div className="h-[400px] flex items-center justify-center">
-                                    <div className="text-white/60">No token sentiment data available</div>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {Array.isArray(tokenSentiment) ? tokenSentiment.map((token) => (
-                                        <div key={token.name} className="border border-white/30 p-0.5">
-                                            <div className="border border-white/10 p-5">
-                                                <div className="flex justify-between items-center mb-4">
-                                                    <h3 className="text-lg font-light uppercase">{token.name}</h3>
-                                                    {getSentimentBadge(token.status)}
-                                                </div>
-                                                <p className="text-white/60 text-sm uppercase mb-4">
-                                                    {token.mentions.toLocaleString()} mentions, {token.change} last 24h
-                                                </p>
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-1">
-                                                        <div className="text-sm text-white/60 uppercase">Sentiment Score</div>
-                                                        <div className={`text-2xl font-light ${getSentimentColor(token.score)}`}>
-                                                            {token.score}/100
-                                                        </div>
+                        {activeTab === "tokens" && (
+                            <>
+                                {loading ? (
+                                    <div className="h-[400px] flex items-center justify-center">
+                                        <div className="animate-pulse text-white/60">Loading token sentiment data...</div>
+                                    </div>
+                                ) : tokenSentiment.length === 0 ? (
+                                    <div className="h-[400px] flex items-center justify-center">
+                                        <div className="text-white/60">No token sentiment data available</div>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {Array.isArray(tokenSentiment) ? tokenSentiment.map((token) => (
+                                            <div key={token.name} className="border border-white/30 p-0.5">
+                                                <div className="border border-white/10 p-5">
+                                                    <div className="flex justify-between items-center mb-4">
+                                                        <h3 className="text-lg font-light uppercase">{token.name}</h3>
+                                                        {getSentimentBadge(token.status)}
                                                     </div>
-                                                    <div className="h-[100px] w-full max-w-[200px] border border-white/10 p-2">
-                                                        <BarChart data={token.chartData} />
+                                                    <p className="text-white/60 text-sm uppercase mb-4">
+                                                        {token.mentions.toLocaleString()} mentions, {token.change} last 24h
+                                                    </p>
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="space-y-1">
+                                                            <div className="text-sm text-white/60 uppercase">Sentiment Score</div>
+                                                            <div className={`text-2xl font-light ${getSentimentColor(token.score)}`}>
+                                                                {token.score}/100
+                                                            </div>
+                                                        </div>
+                                                        <div className="h-[100px] w-full max-w-[200px] border border-white/10 p-2">
+                                                            <BarChart data={token.chartData} />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    )) : <div className="col-span-2 h-[400px] flex items-center justify-center">
-                                        <div className="text-white/60">Invalid token sentiment data format</div>
-                                    </div>}
-                                </div>
-                            )}
-                        </TabsContent>
+                                        )) : <div className="col-span-2 h-[400px] flex items-center justify-center">
+                                            <div className="text-white/60">Invalid token sentiment data format</div>
+                                        </div>}
+                                    </div>
+                                )}
+                            </>
+                        )}
 
                         {/* NFT Sentiment Tab */}
-                        <TabsContent value="nfts">
-                            {loading ? (
-                                <div className="h-[400px] flex items-center justify-center">
-                                    <div className="animate-pulse text-white/60">Loading NFT sentiment data...</div>
-                                </div>
-                            ) : nftSentiment.length === 0 ? (
-                                <div className="h-[400px] flex items-center justify-center">
-                                    <div className="text-white/60">No NFT sentiment data available</div>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {Array.isArray(nftSentiment) ? nftSentiment.map((nft) => (
-                                        <div key={nft.name} className="border border-white/30 p-0.5">
-                                            <div className="border border-white/10 p-5">
-                                                <div className="flex justify-between items-center mb-4">
-                                                    <h3 className="text-lg font-light uppercase">{nft.name}</h3>
-                                                    {getSentimentBadge(nft.status)}
-                                                </div>
-                                                <p className="text-white/60 text-sm uppercase mb-4">
-                                                    {nft.mentions.toLocaleString()} mentions, {nft.change} last 24h
-                                                </p>
-                                                <div className="flex items-center justify-between">
-                                                    <div className="space-y-1">
-                                                        <div className="text-sm text-white/60 uppercase">Sentiment Score</div>
-                                                        <div className={`text-2xl font-light ${getSentimentColor(nft.score)}`}>
-                                                            {nft.score}/100
-                                                        </div>
+                        {activeTab === "nfts" && (
+                            <>
+                                {loading ? (
+                                    <div className="h-[400px] flex items-center justify-center">
+                                        <div className="animate-pulse text-white/60">Loading NFT sentiment data...</div>
+                                    </div>
+                                ) : nftSentiment.length === 0 ? (
+                                    <div className="h-[400px] flex items-center justify-center">
+                                        <div className="text-white/60">No NFT sentiment data available</div>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {Array.isArray(nftSentiment) ? nftSentiment.map((nft) => (
+                                            <div key={nft.name} className="border border-white/30 p-0.5">
+                                                <div className="border border-white/10 p-5">
+                                                    <div className="flex justify-between items-center mb-4">
+                                                        <h3 className="text-lg font-light uppercase">{nft.name}</h3>
+                                                        {getSentimentBadge(nft.status)}
                                                     </div>
-                                                    <div className="h-[100px] w-full max-w-[200px] border border-white/10 p-2">
-                                                        <BarChart data={nft.chartData} />
+                                                    <p className="text-white/60 text-sm uppercase mb-4">
+                                                        {nft.mentions.toLocaleString()} mentions, {nft.change} last 24h
+                                                    </p>
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="space-y-1">
+                                                            <div className="text-sm text-white/60 uppercase">Sentiment Score</div>
+                                                            <div className={`text-2xl font-light ${getSentimentColor(nft.score)}`}>
+                                                                {nft.score}/100
+                                                            </div>
+                                                        </div>
+                                                        <div className="h-[100px] w-full max-w-[200px] border border-white/10 p-2">
+                                                            <BarChart data={nft.chartData} />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    )) : <div className="col-span-2 h-[400px] flex items-center justify-center">
-                                        <div className="text-white/60">Invalid NFT sentiment data format</div>
-                                    </div>}
-                                </div>
-                            )}
-                        </TabsContent>
+                                        )) : <div className="col-span-2 h-[400px] flex items-center justify-center">
+                                            <div className="text-white/60">Invalid NFT sentiment data format</div>
+                                        </div>}
+                                    </div>
+                                )}
+                            </>
+                        )}
 
                         {/* News & Events Tab */}
-                        <TabsContent value="news">
+                        {activeTab === "news" && (
                             <div className="space-y-6">
                                 {/* News Filter */}
                                 <div className="border border-white/30 p-0.5 mb-4">
@@ -1005,10 +1031,10 @@ export default function SentimentTab() {
                                     </div>
                                 )}
                             </div>
-                        </TabsContent>
+                        )}
 
                         {/* Community Tab */}
-                        <TabsContent value="community">
+                        {activeTab === "community" && (
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 {/* Platform Sentiment */}
                                 <div className="md:col-span-2">
@@ -1136,8 +1162,8 @@ export default function SentimentTab() {
                                     </div>
                                 </div>
                             </div>
-                        </TabsContent>
-                    </Tabs>
+                        )}
+                    </div>
                 </div>
             </div>
         </motion.div>

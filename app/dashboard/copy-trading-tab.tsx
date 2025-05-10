@@ -1,17 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import LineChart from "@/components/charts/line-chart";
 import { motion } from "framer-motion";
-import { getTopTraders, setupCopyTrading, stopCopyTrading } from "./api-service";
+import { getTopTraders, setupCopyTrading, stopCopyTrading } from "@/app/dashboard/api-service";
 
 // Type definition for traders
 interface Trader {

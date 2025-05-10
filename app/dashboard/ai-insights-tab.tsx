@@ -4,10 +4,10 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import LineChart from "@/components/charts/line-chart";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
-import { getPersonalizedRecommendations, getDefiOpportunities } from "./api-service";
-import { createTokenPriceWebSocket, PriceUpdateData } from "./solana-api-service";
+// Fix imports by importing from the correct files
+import { getPersonalizedRecommendations, getDefiOpportunities } from "@/app/dashboard/api-service";
+import { createTokenPriceWebSocket, PriceUpdateData } from "@/app/dashboard/solana-api-service";
 
 // Types for trading opportunities and insights
 interface TradingOpportunity {
@@ -167,6 +167,7 @@ export default function AIInsightsTab() {
     const [selectedOpportunity, setSelectedOpportunity] = useState<TradingOpportunity | null>(null);
     const [isGeneratingInsight, setIsGeneratingInsight] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState("opportunities");
 
     // Fetch data on component mount
     useEffect(() => {
@@ -276,6 +277,10 @@ export default function AIInsightsTab() {
         fetchInsights();
     }, []);
 
+    const handleTabChange = (value: string) => {
+        setActiveTab(value);
+    };
+
     const handleGenerateInsight = () => {
         setIsGeneratingInsight(true);
         // In a real app, this would call an API to generate fresh insights
@@ -356,37 +361,55 @@ export default function AIInsightsTab() {
                 </div>
             ) : (
                 <div className="border border-white/30 p-0.5 mb-8">
-                    <div className="border border-white/10 p-5">
-                        <Tabs defaultValue="opportunities" className="w-full">
-                            <TabsList className="grid grid-cols-4 mb-6">
-                                <TabsTrigger 
-                                    value="opportunities" 
-                                    className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white uppercase"
-                                >
-                                    Trading Opportunities
-                                </TabsTrigger>
-                                <TabsTrigger 
-                                    value="predictions" 
-                                    className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white uppercase"
-                                >
-                                    Price Predictions
-                                </TabsTrigger>
-                                <TabsTrigger 
-                                    value="alerts" 
-                                    className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white uppercase"
-                                >
-                                    Market Alerts
-                                </TabsTrigger>
-                                <TabsTrigger 
-                                    value="resources" 
-                                    className="py-3 data-[state=active]:bg-white/5 data-[state=active]:border-b data-[state=active]:border-white text-white/70 data-[state=active]:text-white uppercase"
-                                >
-                                    Learning Resources
-                                </TabsTrigger>
-                            </TabsList>
+                    <div className="border border-white/10 p-0">
+                        {/* Custom Tab Navigation - Elegant Minimal Style (like in page.tsx) */}
+                        <div className="flex border-b border-white/10">
+                            <button
+                                className={`px-6 py-4 text-sm font-mono relative ${
+                                    activeTab === "opportunities"
+                                        ? "text-white border-b border-white"
+                                        : "text-white/40 hover:text-white/60"
+                                }`}
+                                onClick={() => handleTabChange("opportunities")}
+                            >
+                                TRADING OPPORTUNITIES
+                            </button>
+                            <button
+                                className={`px-6 py-4 text-sm font-mono relative ${
+                                    activeTab === "predictions"
+                                        ? "text-white border-b border-white"
+                                        : "text-white/40 hover:text-white/60"
+                                }`}
+                                onClick={() => handleTabChange("predictions")}
+                            >
+                                PRICE PREDICTIONS
+                            </button>
+                            <button
+                                className={`px-6 py-4 text-sm font-mono relative ${
+                                    activeTab === "alerts"
+                                        ? "text-white border-b border-white"
+                                        : "text-white/40 hover:text-white/60"
+                                }`}
+                                onClick={() => handleTabChange("alerts")}
+                            >
+                                MARKET ALERTS
+                            </button>
+                            <button
+                                className={`px-6 py-4 text-sm font-mono relative ${
+                                    activeTab === "resources"
+                                        ? "text-white border-b border-white"
+                                        : "text-white/40 hover:text-white/60"
+                                }`}
+                                onClick={() => handleTabChange("resources")}
+                            >
+                                LEARNING RESOURCES
+                            </button>
+                        </div>
 
+                        {/* Tab Content */}
+                        <div className="p-6">
                             {/* Trading Opportunities Tab */}
-                            <TabsContent value="opportunities">
+                            {activeTab === "opportunities" && (
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     {/* Trading Opportunities List */}
                                     <div className="md:col-span-1">
@@ -508,10 +531,10 @@ export default function AIInsightsTab() {
                                         )}
                                     </div>
                                 </div>
-                            </TabsContent>
+                            )}
 
                             {/* Price Predictions Tab */}
-                            <TabsContent value="predictions">
+                            {activeTab === "predictions" && (
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div className="md:col-span-2">
                                         <div className="border border-white/30 p-0.5">
@@ -572,10 +595,10 @@ export default function AIInsightsTab() {
                                         </div>
                                     </div>
                                 </div>
-                            </TabsContent>
+                            )}
 
                             {/* Market Alerts Tab */}
-                            <TabsContent value="alerts">
+                            {activeTab === "alerts" && (
                                 <div className="border border-white/30 p-0.5">
                                     <div className="border border-white/10 p-5">
                                         <div className="mb-6">
@@ -607,10 +630,10 @@ export default function AIInsightsTab() {
                                         )}
                                     </div>
                                 </div>
-                            </TabsContent>
+                            )}
 
                             {/* Learning Resources Tab */}
-                            <TabsContent value="resources">
+                            {activeTab === "resources" && (
                                 <div className="border border-white/30 p-0.5">
                                     <div className="border border-white/10 p-5">
                                         <div className="mb-6">
@@ -646,8 +669,8 @@ export default function AIInsightsTab() {
                                         )}
                                     </div>
                                 </div>
-                            </TabsContent>
-                        </Tabs>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
