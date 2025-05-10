@@ -4,7 +4,7 @@ import { LineChart as Chart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Respons
 
 interface LineChartProps {
   data: Array<{
-    date: string
+    name: string
     value: number
   }>
 }
@@ -14,7 +14,7 @@ export default function LineChart({ data }: LineChartProps) {
     <ResponsiveContainer width="100%" height="100%">
       <Chart data={data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
-        <XAxis dataKey="date" stroke="rgba(255, 255, 255, 0.5)" tick={{ fill: "rgba(255, 255, 255, 0.5)" }} />
+        <XAxis dataKey="name" stroke="rgba(255, 255, 255, 0.5)" tick={{ fill: "rgba(255, 255, 255, 0.5)" }} />
         <YAxis stroke="rgba(255, 255, 255, 0.5)" tick={{ fill: "rgba(255, 255, 255, 0.5)" }} />
         <Tooltip
           contentStyle={{

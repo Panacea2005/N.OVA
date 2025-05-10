@@ -72,29 +72,28 @@ export default function Navigation() {
     <>
       {/* Always visible navigation bar */}
       <motion.nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled
-            ? "backdrop-blur-lg bg-black/30 border-b border-purple-900/30"
-            : ""
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
+          ? "backdrop-blur-lg bg-black/30 border-b border-purple-900/30"
+          : ""
+          }`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ delay: 0.5, duration: 0.5 }}
       >
         <div className="container mx-auto px-4 md:px-6 py-2 flex justify-between items-center">
           {/* Enhanced N.OVA Logo */}
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="relative"
             onMouseEnter={() => setLogoHovered(true)}
             onMouseLeave={() => setLogoHovered(false)}
           >
             <div className="flex items-center">
               {/* Decorative hexagon bracket */}
-              <motion.div 
+              <motion.div
                 className="mr-1 text-purple-600 font-mono"
                 initial={{ opacity: 0.7 }}
-                animate={{ 
+                animate={{
                   opacity: logoHovered ? 1 : 0.7,
                   scale: logoHovered ? 1.1 : 1
                 }}
@@ -102,13 +101,13 @@ export default function Navigation() {
               >
                 {"{"}
               </motion.div>
-              
+
               {/* Logo text with glitch effect */}
-              <motion.div 
+              <motion.div
                 className="relative font-bold text-xl tracking-wider"
-                animate={{ 
-                  textShadow: logoHovered 
-                    ? "0 0 8px rgba(168, 85, 247, 0.8), 0 0 12px rgba(168, 85, 247, 0.5)" 
+                animate={{
+                  textShadow: logoHovered
+                    ? "0 0 8px rgba(168, 85, 247, 0.8), 0 0 12px rgba(168, 85, 247, 0.5)"
                     : "0 0 0px rgba(168, 85, 247, 0)"
                 }}
                 transition={{ duration: 0.3 }}
@@ -119,12 +118,13 @@ export default function Navigation() {
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-800 via-purple-600 to-purple-400">
                   OVA
                 </span>
-                
+
                 {/* Glitch lines that appear on hover */}
                 <AnimatePresence>
                   {logoHovered && (
                     <>
-                      <motion.span 
+                      <motion.span
+                        key="glitch-1"
                         className="absolute top-0 left-0 w-full h-full bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600 opacity-0"
                         initial={{ opacity: 0, x: -2, y: -2 }}
                         animate={{ opacity: [0, 0.3, 0], x: [-2, -1, -2], y: [-2, -1, -2] }}
@@ -133,7 +133,8 @@ export default function Navigation() {
                       >
                         N.OVA
                       </motion.span>
-                      <motion.span 
+                      <motion.span
+                        key="glitch-2"
                         className="absolute top-0 left-0 w-full h-full bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600 opacity-0"
                         initial={{ opacity: 0, x: 2, y: 2 }}
                         animate={{ opacity: [0, 0.3, 0], x: [2, 1, 2], y: [2, 1, 2] }}
@@ -146,12 +147,12 @@ export default function Navigation() {
                   )}
                 </AnimatePresence>
               </motion.div>
-              
+
               {/* Closing hexagon bracket */}
-              <motion.div 
+              <motion.div
                 className="ml-1 text-purple-600 font-mono"
                 initial={{ opacity: 0.7 }}
-                animate={{ 
+                animate={{
                   opacity: logoHovered ? 1 : 0.7,
                   scale: logoHovered ? 1.1 : 1
                 }}
@@ -160,23 +161,23 @@ export default function Navigation() {
                 {"}"}
               </motion.div>
             </div>
-            
+
             {/* Animated underline */}
-            <motion.div 
+            <motion.div
               className="absolute -bottom-1 left-1/2 h-px bg-gradient-to-r from-purple-600 via-purple-500 to-purple-800"
               initial={{ width: "0%", x: "-50%" }}
-              animate={{ 
+              animate={{
                 width: logoHovered ? "120%" : "0%",
                 x: "-50%"
               }}
               transition={{ duration: 0.3 }}
             />
-            
+
             {/* Pulse dot indicator */}
-            <motion.div 
+            <motion.div
               className="absolute -bottom-1 left-1/2 w-1 h-1 rounded-full bg-purple-500"
               initial={{ opacity: 0 }}
-              animate={{ 
+              animate={{
                 opacity: logoHovered ? 1 : 0,
               }}
               transition={{ duration: 0.3 }}
@@ -189,7 +190,7 @@ export default function Navigation() {
           <div className="flex items-center gap-4">
             {/* ConnectWalletButton is styled in its component */}
             <ConnectWalletButton />
-            
+
             <button
               ref={menuButtonRef}
               className="text-white p-2 z-50 hover:bg-gradient-to-br hover:from-purple-900/20 hover:to-purple-600/20 rounded-full transition-all duration-300 border border-purple-900/30"

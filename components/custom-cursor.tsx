@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -8,11 +7,11 @@ const CustomCursor = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
-  
+
   // Motion values for cursor position
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
-  
+
   // Spring animations for smoother following
   const springConfig = { damping: 25, stiffness: 200 };
   const trailingX = useSpring(cursorX, springConfig);
@@ -23,16 +22,16 @@ const CustomCursor = () => {
     const handleMouseMove = (e: { clientX: number; clientY: number; }) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
-      
+
       if (!isVisible) {
         setIsVisible(true);
       }
     };
-    
+
     // Handle mouse down/up events for click animations
     const handleMouseDown = () => setIsClicking(true);
     const handleMouseUp = () => setIsClicking(false);
-    
+
     // Handle hover states for interactive elements
     const handleMouseOver = (e: { target: any; }) => {
       const target = e.target;
@@ -50,7 +49,7 @@ const CustomCursor = () => {
         setIsHovering(false);
       }
     };
-    
+
     // Hide cursor when it leaves the window
     const handleMouseLeave = () => {
       setIsVisible(false);
@@ -61,7 +60,7 @@ const CustomCursor = () => {
     window.addEventListener("mouseup", handleMouseUp);
     window.addEventListener("mouseover", handleMouseOver);
     window.addEventListener("mouseleave", handleMouseLeave);
-    
+
     // Clean up event listeners
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
@@ -78,6 +77,7 @@ const CustomCursor = () => {
         <>
           {/* Main cursor dot */}
           <motion.div
+            key="main-cursor"
             className="fixed pointer-events-none z-[100] mix-blend-difference"
             style={{
               x: cursorX,
@@ -95,9 +95,10 @@ const CustomCursor = () => {
           >
             <div className="w-full h-full rounded-full bg-white" />
           </motion.div>
-          
+
           {/* Trailing ring effect */}
           <motion.div
+            key="trailing-cursor"
             className="fixed pointer-events-none z-[99] mix-blend-difference"
             style={{
               x: trailingX,
@@ -116,10 +117,11 @@ const CustomCursor = () => {
           >
             <div className="w-full h-full rounded-full border border-white" />
           </motion.div>
-          
+
           {/* Hover indicator that appears on interactive elements */}
           {isHovering && (
             <motion.div
+              key="hover-cursor"
               className="fixed pointer-events-none z-[98] mix-blend-difference"
               style={{
                 x: cursorX,
@@ -128,7 +130,7 @@ const CustomCursor = () => {
                 translateY: "-50%",
               }}
               initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ 
+              animate={{
                 opacity: 0.15,
                 scale: 1,
                 width: 80,
@@ -140,10 +142,11 @@ const CustomCursor = () => {
               <div className="w-full h-full rounded-full bg-white" />
             </motion.div>
           )}
-          
+
           {/* Click ripple effect */}
           {isClicking && (
             <motion.div
+              key="click-cursor"
               className="fixed pointer-events-none z-[97] mix-blend-difference"
               style={{
                 x: cursorX,
@@ -160,7 +163,7 @@ const CustomCursor = () => {
           )}
         </>
       )}
-      
+
       {/* Global style to hide default cursor */}
       <style jsx global>{`
         body, a, button, input, select, textarea, [role="button"], .clickable {
