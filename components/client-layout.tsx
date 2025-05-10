@@ -1,13 +1,32 @@
 "use client";
 
-import React from "react";
-import CustomCursor from "./custom-cursor";
+import React, { ReactNode, useEffect } from "react";
+import { WalletContextProvider } from "@/lib/wallet-context-provider";
+import { initializeLazorKitBridge } from "@/lib/lazorkit-bridge";
+import dynamic from "next/dynamic";
 
-export function ClientLayout({ children }: { children: React.ReactNode }) {
+// Dynamically import cursor component with no SSR
+const MinimalCustomCursor = dynamic(() => import("@/components/custom-cursor"), {
+  ssr: false,
+});
+
+interface ClientLayoutProps {
+  children: ReactNode;
+}
+
+export function ClientLayout({ children }: ClientLayoutProps) {
+  // Initialize LazorKit bridge on client-side
+  useEffect(() => {
+    // Initialize the bridge between custom hooks and wallet adapter
+    initializeLazorKitBridge();
+  }, []);
+  
   return (
-    <>
-      <CustomCursor />
+    <WalletContextProvider>
       {children}
-    </>
+      <MinimalCustomCursor />
+    </WalletContextProvider>
   );
 }
+
+export default ClientLayout;

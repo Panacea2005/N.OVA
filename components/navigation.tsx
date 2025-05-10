@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Canvas } from "@react-three/fiber";
-import { Environment, SpotLight } from "@react-three/drei";
+import { Environment } from "@react-three/drei";
 import dynamic from "next/dynamic";
 import { ConnectWalletButton } from "@/components/ui/connect-wallet-button";
 
@@ -18,11 +18,10 @@ const HolographicSphere = dynamic(
 export default function Navigation() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [activeItem, setActiveItem] = useState<number | null>(null);
+  const [activeGroup, setActiveGroup] = useState<number | null>(0);
+  const [activeItem, setActiveItem] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const [logoHovered, setLogoHovered] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,7 +29,6 @@ export default function Navigation() {
     };
 
     const handleClickOutside = (event: MouseEvent) => {
-      // Check if the click is outside the menu AND not on the menu button
       if (
         menuRef.current &&
         !menuRef.current.contains(event.target as Node) &&
@@ -50,150 +48,76 @@ export default function Navigation() {
     };
   }, []);
 
-  // Toggle menu function to ensure proper toggling
   const toggleMenu = () => {
     setMenuOpen((prevState) => !prevState);
   };
 
-  const navItems = [
-    { name: "N.OVA", href: "/" },
-    { name: "N.ABOUT", href: "/about" },
-    { name: "N.TOKENOMICS", href: "/tokenomics" },
-    { name: "N.AI", href: "/ai" },
-    { name: "N.AURORA", href: "/music" },
-    { name: "N.IDENTITY", href: "/nft" },
-    { name: "N.DAO", href: "/dao" },
-    { name: "N.TRANSFER", href: "/transfer" },
-    { name: "N.DASHBOARD", href: "/dashboard" },
-    { name: "N.PROFILE", href: "/profile" },
+  // Grouped navigation items
+  const navGroups = [
+    {
+      name: "N.OVA",
+      items: [
+        { name: "N.OVA", href: "/" },
+        { name: "N.ABOUT", href: "/about" }
+      ]
+    },
+    {
+      name: "N.AI",
+      items: [
+        { name: "N.CHATBOT", href: "/ai" },
+        { name: "N.MUSIC", href: "/music" },
+        { name: "N.IDENTITY", href: "/nft" }
+      ]
+    },
+    {
+      name: "N.DEFI",
+      items: [
+        { name: "N.TOKENOMICS", href: "/tokenomics" },
+        { name: "N.DAO", href: "/dao" },
+        { name: "N.TRANSFER", href: "/transfer" }
+      ]
+    },
+    {
+      name: "N.USER",
+      items: [
+        { name: "N.DASHBOARD", href: "/dashboard" },
+        { name: "N.PROFILE", href: "/profile" }
+      ]
+    }
   ];
 
   return (
     <>
-      {/* Always visible navigation bar */}
+      {/* Fixed Navigation Bar */}
       <motion.nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
-          ? "backdrop-blur-lg bg-black/30 border-b border-purple-900/30"
-          : ""
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-black border-b border-white/10" : ""
           }`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        transition={{ delay: 0.5, duration: 0.5 }}
+        transition={{ duration: 0.5 }}
       >
-        <div className="container mx-auto px-4 md:px-6 py-2 flex justify-between items-center">
-          {/* Enhanced N.OVA Logo */}
-          <Link
-            href="/"
-            className="relative"
-            onMouseEnter={() => setLogoHovered(true)}
-            onMouseLeave={() => setLogoHovered(false)}
-          >
+        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+          {/* Logo */}
+          <Link href="/" className="relative group">
             <div className="flex items-center">
-              {/* Decorative hexagon bracket */}
+              <span className="text-xl font-mono font-light">N.OVA</span>
               <motion.div
-                className="mr-1 text-purple-600 font-mono"
-                initial={{ opacity: 0.7 }}
-                animate={{
-                  opacity: logoHovered ? 1 : 0.7,
-                  scale: logoHovered ? 1.1 : 1
-                }}
-                transition={{ duration: 0.3 }}
-              >
-                {"{"}
-              </motion.div>
-
-              {/* Logo text with glitch effect */}
-              <motion.div
-                className="relative font-bold text-xl tracking-wider"
-                animate={{
-                  textShadow: logoHovered
-                    ? "0 0 8px rgba(168, 85, 247, 0.8), 0 0 12px rgba(168, 85, 247, 0.5)"
-                    : "0 0 0px rgba(168, 85, 247, 0)"
-                }}
-                transition={{ duration: 0.3 }}
-              >
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-purple-500 to-purple-800">
-                  N.
-                </span>
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-800 via-purple-600 to-purple-400">
-                  OVA
-                </span>
-
-                {/* Glitch lines that appear on hover */}
-                <AnimatePresence>
-                  {logoHovered && (
-                    <>
-                      <motion.span
-                        key="glitch-1"
-                        className="absolute top-0 left-0 w-full h-full bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600 opacity-0"
-                        initial={{ opacity: 0, x: -2, y: -2 }}
-                        animate={{ opacity: [0, 0.3, 0], x: [-2, -1, -2], y: [-2, -1, -2] }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 1.5, repeat: Infinity, repeatType: "loop" }}
-                      >
-                        N.OVA
-                      </motion.span>
-                      <motion.span
-                        key="glitch-2"
-                        className="absolute top-0 left-0 w-full h-full bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600 opacity-0"
-                        initial={{ opacity: 0, x: 2, y: 2 }}
-                        animate={{ opacity: [0, 0.3, 0], x: [2, 1, 2], y: [2, 1, 2] }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 1.5, delay: 0.1, repeat: Infinity, repeatType: "loop" }}
-                      >
-                        N.OVA
-                      </motion.span>
-                    </>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-
-              {/* Closing hexagon bracket */}
-              <motion.div
-                className="ml-1 text-purple-600 font-mono"
-                initial={{ opacity: 0.7 }}
-                animate={{
-                  opacity: logoHovered ? 1 : 0.7,
-                  scale: logoHovered ? 1.1 : 1
-                }}
-                transition={{ duration: 0.3 }}
-              >
-                {"}"}
-              </motion.div>
+                className="absolute -bottom-1 left-0 h-px bg-white w-0 group-hover:w-full transition-all duration-300"
+                initial={{ width: 0 }}
+                animate={{ width: "0%" }}
+                exit={{ width: 0 }}
+              />
             </div>
-
-            {/* Animated underline */}
-            <motion.div
-              className="absolute -bottom-1 left-1/2 h-px bg-gradient-to-r from-purple-600 via-purple-500 to-purple-800"
-              initial={{ width: "0%", x: "-50%" }}
-              animate={{
-                width: logoHovered ? "120%" : "0%",
-                x: "-50%"
-              }}
-              transition={{ duration: 0.3 }}
-            />
-
-            {/* Pulse dot indicator */}
-            <motion.div
-              className="absolute -bottom-1 left-1/2 w-1 h-1 rounded-full bg-purple-500"
-              initial={{ opacity: 0 }}
-              animate={{
-                opacity: logoHovered ? 1 : 0,
-              }}
-              transition={{ duration: 0.3 }}
-              style={{
-                boxShadow: "0 0 8px 2px rgba(168, 85, 247, 0.7)"
-              }}
-            />
           </Link>
 
           <div className="flex items-center gap-4">
-            {/* ConnectWalletButton is styled in its component */}
+            {/* Connect Wallet Button */}
             <ConnectWalletButton />
 
+            {/* Menu Button */}
             <button
               ref={menuButtonRef}
-              className="text-white p-2 z-50 hover:bg-gradient-to-br hover:from-purple-900/20 hover:to-purple-600/20 rounded-full transition-all duration-300 border border-purple-900/30"
+              className="text-white p-2 hover:bg-white/5 transition-all duration-300 border border-white/10"
               onClick={toggleMenu}
               aria-label="Toggle menu"
             >
@@ -204,7 +128,6 @@ export default function Navigation() {
                   viewBox="0 0 24 24"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
-                  className="text-purple-500"
                 >
                   <path
                     d="M18 6L6 18M6 6L18 18"
@@ -221,7 +144,6 @@ export default function Navigation() {
                   viewBox="0 0 24 24"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
-                  className="text-purple-500"
                 >
                   <path
                     d="M4 8H13"
@@ -248,7 +170,7 @@ export default function Navigation() {
         </div>
       </motion.nav>
 
-      {/* Full Screen Menu - toggle with menu button */}
+      {/* Full Screen Menu with Grouped Navigation */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -256,77 +178,103 @@ export default function Navigation() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/90 backdrop-blur-2xl z-40 flex"
+            className="fixed inset-0 bg-black z-40 flex overflow-hidden"
           >
+            {/* Simple Background */}
             <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute top-0 w-full h-px bg-gradient-to-r from-transparent via-purple-800 to-transparent opacity-30"></div>
-              <div className="absolute bottom-0 w-full h-px bg-gradient-to-r from-transparent via-purple-600 to-transparent opacity-30"></div>
-              <div className="absolute left-0 h-full w-px bg-gradient-to-b from-transparent via-purple-800 to-transparent opacity-30"></div>
-              <div className="absolute right-0 h-full w-px bg-gradient-to-b from-transparent via-purple-600 to-transparent opacity-30"></div>
-
-              {/* Futuristic Grid Background */}
-              <div className="absolute inset-0 opacity-5">
-                {Array.from({ length: 20 }).map((_, i) => (
-                  <div
-                    key={`h-${i}`}
-                    className="absolute h-px w-full bg-purple-800"
-                    style={{ top: `${5 * i}%` }}
-                  ></div>
-                ))}
-                {Array.from({ length: 20 }).map((_, i) => (
-                  <div
-                    key={`v-${i}`}
-                    className="absolute w-px h-full bg-purple-600"
-                    style={{ left: `${5 * i}%` }}
-                  ></div>
-                ))}
-              </div>
+              <div className="absolute top-0 w-full h-px bg-white/10"></div>
+              <div className="absolute bottom-0 w-full h-px bg-white/10"></div>
+              <div className="absolute left-0 h-full w-px bg-white/10"></div>
+              <div className="absolute right-0 h-full w-px bg-white/10"></div>
             </div>
 
-            <div className="w-full md:w-1/2 h-full flex flex-col justify-start items-start p-8 md:p-16 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent via-transparent to-black/40 pointer-events-none z-10"></div>
-              <div className="absolute top-0 left-0 w-1/3 h-full bg-gradient-to-r from-purple-900/10 to-transparent pointer-events-none"></div>
-              <div
-                ref={scrollContainerRef}
-                className="w-full h-full overflow-y-auto pr-4 no-scrollbar"
-              >
-                {navItems.map((item, i) => (
+            {/* Menu Content - Split into two columns for desktop */}
+            <div className="w-full md:w-1/2 h-full flex flex-col justify-start items-start p-8 md:p-16 relative overflow-auto">
+              <div className="w-full flex flex-col mt-12">
+                {navGroups.map((group, groupIndex) => (
                   <motion.div
-                    key={item.name}
-                    initial={{ opacity: 0, x: -50 }}
+                    key={group.name}
+                    initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -50 }}
-                    transition={{ delay: i * 0.1 }}
-                    className="mb-12 relative group"
-                    onMouseEnter={() => setActiveItem(i)}
-                    onMouseLeave={() => setActiveItem(null)}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ delay: groupIndex * 0.1 }}
+                    className="mb-12 relative"
                   >
-                    <div className="absolute -left-6 w-1 h-0 bg-gradient-to-b from-purple-800 to-purple-600 group-hover:h-full transition-all duration-500 ease-out"></div>
                     <div
-                      className={`absolute -left-12 w-3 h-3 rounded-full ${activeItem === i ? "bg-purple-600" : "bg-white/20"
-                        } transition-all duration-300`}
-                    ></div>
-
-                    <Link
-                      href={item.href}
-                      className="group flex items-center"
-                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center mb-4 cursor-pointer group"
+                      onClick={() => setActiveGroup(activeGroup === groupIndex ? null : groupIndex)}
                     >
-                      <span className="text-sm font-mono uppercase tracking-widest text-white/40 mr-4 w-16 group-hover:text-purple-600 transition-colors duration-300">
-                        {`0${i + 1}`.slice(-2)}
+                      <span className="text-sm font-mono uppercase text-white/60 mr-4 w-8 group-hover:text-white/80 transition-colors">
+                        {`0${groupIndex + 1}`.slice(-2)}
                       </span>
-                      <div className="flex flex-col">
-                        <span className="text-6xl md:text-7xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70 group-hover:from-purple-600 group-hover:to-purple-900 transition-all duration-300">
-                          {item.name}
-                        </span>
-                        <div className="w-0 group-hover:w-full h-0.5 bg-gradient-to-r from-purple-600 to-purple-900 transition-all duration-500 mt-1"></div>
+                      <div className="flex flex-col flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-3xl font-light tracking-tighter text-white/70 group-hover:text-white transition-colors">
+                            {group.name}
+                          </span>
+                          <div className="flex items-center justify-center w-6 h-6">
+                            <svg
+                              width="12"
+                              height="12"
+                              viewBox="0 0 12 12"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                              className={`transition-transform duration-300 ${activeGroup === groupIndex ? 'rotate-45' : 'rotate-0'}`}
+                            >
+                              <path d="M6 0V12M0 6H12" stroke="white" strokeWidth="1" strokeOpacity="0.6" />
+                            </svg>
+                          </div>
+                        </div>
+                        <div className="w-full h-px bg-white/20 mt-1"></div>
                       </div>
-                    </Link>
+                    </div>
+
+                    <AnimatePresence>
+                      {activeGroup === groupIndex && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="overflow-hidden ml-12"
+                        >
+                          {group.items.map((item, itemIndex) => (
+                            <motion.div
+                              key={item.name}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0, x: -10 }}
+                              transition={{ delay: itemIndex * 0.05 }}
+                              className="mb-6 relative group"
+                              onMouseEnter={() => setActiveItem(item.name)}
+                              onMouseLeave={() => setActiveItem(null)}
+                            >
+                              <Link
+                                href={item.href}
+                                className="group flex items-center"
+                                onClick={() => setMenuOpen(false)}
+                              >
+                                <div className="flex flex-col">
+                                  <span className="text-6xl md:text-7xl font-light tracking-tighter text-white/90 group-hover:text-white transition-all duration-300">
+                                    {item.name}
+                                  </span>
+                                  <div
+                                    className={`w-0 group-hover:w-full h-px bg-white transition-all duration-500 mt-1 ${activeItem === item.name ? "w-full" : "w-0"
+                                      }`}
+                                  ></div>
+                                </div>
+                              </Link>
+                            </motion.div>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 ))}
               </div>
             </div>
 
+            {/* Holographic Sphere Area - Only visible on desktop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -334,67 +282,33 @@ export default function Navigation() {
               transition={{ delay: 0.3 }}
               className="hidden md:block w-1/2 h-full relative"
             >
-              <div className="absolute -top-10 -left-10 -right-10 -bottom-10 blur-xl opacity-30 z-0">
-                <div className="absolute top-1/4 left-1/4 w-32 h-32 rounded-full bg-purple-800"></div>
-                <div className="absolute top-1/2 right-1/4 w-40 h-40 rounded-full bg-purple-600"></div>
-                <div className="absolute bottom-1/4 left-1/3 w-36 h-36 rounded-full bg-purple-900"></div>
-              </div>
-
+              {/* Simple sphere container */}
               <div className="absolute inset-0 z-10">
                 <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
-                  <Suspense fallback={null}>
-                    <HolographicSphere />
-                    <Environment preset="night" />
-                  </Suspense>
+                  <HolographicSphere />
+                  <Environment preset="night" />
                 </Canvas>
               </div>
 
-              <div className="absolute inset-20 border border-white/10 rounded-full animate-pulse"></div>
-              <div
-                className="absolute inset-40 border border-purple-800/20 rounded-full animate-pulse"
-                style={{ animationDelay: "1s" }}
-              ></div>
-              <div
-                className="absolute inset-60 border border-purple-600/20 rounded-full animate-pulse"
-                style={{ animationDelay: "2s" }}
-              ></div>
+              {/* Minimalist circles */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-64 h-64 border border-white/10 rounded-full"></div>
+                <div className="absolute w-48 h-48 border border-white/5 rounded-full"></div>
+                <div className="absolute w-32 h-32 border border-white/5 rounded-full"></div>
+              </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Custom CSS for hiding scrollbar and animations */}
+      {/* Custom CSS for hiding scrollbar */}
       <style jsx global>{`
         .no-scrollbar {
-          -ms-overflow-style: none; /* IE and Edge */
-          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
         .no-scrollbar::-webkit-scrollbar {
-          display: none; /* Chrome, Safari and Opera */
-        }
-
-        @keyframes pulse-glow {
-          0% {
-            box-shadow: 0 0 10px 0 rgba(126, 34, 206, 0.3);
-          }
-          50% {
-            box-shadow: 0 0 20px 5px rgba(126, 34, 206, 0.5);
-          }
-          100% {
-            box-shadow: 0 0 10px 0 rgba(126, 34, 206, 0.3);
-          }
-        }
-
-        @keyframes floating {
-          0% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-10px);
-          }
-          100% {
-            transform: translateY(0px);
-          }
+          display: none;
         }
       `}</style>
     </>

@@ -223,7 +223,7 @@ const getTokenIconUrl = (address: string | number) => {
   // Try to get token logo from the Solana token list or other sources
   // For known tokens, hardcode some icons
   const knownTokens: Record<string, string> = {
-    So11111111111111111111111111111111111111112: "/images/solana-logo.png", // SOL
+    So11111111111111111111111111111111111111112: "/partners/solana.svg", // SOL
     H2LhfTsiT2RWKpbyDLstZALcvVyUcaZmM2T7GtQoGJCu: "/images/logo.png", // NOVA
     EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v: "/images/usdc-logo.png", // USDC
     Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB: "/images/usdt-logo.png", // USDT
@@ -235,6 +235,31 @@ const getTokenIconUrl = (address: string | number) => {
 
   // Try Jupiter Aggregator token list API
   return `https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/${address}/logo.png`;
+};
+
+const determineRank = (novaBalance: string | number | null | undefined) => {
+  if (novaBalance === null || novaBalance === undefined)
+    return { name: "ECHO", color: "border-gray-500" };
+
+  // Convert raw balance by removing 9 decimals (standard for Solana tokens)
+  const convertedBalance =
+    typeof novaBalance === "number"
+      ? novaBalance / Math.pow(10, 9)
+      : parseFloat(novaBalance) / Math.pow(10, 9) || 0;
+
+  if (convertedBalance >= 100000)
+    return { name: "SOVEREIGN", color: "border-amber-500" };
+  if (convertedBalance >= 20000)
+    return { name: "ORACLE", color: "border-pink-500" };
+  if (convertedBalance >= 5000)
+    return { name: "NEXUS", color: "border-purple-500" };
+  if (convertedBalance >= 1500)
+    return { name: "CIPHER", color: "border-teal-500" };
+  if (convertedBalance >= 500)
+    return { name: "SIGNAL", color: "border-cyan-500" };
+  if (convertedBalance >= 100)
+    return { name: "PULSE", color: "border-blue-500" };
+  return { name: "ECHO", color: "border-gray-500" };
 };
 
 // Tab component
@@ -1030,7 +1055,7 @@ export default function ProfilePage() {
         decimals: 9,
         price: 0,
         change24h: 0,
-        logo: "/images/solana-logo.png",
+        logo: "/partners/solana.svg",
         mint: "So11111111111111111111111111111111111111112",
         tokenAccount: null,
       };
@@ -1814,27 +1839,50 @@ export default function ProfilePage() {
               className="border border-white/10 p-6"
             >
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                {/* Avatar and Wallet Info */}
-                <div className="flex items-center gap-6">
-                  <div className="w-16 h-16 border-2 border-white/20 rounded-full overflow-hidden">
-                    <img
-                      src="/images/logo.png"
-                      alt="Avatar"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+                {/* Avatar and Wallet Info with Rank Badge */}
+<div className="flex items-center gap-6">
+  <div className="w-16 h-16 border-2 border-white/20 rounded-full overflow-hidden">
+    <img
+      src="/images/logo.png"
+      alt="Avatar"
+      className="w-full h-full object-cover"
+    />
+  </div>
 
-                  <div>
-                    <h2 className="text-2xl font-light mb-2">
-                      {username || truncateAddress(walletAddress || "")}
-                    </h2>
-                    <div className="flex items-center text-white/60 text-sm">
-                      <span>Network: {network}</span>
-                      <span className="mx-2">•</span>
-                      <span>Transactions: {transactionCount}</span>
-                    </div>
-                  </div>
-                </div>
+  <div>
+    <div className="flex items-center gap-3 mb-2">
+      <h2 className="text-2xl font-light">
+        {username || truncateAddress(walletAddress || "")}
+      </h2>
+      
+      {/* Rank Badge - dynamically determined based on NOVA balance */}
+      {(() => {
+        const userRank = determineRank(novaBalance);
+        const rankColors = {
+          "ECHO": "border-gray-500 text-gray-400",
+          "PULSE": "border-blue-500 text-blue-400",
+          "SIGNAL": "border-cyan-500 text-cyan-400",
+          "CIPHER": "border-teal-500 text-teal-400",
+          "NEXUS": "border-purple-500 text-purple-400",
+          "ORACLE": "border-pink-500 text-pink-400",
+          "SOVEREIGN": "border-amber-500 text-amber-400",
+        };
+        const rankColor = rankColors[userRank.name as keyof typeof rankColors] || "border-white/30 text-white/70";
+        
+        return (
+          <div className={`border ${rankColor} px-2 py-0.5 text-xs uppercase`}>
+            {userRank.name}
+          </div>
+        );
+      })()}
+    </div>
+    <div className="flex items-center text-white/60 text-sm">
+      <span>Network: {network}</span>
+      <span className="mx-2">•</span>
+      <span>Transactions: {transactionCount}</span>
+    </div>
+  </div>
+</div>
 
                 {/* Wallet Actions */}
                 <div className="flex flex-wrap gap-3">
