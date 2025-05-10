@@ -1,12 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import LineChart from "@/components/charts/line-chart";
 import BarChart from "@/components/charts/bar-chart";
 import PieChart from "@/components/charts/pie-chart";
-import { motion } from "framer-motion";
 import {
     getSolanaData,
     createNetworkStatsWebSocket,

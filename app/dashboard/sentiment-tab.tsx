@@ -5,12 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import BarChart from "@/components/charts/bar-chart";
-import PieChart from "@/components/charts/pie-chart";
 import { motion } from "framer-motion";
 import { getNewsAndSentiment, analyzeSentiment, getTokenSentimentData, detectEvents, createOrderBookWebSocket, OrderBookData } from "./api-service";
 import { ExternalLink, Clock, ThumbsUp, ThumbsDown, MessageSquare, Filter } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Toggle } from "@/components/ui/toggle";
 

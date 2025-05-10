@@ -8,7 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import LineChart from "@/components/charts/line-chart";
 import { motion } from "framer-motion";
-import { getTopTraders, setupCopyTrading, stopCopyTrading } from "@/app/dashboard/api-service";
+import { getTopTraders, setupCopyTrading, stopCopyTrading } from "./api-service";
 
 // Type definition for traders
 interface Trader {

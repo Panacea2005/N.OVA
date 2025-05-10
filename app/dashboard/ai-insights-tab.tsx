@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import LineChart from "@/components/charts/line-chart";
 import { motion } from "framer-motion";
 // Fix imports by importing from the correct files
-import { getPersonalizedRecommendations, getDefiOpportunities } from "@/app/dashboard/api-service";
-import { createTokenPriceWebSocket, PriceUpdateData } from "@/app/dashboard/solana-api-service";
+import { getPersonalizedRecommendations, getDefiOpportunities } from "./api-service";
+import { createTokenPriceWebSocket, PriceUpdateData } from "./solana-api-service";
 
 // Types for trading opportunities and insights
 interface TradingOpportunity {

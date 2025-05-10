@@ -27,20 +27,32 @@ interface MusicRecordInfoResponse {
   errorCode?: number;
 }
 
-const MUSIC_AI_API_URL = process.env.NEXT_PUBLIC_MUSIC_AI_API_URL || "https://apibox.erweima.ai/api/v1";
-const API_KEY = process.env.NEXT_PUBLIC_MUSIC_API_KEY || "f798ac38211e1576dd1b0486dc504a39";
+// Move environment variables to a function to avoid accessing them during SSR
+const getApiConfig = () => {
+  const MUSIC_AI_API_URL = process.env.NEXT_PUBLIC_MUSIC_AI_API_URL || "https://apibox.erweima.ai/api/v1";
+  const API_KEY = process.env.NEXT_PUBLIC_MUSIC_API_KEY || "f798ac38211e1576dd1b0486dc504a39";
 
-if (!API_KEY) {
-  throw new Error("NEXT_PUBLIC_MUSIC_API_KEY is not defined in environment variables");
-}
+  if (!API_KEY) {
+    throw new Error("NEXT_PUBLIC_MUSIC_API_KEY is not defined in environment variables");
+  }
 
-const apiClient = axios.create({
-  baseURL: MUSIC_AI_API_URL,
-  headers: {
-    Authorization: `Bearer ${API_KEY}`,
-    "Content-Type": "application/json",
-  },
-});
+  return {
+    baseURL: MUSIC_AI_API_URL,
+    apiKey: API_KEY
+  };
+};
+
+// Create API client only when needed, not during module initialization
+const getApiClient = () => {
+  const { baseURL, apiKey } = getApiConfig();
+  return axios.create({
+    baseURL,
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+  });
+};
 
 // Helper function to find audio URL, task ID, and status in API response
 function findResponseFields(obj: any, path = ""): { id?: string; status?: string; audioUrl?: string; error?: string } {
@@ -150,6 +162,9 @@ function findResponseFields(obj: any, path = ""): { id?: string; status?: string
 }
 
 export async function generateMusic(params: MusicGenerationParams): Promise<MusicGenerationResponse> {
+  const apiClient = getApiClient();
+  const { baseURL } = getApiConfig();
+  
   const payload: any = {
     prompt: params.prompt,
     instrumental: params.instrumental,
@@ -241,6 +256,9 @@ export async function generateMusic(params: MusicGenerationParams): Promise<Musi
 }
 
 export async function getMusicGenerationDetails(taskId: string): Promise<MusicRecordInfoResponse> {
+  const apiClient = getApiClient();
+  const { baseURL } = getApiConfig();
+  
   try {
     if (!taskId) {
       throw new Error("taskId is required");
@@ -274,10 +292,10 @@ export async function getMusicGenerationDetails(taskId: string): Promise<MusicRe
     if ((result.status === "SUCCESS" || result.status === "completed") && !result.audio_url) {
       console.log("⚠️ Status is SUCCESS but no audio_url found. Raw data:", JSON.stringify(data, null, 2));
       const possibleUrls = [
-        `${MUSIC_AI_API_URL}/download/${taskId}`,
-        `${MUSIC_AI_API_URL}/files/${taskId}.mp3`,
-        `${MUSIC_AI_API_URL}/output/${taskId}`,
-        `${MUSIC_AI_API_URL}/stream/${taskId}`,
+        `${baseURL}/download/${taskId}`,
+        `${baseURL}/files/${taskId}.mp3`,
+        `${baseURL}/output/${taskId}`,
+        `${baseURL}/stream/${taskId}`,
       ];
       result.audio_url = possibleUrls[0];
     }
