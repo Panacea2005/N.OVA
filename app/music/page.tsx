@@ -216,7 +216,7 @@ const MinimalAudioSlider = ({
   );
 };
 
-export default function MusicGenerator() {
+export default function MusicPage() {
   const [prompt, setPrompt] = useState("");
   const [title, setTitle] = useState("");
   const [negativeTags, setNegativeTags] = useState("");
@@ -256,52 +256,47 @@ export default function MusicGenerator() {
   const [currentTime, setCurrentTime] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  const [isMounted, setIsMounted] = useState(false);
 
   // Only run client-side code after component is mounted
   useEffect(() => {
-    setIsMounted(true);
-    
     // Try to load saved tracks from localStorage
-    if (typeof window !== 'undefined') {
-      try {
-        const savedTracksJson = localStorage.getItem('generatedTracks');
-        if (savedTracksJson) {
-          const savedTracks = JSON.parse(savedTracksJson);
-          setGeneratedTracks(savedTracks);
-        }
-        
-        const savedHistoryJson = localStorage.getItem('generationHistory');
-        if (savedHistoryJson) {
-          setGenerationHistory(JSON.parse(savedHistoryJson));
-        }
-      } catch (error) {
-        console.error('Error loading from localStorage:', error);
+    try {
+      const savedTracksJson = localStorage.getItem('generatedTracks');
+      if (savedTracksJson) {
+        const savedTracks = JSON.parse(savedTracksJson);
+        setGeneratedTracks(savedTracks);
       }
+      
+      const savedHistoryJson = localStorage.getItem('generationHistory');
+      if (savedHistoryJson) {
+        setGenerationHistory(JSON.parse(savedHistoryJson));
+      }
+    } catch (error) {
+      console.error('Error loading from localStorage:', error);
     }
   }, []);
 
   useEffect(() => {
     // Save tracks to localStorage when they change
-    if (isMounted && typeof window !== 'undefined' && generatedTracks.length > 0) {
+    if (generatedTracks.length > 0) {
       try {
         localStorage.setItem('generatedTracks', JSON.stringify(generatedTracks));
       } catch (error) {
         console.error('Error saving to localStorage:', error);
       }
     }
-  }, [generatedTracks, isMounted]);
+  }, [generatedTracks]);
 
   useEffect(() => {
     // Save history to localStorage when it changes
-    if (isMounted && typeof window !== 'undefined' && generationHistory.length > 0) {
+    if (generationHistory.length > 0) {
       try {
         localStorage.setItem('generationHistory', JSON.stringify(generationHistory));
       } catch (error) {
         console.error('Error saving history to localStorage:', error);
       }
     }
-  }, [generationHistory, isMounted]);
+  }, [generationHistory]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -556,25 +551,21 @@ export default function MusicGenerator() {
     audioUrl?: string;
     instrumental?: boolean;
   }) => {
-    if (typeof window !== 'undefined') {
-      try {
-        // Get current saved tracks or initialize empty array
-        const savedTracksJson = localStorage.getItem('savedTracks');
-        const savedTracks = savedTracksJson ? JSON.parse(savedTracksJson) : [];
-        
-        // Add the new track
-        savedTracks.push(track);
-        
-        // Save back to localStorage
-        localStorage.setItem('savedTracks', JSON.stringify(savedTracks));
-        
-        alert(`Track "${track.title}" saved to your collection`);
-      } catch (error) {
-        console.error('Error saving track:', error);
-        alert('Failed to save track. Please try again.');
-      }
-    } else {
+    try {
+      // Get current saved tracks or initialize empty array
+      const savedTracksJson = localStorage.getItem('savedTracks');
+      const savedTracks = savedTracksJson ? JSON.parse(savedTracksJson) : [];
+      
+      // Add the new track
+      savedTracks.push(track);
+      
+      // Save back to localStorage
+      localStorage.setItem('savedTracks', JSON.stringify(savedTracks));
+      
       alert(`Track "${track.title}" saved to your collection`);
+    } catch (error) {
+      console.error('Error saving track:', error);
+      alert('Failed to save track. Please try again.');
     }
   };
 
@@ -752,42 +743,6 @@ export default function MusicGenerator() {
     );
   };
 
-  // Server-side rendering - return minimal UI
-  if (!isMounted) {
-    return (
-      <main className="relative min-h-screen bg-black text-white font-mono">
-        <div className="fixed inset-0 bg-black z-0" />
-        <div
-          className="fixed inset-0 z-0 opacity-10"
-          style={{
-            backgroundImage:
-              "linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px)",
-            backgroundSize: "40px 40px",
-          }}
-        />
-
-        <Navigation />
-
-        <div className="container mx-auto px-2 pt-24 pb-16 relative z-10">
-          <div className="max-w-7xl mx-auto">
-            <div className="mb-16">
-              <h1 className="text-8xl font-light mb-6">N.AURORA</h1>
-              <p className="text-white/70 uppercase max-w-4xl">
-                GENERATE UNIQUE AI-POWERED MUSIC COMPOSITIONS FOR YOUR METAVERSE
-                EXPERIENCES
-              </p>
-            </div>
-            <div className="flex items-center justify-center h-32">
-              <p>Loading music generator...</p>
-            </div>
-          </div>
-        </div>
-
-        <Footer />
-      </main>
-    );
-  }
-
   return (
     <main className="relative min-h-screen bg-black text-white font-mono">
       <div className="fixed inset-0 bg-black z-0" />
@@ -799,7 +754,6 @@ export default function MusicGenerator() {
           backgroundSize: "40px 40px",
         }}
       />
-
       <Navigation />
 
       <div className="container mx-auto px-2 pt-24 pb-16 relative z-10">
@@ -1095,59 +1049,59 @@ export default function MusicGenerator() {
                     </div>
 
                     <div className="flex-1 bg-black border border-white/10 relative overflow-hidden min-h-[550px] flex items-center justify-center">
-  {isGenerating ? (
-    <div className="flex items-center justify-center h-full w-full">
-      <div className="text-center">
-        <div className="w-16 h-16 border-t-2 border-b-2 border-white rounded-full animate-spin mb-4 mx-auto" />
-        <div className="text-white/70 animate-pulse uppercase">
-          Composing your music...
-        </div>
-        <div className="text-xs text-white/40 mt-2 uppercase">
-          Creating neural audio patterns
-        </div>
-      </div>
-    </div>
-  ) : generatedTracks.length > 0 ? (
-    <div className="p-6 w-full h-full overflow-y-auto flex flex-col items-center"> 
-      {/* Single centered track card */}
-      {renderTrackCard(generatedTracks[currentTrackIndex])}
-    </div>
-  ) : (
-    <div className="flex items-center justify-center h-full w-full">
-      <div className="text-center text-white/50 uppercase">
-        <Music className="w-12 h-12 mb-4 mx-auto opacity-30" />
-        <p>No tracks generated yet</p>
-        <p className="text-xs mt-2">
-          Enter a prompt and click generate
-        </p>
-      </div>
-    </div>
-  )}
+                      {isGenerating ? (
+                        <div className="flex items-center justify-center h-full w-full">
+                          <div className="text-center">
+                            <div className="w-16 h-16 border-t-2 border-b-2 border-white rounded-full animate-spin mb-4 mx-auto" />
+                            <div className="text-white/70 animate-pulse uppercase">
+                              Composing your music...
+                            </div>
+                            <div className="text-xs text-white/40 mt-2 uppercase">
+                              Creating neural audio patterns
+                            </div>
+                          </div>
+                        </div>
+                      ) : generatedTracks.length > 0 ? (
+                        <div className="p-6 w-full h-full overflow-y-auto flex flex-col items-center"> 
+                          {/* Single centered track card */}
+                          {renderTrackCard(generatedTracks[currentTrackIndex])}
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center h-full w-full">
+                          <div className="text-center text-white/50 uppercase">
+                            <Music className="w-12 h-12 mb-4 mx-auto opacity-30" />
+                            <p>No tracks generated yet</p>
+                            <p className="text-xs mt-2">
+                              Enter a prompt and click generate
+                            </p>
+                          </div>
+                        </div>
+                      )}
 
-  <audio 
-    ref={audioRef} 
-    onError={(e) => {
-      console.error('Audio error:', e);
-      setIsPlaying(false);
-      setErrorMessage("Error playing audio. Please try again.");
-    }}
-    onLoadedMetadata={() => {
-      // Update duration if the metadata has been loaded
-      if (audioRef.current && currentTrack) {
-        // If the audio has a valid duration, update the track's duration
-        if (audioRef.current.duration && !isNaN(audioRef.current.duration)) {
-          setGeneratedTracks(tracks => 
-            tracks.map(t => 
-              t.id === currentTrack.id 
-                ? {...t, duration: audioRef.current?.duration || t.duration} 
-                : t
-            )
-          );
-        }
-      }
-    }}
-  />
-</div>
+                      <audio 
+                        ref={audioRef} 
+                        onError={(e) => {
+                          console.error('Audio error:', e);
+                          setIsPlaying(false);
+                          setErrorMessage("Error playing audio. Please try again.");
+                        }}
+                        onLoadedMetadata={() => {
+                          // Update duration if the metadata has been loaded
+                          if (audioRef.current && currentTrack) {
+                            // If the audio has a valid duration, update the track's duration
+                            if (audioRef.current.duration && !isNaN(audioRef.current.duration)) {
+                              setGeneratedTracks(tracks => 
+                                tracks.map(t => 
+                                  t.id === currentTrack.id 
+                                    ? {...t, duration: audioRef.current?.duration || t.duration} 
+                                    : t
+                                )
+                              );
+                            }
+                          }
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

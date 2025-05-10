@@ -1,10 +1,6 @@
+// Integrated API Service Module - combines api-service.ts and api-service.tsx
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import axios from 'axios';
-import {
-    solanaApi,
-    copyTradingApi,
-    sentimentApi
-} from '@/lib/api';
 import { toast } from '@/components/ui/use-toast';
 
 // Define types locally since they're not exported from @/lib/api
@@ -147,6 +143,12 @@ interface PlatformSentiment {
     positive: number;
     neutral: number;
     negative: number;
+}
+
+// Chart data point interface
+interface ChartDataPoint {
+    name: string;
+    value: number;
 }
 
 // Connection to Solana blockchain - use devnet as default per user preference
@@ -293,6 +295,8 @@ export const getSolHistoricalData = async (days = 1, interval = 'hourly') => {
             };
         });
     } catch (error) {
+        console.error('Error fetching SOL historical data:', error);
+        return [];
     }
 };
 
@@ -334,7 +338,7 @@ export const getTokenVolumeData = async () => {
     }
 };
 
-// Real-time network stats handler
+// Types for websocket data
 export interface NetworkStatsData {
     tps: number;
     slot: number;
@@ -352,6 +356,29 @@ export interface NetworkStatsData {
         slot: number;
         progress: number;
     };
+}
+
+export interface OrderBookEntry {
+    price: number;
+    size: number;
+    total?: number;
+}
+
+export interface OrderBookData {
+    market?: string;
+    asks: OrderBookEntry[];
+    bids: OrderBookEntry[];
+    timestamp?: number;
+}
+
+export interface AlertData {
+    id: string;
+    type: 'price' | 'news' | 'whale' | 'technical' | 'general';
+    priority: 'low' | 'medium' | 'high';
+    title: string;
+    message: string;
+    asset?: string;
+    timestamp: number;
 }
 
 // Simple WebSocket connection handler
@@ -520,6 +547,7 @@ function createWebSocketConnection<T>(
     };
 }
 
+// Network stats WebSocket
 export const createNetworkStatsWebSocket = (
     onUpdate: (data: NetworkStatsData) => void
 ) => {
@@ -597,20 +625,7 @@ export const createNetworkStatsWebSocket = (
     );
 };
 
-// Market depth/order book handler
-export interface OrderBookEntry {
-    price: number;
-    size: number;
-    total: number;
-}
-
-export interface OrderBookData {
-    market: string;
-    bids: OrderBookEntry[];
-    asks: OrderBookEntry[];
-    timestamp: number;
-}
-
+// Order book WebSocket
 export const createOrderBookWebSocket = (
     market: string,
     onUpdate: (data: OrderBookData) => void
@@ -625,17 +640,7 @@ export const createOrderBookWebSocket = (
     );
 };
 
-// Notification/alert handler
-export interface AlertData {
-    id: string;
-    type: 'price' | 'news' | 'whale' | 'technical' | 'general';
-    priority: 'low' | 'medium' | 'high';
-    title: string;
-    message: string;
-    asset?: string;
-    timestamp: number;
-}
-
+// Alerts WebSocket
 export const createAlertsWebSocket = (
     onAlert: (data: AlertData) => void
 ) => {
@@ -722,6 +727,488 @@ export const getPersonalizedRecommendations = async (userId: string) => {
             strategies: []
         };
     }
+};
+
+// Get DeFi opportunities
+export const getDefiOpportunities = async () => {
+    try {
+        // In a real app, this would call DeFi protocol APIs
+        // Here we'll use DefiLlama data to get real protocols at least
+
+        const protocols = await fetchDefiProtocols();
+
+        // Transform into opportunities (in a real app these would include APY data)
+        return protocols.slice(0, 5).map((protocol: any) => ({
+            protocol: protocol.name,
+            pool: protocol.category === 'Liquid Staking' ? 'Staking' : 'Multiple pools',
+            apy: (Math.random() * 30 + 5).toFixed(1),
+            tvl: `$${(protocol.tvl / 1000000).toFixed(1)}M`,
+            risk: protocol.tvl > 100000000 ? 'Low' : (protocol.tvl > 10000000 ? 'Medium' : 'High')
+        }));
+    } catch (error) {
+        console.error('Error getting DeFi opportunities:', error);
+        return [];
+    }
+};
+
+// Mock implementation for top traders
+export const getTopTraders = async (): Promise<Trader[]> => {
+    // In a real app, this would fetch real data from an API
+    return [
+        {
+            address: "JuT35R1idBsYShZFWvPHJbQ9YPgZ8cGwBokaEkEgu6F",
+            displayAddress: "JuT35R...EkEgu6F",
+            totalProfit: 125430,
+            totalTrades: 432,
+            winRate: 76,
+            strategy: "Momentum",
+            riskScore: "Medium"
+        },
+        {
+            address: "3xTy8J4NPyBcVKbNVDSCxGhGvuZ3uXVnKJpCG7NARTrs",
+            displayAddress: "3xTy8J...ARTrs",
+            totalProfit: 231250,
+            totalTrades: 156,
+            winRate: 83,
+            strategy: "Arbitrage",
+            riskScore: "Low"
+        },
+        {
+            address: "7Y7xYpX5REvM1MWYRhCGZMnKUT7Cnc5MjxX7zGSDv4LY",
+            displayAddress: "7Y7xYp...SDv4LY",
+            totalProfit: 567890,
+            totalTrades: 921,
+            winRate: 68,
+            strategy: "Swing",
+            riskScore: "High"
+        },
+        {
+            address: "BbvHGHBvSbVijbNbXEcGfuEnq45Za7pTp9XRpMnzHmG9",
+            displayAddress: "BbvHGH...zHmG9",
+            totalProfit: 98760,
+            totalTrades: 325,
+            winRate: 71,
+            strategy: "DeFi Yield",
+            riskScore: "Medium"
+        },
+        {
+            address: "EvE1DqPTtMhGjG9Vje7txkQak9VG9gXXpwXYBvbXUyNx",
+            displayAddress: "EvE1Dq...UyNx",
+            totalProfit: 345670,
+            totalTrades: 587,
+            winRate: 74,
+            strategy: "NFT Flipping",
+            riskScore: "High"
+        }
+    ];
+};
+
+// Mock implementation for setting up copy trading
+export const setupCopyTrading = async (setup: CopyTradingSetup): Promise<boolean> => {
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // In a real app, this would call an API to set up the copy trading
+    console.log("Setting up copy trading with:", setup);
+
+    // Simulate 95% success rate
+    if (Math.random() > 0.05) {
+        toast({
+            title: "Copy Trading Setup",
+            description: `Successfully set up copy trading for trader ${setup.traderAddress.slice(0, 6)}...`,
+            duration: 3000
+        });
+        return true;
+    } else {
+        // Simulate occasional failure
+        throw new Error("Failed to set up copy trading. Please try again.");
+    }
+};
+
+// Mock implementation for stopping copy trading
+export const stopCopyTrading = async (traderAddress: string): Promise<boolean> => {
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // In a real app, this would call an API to stop the copy trading
+    console.log("Stopping copy trading for:", traderAddress);
+
+    // Simulate high success rate
+    if (Math.random() > 0.02) {
+        toast({
+            title: "Copy Trading Stopped",
+            description: `Successfully stopped copy trading for trader ${traderAddress.slice(0, 6)}...`,
+            duration: 3000
+        });
+        return true;
+    } else {
+        // Simulate occasional failure
+        throw new Error("Failed to stop copy trading. Please try again.");
+    }
+};
+
+// Get news and sentiment - more comprehensive implementation from both files
+export const getNewsAndSentiment = async (filter = "all", category = "trending") => {
+    try {
+        // In a real app, this would call a news API like CryptoPanic
+        // Generate mock news items for consistent return format
+        const generateMockNews = (count: number): NewsItem[] => {
+            const results: NewsItem[] = [];
+            const sources = [
+                { title: "Crypto News", domain: "cryptonews.com" },
+                { title: "Solana Times", domain: "solanatimes.io" },
+                { title: "Twitter", domain: "twitter.com" },
+                { title: "Reddit", domain: "reddit.com" },
+                { title: "BlockWorks", domain: "blockworks.co" },
+            ];
+
+            const titles = [
+                "Solana reaches new all-time high in daily transactions",
+                "Jupiter introduces new swap protocol on Solana",
+                "Solana DeFi ecosystem surpasses $10B in TVL",
+                "New NFT collection launches on Solana, sells out in minutes",
+                "Ethereum bridge to Solana sees increased activity",
+                "Major exchange adds support for JTO and BONK tokens",
+                "Analysts predict bullish Q3 for Solana ecosystem",
+                "Developers flock to Solana for new DeFi applications",
+                "SOL price breaks through key resistance level",
+                "Solana Foundation announces new developer grants",
+                "Community votes on key protocol upgrade for Solana",
+                "Mad Lads NFT floor price surges after new utility announcement",
+            ];
+
+            const descriptions = [
+                "The Solana blockchain has set a new record for daily transactions, surpassing previous highs with over 50 million transactions in 24 hours.",
+                "Jupiter, the leading aggregator on Solana, has released a new swap protocol that improves execution and reduces slippage.",
+                "Solana's DeFi ecosystem has grown significantly, now exceeding $10 billion in total value locked across various protocols.",
+                "A new collection of NFTs on the Solana blockchain sold out within minutes of launch, demonstrating continued demand.",
+                "The bridge between Ethereum and Solana has seen increased activity as users move assets between the two blockchains.",
+                "A major cryptocurrency exchange has added support for JTO and BONK tokens, two popular tokens in the Solana ecosystem.",
+                "Several market analysts have released reports predicting a bullish third quarter for the Solana ecosystem.",
+                "Developer activity on Solana continues to grow as more teams build DeFi applications on the high-performance blockchain.",
+                "The price of SOL has broken through a key resistance level, potentially signaling a new bullish trend.",
+                "The Solana Foundation has announced a new round of developer grants to support projects building on the blockchain.",
+                "The Solana community is voting on a key protocol upgrade that aims to improve performance and stability.",
+                "The floor price for Mad Lads NFTs has increased significantly following an announcement of new utility features."
+            ];
+
+            for (let i = 0; i < count; i++) {
+                const sourceIndex = Math.floor(Math.random() * sources.length);
+                const titleIndex = Math.floor(Math.random() * titles.length);
+                const source = sources[sourceIndex];
+                const title = titles[titleIndex];
+                const description = descriptions[titleIndex];
+
+                const positiveVotes = Math.floor(Math.random() * 1000) + 50;
+                const negativeVotes = Math.floor(Math.random() * 500);
+
+                const hoursAgo = Math.floor(Math.random() * 48);
+                const publishedDate = new Date();
+                publishedDate.setHours(publishedDate.getHours() - hoursAgo);
+
+                results.push({
+                    id: `news-${i}`,
+                    title,
+                    url: `https://${source.domain}/article-${i}`,
+                    source: {
+                        title: source.title,
+                        domain: source.domain,
+                        path: `/article-${i}`,
+                    },
+                    domain: source.domain,
+                    published_at: publishedDate.toISOString(),
+                    created_at: publishedDate.toISOString(),
+                    votes: {
+                        negative: negativeVotes,
+                        positive: positiveVotes,
+                        important: Math.floor(Math.random() * 100) + 10,
+                        liked: Math.floor(Math.random() * 200) + 20,
+                        disliked: Math.floor(Math.random() * 50) + 5,
+                        lol: Math.floor(Math.random() * 30),
+                        toxic: Math.floor(Math.random() * 20),
+                        saved: Math.floor(Math.random() * 150) + 15,
+                        comments: Math.floor(Math.random() * 200) + 10,
+                    },
+                    metadata: {
+                        description: description,
+                        image: `https://picsum.photos/seed/solana${i}/200/200`,
+                    },
+                    currencies: [
+                        {
+                            code: "SOL",
+                            title: "Solana",
+                            slug: "solana",
+                            url: "https://solana.com",
+                        },
+                    ],
+                });
+            }
+
+            return results;
+        };
+
+        // Generate mock news data
+        let mockNewsItems = generateMockNews(20);
+
+        // Filter news items based on the filter parameter if needed
+        let filteredNews = mockNewsItems;
+        if (filter !== "all") {
+            filteredNews = mockNewsItems.filter(item =>
+                item.currencies?.some(currency => currency.code.toLowerCase() === filter.toLowerCase())
+            );
+        }
+
+        // Filter based on category (trending, hot, bullish, bearish)
+        if (category === "hot") {
+            filteredNews = filteredNews.sort((a, b) =>
+                (b.votes.positive + b.votes.negative) - (a.votes.positive + a.votes.negative)
+            );
+        } else if (category === "bullish") {
+            filteredNews = filteredNews.filter(item =>
+                item.votes.positive > item.votes.negative * 2
+            );
+        } else if (category === "bearish") {
+            filteredNews = filteredNews.filter(item =>
+                item.votes.negative > item.votes.positive
+            );
+        }
+
+        // Ensure we always have at least 5 results regardless of filter
+        if (filteredNews.length < 5) {
+            const additionalItems = generateMockNews(10);
+            filteredNews = [...filteredNews, ...additionalItems].slice(0, 10);
+        }
+
+        // Create mock response structure
+        const mockResponse: CryptoPanicResponse = {
+            count: filteredNews.length,
+            next: null,
+            previous: null,
+            results: filteredNews
+        };
+
+        return mockResponse;
+    } catch (error) {
+        console.error("Error fetching news and sentiment:", error);
+        throw error;
+    }
+};
+
+// Mock implementation for token sentiment data
+export const getTokenSentimentData = async (tokensList: string[] = []) => {
+    // In a real app, this would call a sentiment analysis API
+    // Normalize input tokens
+    const tokens = tokensList.length > 0 ? tokensList : ["SOL", "JUP", "BONK", "JTO", "RAY"];
+
+    // Generate mock token sentiment data
+    const generateTokenData = (): TokenSentiment[] => {
+        return tokens.map(token => {
+            const score = Math.floor(Math.random() * 100);
+            let status, changeDirection;
+
+            if (score >= 75) {
+                status = "Very Bullish";
+                changeDirection = "+";
+            } else if (score >= 60) {
+                status = "Bullish";
+                changeDirection = "+";
+            } else if (score <= 25) {
+                status = "Very Bearish";
+                changeDirection = "-";
+            } else if (score <= 40) {
+                status = "Bearish";
+                changeDirection = "-";
+            } else {
+                status = "Neutral";
+                changeDirection = Math.random() > 0.5 ? "+" : "-";
+            }
+
+            const changePercent = (Math.random() * 15).toFixed(2);
+            const change = `${changeDirection}${changePercent}%`;
+            const mentions = Math.floor(Math.random() * 50000) + 5000;
+
+            // Generate chart data for the last 7 days
+            const chartData: ChartDataPoint[] = [];
+            for (let i = 6; i >= 0; i--) {
+                const day = new Date();
+                day.setDate(day.getDate() - i);
+                const dayName = day.toLocaleDateString('en-US', { weekday: 'short' });
+                chartData.push({
+                    name: dayName,
+                    value: Math.floor(Math.random() * 100)
+                });
+            }
+
+            return {
+                name: token,
+                score,
+                change,
+                status,
+                mentions,
+                chartData
+            };
+        });
+    };
+
+    // Generate mock platform sentiment data
+    const generatePlatformData = (): PlatformSentiment[] => {
+        const platforms = [
+            "Twitter",
+            "Reddit",
+            "Discord",
+            "Telegram"
+        ];
+
+        return platforms.map(platform => {
+            const total = Math.floor(Math.random() * 1000) + 200;
+            const positive = Math.floor(Math.random() * (total * 0.6));
+            const negative = Math.floor(Math.random() * (total * 0.4));
+            const neutral = total - positive - negative;
+
+            return {
+                name: platform,
+                positive,
+                neutral,
+                negative
+            };
+        });
+    };
+
+    return {
+        tokens: generateTokenData(),
+        platforms: generatePlatformData()
+    };
+};
+
+// Mock implementation for sentiment analysis
+export const analyzeSentiment = async (text: string) => {
+    // In a real app, this would call an NLP API or sentiment analysis service
+    // Simulate processing delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    // Generate a sentiment score based on keywords in the text
+    let score = 0.5; // Neutral default
+
+    const positiveKeywords = ["bullish", "buy", "up", "growth", "increase", "positive", "good", "great", "excellent", "gain"];
+    const negativeKeywords = ["bearish", "sell", "down", "decline", "decrease", "negative", "bad", "poor", "loss", "crash"];
+
+    const lowerText = text.toLowerCase();
+
+    // Simple keyword-based analysis
+    positiveKeywords.forEach(keyword => {
+        if (lowerText.includes(keyword)) score += 0.1;
+    });
+
+    negativeKeywords.forEach(keyword => {
+        if (lowerText.includes(keyword)) score -= 0.1;
+    });
+
+    // Clamp score between 0 and 1
+    score = Math.max(0, Math.min(1, score));
+
+    let sentiment;
+    if (score > 0.7) {
+        sentiment = "positive";
+    } else if (score < 0.4) {
+        sentiment = "negative";
+    } else {
+        sentiment = "neutral";
+    }
+
+    return {
+        score,
+        confidence: 0.7 + Math.random() * 0.2, // 70-90% confidence
+        sentiment,
+        trend: sentiment === "positive" ? "bullish" : 
+            sentiment === "negative" ? "bearish" : "neutral",
+        entities: [
+            { name: "SOL", sentiment: score > 0.5 ? "positive" : "negative", confidence: 0.8 }
+        ]
+    };
+};
+
+// Mock implementation for market events
+export const detectEvents = async (query: string = ""): Promise<Event[]> => {
+    // In a real app, this would call an event detection API
+
+    // Generate mock events based on query
+    const events = [
+        {
+            title: "Solana Token 2025 Upgrade",
+            description: "Solana implementing Token 2025 program with enhanced token features",
+            impact: "Medium",
+            timestamp: new Date(Date.now() + 2 * 24 * 3600000).toISOString(), // 2 days in future
+            source: "Solana Foundation"
+        },
+        {
+            title: "Fed Interest Rate Decision",
+            description: "Federal Reserve expected to announce interest rate decision",
+            impact: "High",
+            timestamp: new Date(Date.now() + 5 * 24 * 3600000).toISOString(), // 5 days in future
+            source: "Federal Reserve"
+        },
+        {
+            title: "Jupiter DEX v7 Launch",
+            description: "Major upgrade to Jupiter DEX platform with new features",
+            impact: "Medium",
+            timestamp: new Date(Date.now() + 8 * 24 * 3600000).toISOString(), // 8 days in future
+            source: "Jupiter"
+        },
+        {
+            title: "Breakpoint 2025 Conference",
+            description: "Annual Solana conference featuring major ecosystem announcements",
+            impact: "High",
+            timestamp: new Date(Date.now() + 45 * 24 * 3600000).toISOString(), // 45 days in future
+            source: "Solana Foundation"
+        },
+        {
+            title: "Firedancer Client Launch",
+            description: "Release of the alternative Solana client implementation by Jump Crypto",
+            impact: "High",
+            timestamp: new Date(Date.now() + 14 * 24 * 3600000).toISOString(), // 14 days in future
+            source: "Jump Crypto"
+        },
+        {
+            title: "Solana Hackathon Finals",
+            description: "Global hackathon showcasing new projects built on Solana",
+            impact: "Low",
+            timestamp: new Date(Date.now() + 30 * 24 * 3600000).toISOString(), // 30 days in future
+            source: "Solana Labs"
+        }
+    ];
+
+    // Filter or prioritize events based on query
+    if (query && query.toLowerCase() !== "solana ecosystem") {
+        const lowerQuery = query.toLowerCase();
+
+        // If query contains specific tokens, filter for those
+        if (lowerQuery.includes('sol') || lowerQuery.includes('solana')) {
+            return events.filter(event =>
+                event.title.toLowerCase().includes('sol') ||
+                event.description.toLowerCase().includes('solana')
+            );
+        }
+
+        if (lowerQuery.includes('bonk')) {
+            return events.filter(event =>
+                event.title.toLowerCase().includes('bonk') ||
+                event.description.toLowerCase().includes('bonk')
+            );
+        }
+
+        if (lowerQuery.includes('jito')) {
+            return events.filter(event =>
+                event.title.toLowerCase().includes('jito') ||
+                event.description.toLowerCase().includes('jito')
+            );
+        }
+
+        // Default return all events sorted by time
+        return events.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    }
+
+    // Return all events if no query specified
+    return events.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 };
 
 // Portfolio data APIs
@@ -935,672 +1422,99 @@ export const getNFTCollections = async () => {
     }
 };
 
-// Get DeFi opportunities
-export const getDefiOpportunities = async () => {
-    try {
-        // In a real app, this would call DeFi protocol APIs
-        // Here we'll use DefiLlama data to get real protocols at least
+// Helper function to generate order book data - alternative implementation
+// from api-service.tsx for compatibility
+function generateOrderBookData(): OrderBookData {
+    const midPrice = 173.5; // Base price for SOL/USDC
 
-        const protocols = await fetchDefiProtocols();
+    const asks: OrderBookEntry[] = [];
+    const bids: OrderBookEntry[] = [];
 
-        // Transform into opportunities (in a real app these would include APY data)
-        return protocols.slice(0, 5).map((protocol: any) => ({
-            protocol: protocol.name,
-            pool: protocol.category === 'Liquid Staking' ? 'Staking' : 'Multiple pools',
-            apy: (Math.random() * 30 + 5).toFixed(1),
-            tvl: `$${(protocol.tvl / 1000000).toFixed(1)}M`,
-            risk: protocol.tvl > 100000000 ? 'Low' : (protocol.tvl > 10000000 ? 'Medium' : 'High')
-        }));
-    } catch (error) {
-        console.error('Error getting DeFi opportunities:', error);
-        return [];
-    }
-};
+    // Generate asks (higher than midPrice)
+    for (let i = 0; i < 20; i++) {
+        const priceGap = 0.2 + (Math.random() * 0.3); // Small random gap between price levels
+        const price = midPrice + (i * priceGap);
+        const size = 5 + Math.random() * 300; // Random size between 5 and 305
 
-// Mock implementation for top traders
-export const getTopTraders = async (): Promise<Trader[]> => {
-    // In a real app, this would fetch real data from an API
-    return [
-        {
-            address: "JuT35R1idBsYShZFWvPHJbQ9YPgZ8cGwBokaEkEgu6F",
-            displayAddress: "JuT35R...EkEgu6F",
-            totalProfit: 125430,
-            totalTrades: 432,
-            winRate: 76,
-            strategy: "Momentum",
-            riskScore: "Medium"
-        },
-        {
-            address: "3xTy8J4NPyBcVKbNVDSCxGhGvuZ3uXVnKJpCG7NARTrs",
-            displayAddress: "3xTy8J...ARTrs",
-            totalProfit: 231250,
-            totalTrades: 156,
-            winRate: 83,
-            strategy: "Arbitrage",
-            riskScore: "Low"
-        },
-        {
-            address: "7Y7xYpX5REvM1MWYRhCGZMnKUT7Cnc5MjxX7zGSDv4LY",
-            displayAddress: "7Y7xYp...SDv4LY",
-            totalProfit: 567890,
-            totalTrades: 921,
-            winRate: 68,
-            strategy: "Swing",
-            riskScore: "High"
-        },
-        {
-            address: "BbvHGHBvSbVijbNbXEcGfuEnq45Za7pTp9XRpMnzHmG9",
-            displayAddress: "BbvHGH...zHmG9",
-            totalProfit: 98760,
-            totalTrades: 325,
-            winRate: 71,
-            strategy: "DeFi Yield",
-            riskScore: "Medium"
-        },
-        {
-            address: "EvE1DqPTtMhGjG9Vje7txkQak9VG9gXXpwXYBvbXUyNx",
-            displayAddress: "EvE1Dq...UyNx",
-            totalProfit: 345670,
-            totalTrades: 587,
-            winRate: 74,
-            strategy: "NFT Flipping",
-            riskScore: "High"
-        }
-    ];
-};
-
-// Mock implementation for setting up copy trading
-export const setupCopyTrading = async (setup: CopyTradingSetup): Promise<boolean> => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    // In a real app, this would call an API to set up the copy trading
-    console.log("Setting up copy trading with:", setup);
-
-    // Simulate 95% success rate
-    if (Math.random() > 0.05) {
-        toast({
-            title: "Copy Trading Setup",
-            description: `Successfully set up copy trading for trader ${setup.traderAddress.slice(0, 6)}...`,
-            duration: 3000
+        asks.push({
+            price,
+            size
         });
-        return true;
-    } else {
-        // Simulate occasional failure
-        throw new Error("Failed to set up copy trading. Please try again.");
     }
-};
 
-// Mock implementation for stopping copy trading
-export const stopCopyTrading = async (traderAddress: string): Promise<boolean> => {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Sort asks ascending by price
+    asks.sort((a, b) => a.price - b.price);
 
-    // In a real app, this would call an API to stop the copy trading
-    console.log("Stopping copy trading for:", traderAddress);
+    // Generate bids (lower than midPrice)
+    for (let i = 0; i < 20; i++) {
+        const priceGap = 0.2 + (Math.random() * 0.3);
+        const price = midPrice - (i * priceGap);
+        const size = 5 + Math.random() * 300;
 
-    // Simulate high success rate
-    if (Math.random() > 0.02) {
-        toast({
-            title: "Copy Trading Stopped",
-            description: `Successfully stopped copy trading for trader ${traderAddress.slice(0, 6)}...`,
-            duration: 3000
+        bids.push({
+            price,
+            size
         });
-        return true;
-    } else {
-        // Simulate occasional failure
-        throw new Error("Failed to stop copy trading. Please try again.");
     }
-};
 
-// Mock implementation for sentiment and news analysis
-export const getNewsAndSentiment = async (filter = "all", category = "trending") => {
-    try {
-        // In a real app, this would call a news API like CryptoPanic
-        // Generate mock news data
-        const mockNewsItems: NewsItem[] = [
-            {
-                id: "news1",
-                title: "Solana TVL reaches new high of $3.5 billion",
-                url: "#",
-                source: {
-                    title: "Solana News",
-                    domain: "solanews.com",
-                    path: "/tvl-record"
-                },
-                domain: "solanews.com",
-                published_at: new Date(Date.now() - 25 * 60000).toISOString(), // 25 minutes ago
-                created_at: new Date(Date.now() - 25 * 60000).toISOString(),
-                votes: {
-                    negative: 2,
-                    positive: 45,
-                    important: 12,
-                    liked: 38,
-                    disliked: 2,
-                    lol: 0,
-                    toxic: 0,
-                    saved: 15,
-                    comments: 7
-                },
-                metadata: {
-                    description: "Solana's Total Value Locked has reached a new all-time high, showcasing growing adoption.",
-                    image: "https://picsum.photos/seed/sol1/800/400"
-                },
-                currencies: [
-                    {
-                        code: "SOL",
-                        title: "Solana",
-                        slug: "solana",
-                        url: "#"
-                    }
-                ]
-            },
-            {
-                id: "news2",
-                title: "Jupiter DEX volume surpasses $500M in single day",
-                url: "#",
-                source: {
-                    title: "Crypto Daily",
-                    domain: "cryptodaily.io",
-                    path: "/jupiter-volume"
-                },
-                domain: "cryptodaily.io",
-                published_at: new Date(Date.now() - 120 * 60000).toISOString(), // 2 hours ago
-                created_at: new Date(Date.now() - 120 * 60000).toISOString(),
-                votes: {
-                    negative: 1,
-                    positive: 32,
-                    important: 8,
-                    liked: 28,
-                    disliked: 1,
-                    lol: 0,
-                    toxic: 0,
-                    saved: 10,
-                    comments: 5
-                },
-                metadata: {
-                    description: "Jupiter, Solana's top DEX aggregator, has broken records with over $500M in 24h volume.",
-                    image: "https://picsum.photos/seed/jup1/800/400"
-                },
-                currencies: [
-                    {
-                        code: "JUP",
-                        title: "Jupiter",
-                        slug: "jupiter",
-                        url: "#"
-                    }
-                ]
-            },
-            {
-                id: "news3",
-                title: "Solana Foundation announces $10M grant for developer ecosystem",
-                url: "#",
-                source: {
-                    title: "Blockchain Times",
-                    domain: "bctimes.com",
-                    path: "/solana-grants"
-                },
-                domain: "bctimes.com",
-                published_at: new Date(Date.now() - 12 * 3600000).toISOString(), // 12 hours ago
-                created_at: new Date(Date.now() - 12 * 3600000).toISOString(),
-                votes: {
-                    negative: 0,
-                    positive: 67,
-                    important: 23,
-                    liked: 62,
-                    disliked: 0,
-                    lol: 0,
-                    toxic: 0,
-                    saved: 28,
-                    comments: 14
-                },
-                metadata: {
-                    description: "New grant program aims to accelerate development of dApps on Solana blockchain.",
-                    image: "https://picsum.photos/seed/sol3/800/400"
-                },
-                currencies: [
-                    {
-                        code: "SOL",
-                        title: "Solana",
-                        slug: "solana",
-                        url: "#"
-                    }
-                ]
-            },
-            {
-                id: "news4",
-                title: "BONK token surges 25% amid Solana ecosystem growth",
-                url: "#",
-                source: {
-                    title: "CoinMarket",
-                    domain: "coinmarket.io",
-                    path: "/bonk-surge"
-                },
-                domain: "coinmarket.io",
-                published_at: new Date(Date.now() - 4 * 3600000).toISOString(), // 4 hours ago
-                created_at: new Date(Date.now() - 4 * 3600000).toISOString(),
-                votes: {
-                    negative: 3,
-                    positive: 89,
-                    important: 35,
-                    liked: 77,
-                    disliked: 3,
-                    lol: 5,
-                    toxic: 0,
-                    saved: 42,
-                    comments: 28
-                },
-                metadata: {
-                    description: "The meme coin BONK has seen significant gains as Solana ecosystem adoption continues to grow.",
-                    image: "https://picsum.photos/seed/bonk1/800/400"
-                },
-                currencies: [
-                    {
-                        code: "BONK",
-                        title: "Bonk",
-                        slug: "bonk",
-                        url: "#"
-                    }
-                ]
-            },
-            {
-                id: "news5",
-                title: "Major Exchange announces SOL staking rewards of 8% APY",
-                url: "#",
-                source: {
-                    title: "Crypto Pulse",
-                    domain: "cryptopulse.com",
-                    path: "/sol-staking-rewards"
-                },
-                domain: "cryptopulse.com",
-                published_at: new Date(Date.now() - 6 * 3600000).toISOString(), // 6 hours ago
-                created_at: new Date(Date.now() - 6 * 3600000).toISOString(),
-                votes: {
-                    negative: 1,
-                    positive: 42,
-                    important: 15,
-                    liked: 36,
-                    disliked: 1,
-                    lol: 0,
-                    toxic: 0,
-                    saved: 20,
-                    comments: 9
-                },
-                metadata: {
-                    description: "Leading cryptocurrency exchange now offering competitive staking rewards for Solana holders.",
-                    image: "https://picsum.photos/seed/stake1/800/400"
-                },
-                currencies: [
-                    {
-                        code: "SOL",
-                        title: "Solana",
-                        slug: "solana",
-                        url: "#"
-                    }
-                ]
-            },
-            {
-                id: "news6",
-                title: "Jito Network unveils new liquid staking protocol on Solana",
-                url: "#",
-                source: {
-                    title: "DeFi Insider",
-                    domain: "defiinsider.com",
-                    path: "/jito-staking"
-                },
-                domain: "defiinsider.com",
-                published_at: new Date(Date.now() - 18 * 3600000).toISOString(), // 18 hours ago
-                created_at: new Date(Date.now() - 18 * 3600000).toISOString(),
-                votes: {
-                    negative: 0,
-                    positive: 53,
-                    important: 19,
-                    liked: 49,
-                    disliked: 0,
-                    lol: 0,
-                    toxic: 0,
-                    saved: 24,
-                    comments: 12
-                },
-                metadata: {
-                    description: "Jito launches enhanced liquid staking solution aimed at improving yield for SOL holders.",
-                    image: "https://picsum.photos/seed/jito1/800/400"
-                },
-                currencies: [
-                    {
-                        code: "JTO",
-                        title: "Jito",
-                        slug: "jito",
-                        url: "#"
-                    }
-                ]
-            },
-            {
-                id: "news7",
-                title: "SOL breaks $200 barrier as institutional interest grows",
-                url: "#",
-                source: {
-                    title: "TokenInsight",
-                    domain: "tokeninsight.com",
-                    path: "/sol-price-movement"
-                },
-                domain: "tokeninsight.com",
-                published_at: new Date(Date.now() - 36 * 3600000).toISOString(), // 36 hours ago
-                created_at: new Date(Date.now() - 36 * 3600000).toISOString(),
-                votes: {
-                    negative: 5,
-                    positive: 120,
-                    important: 47,
-                    liked: 113,
-                    disliked: 5,
-                    lol: 0,
-                    toxic: 1,
-                    saved: 59,
-                    comments: 34
-                },
-                metadata: {
-                    description: "Solana price reaches new milestone as institutional investors increase positions in the asset.",
-                    image: "https://picsum.photos/seed/sol_price/800/400"
-                },
-                currencies: [
-                    {
-                        code: "SOL",
-                        title: "Solana",
-                        slug: "solana",
-                        url: "#"
-                    }
-                ]
-            }
-        ];
+    // Sort bids descending by price
+    bids.sort((a, b) => b.price - a.price);
 
-        // Filter news items based on the filter parameter if needed
-        let filteredNews = mockNewsItems;
-        if (filter !== "all") {
-            filteredNews = mockNewsItems.filter(item =>
-                item.currencies?.some(currency => currency.code.toLowerCase() === filter.toLowerCase())
-            );
-        }
+    return { asks, bids };
+}
 
-        // Filter based on category (trending, hot, bullish, bearish)
-        if (category === "hot") {
-            filteredNews = filteredNews.sort((a, b) =>
-                (b.votes.positive + b.votes.negative) - (a.votes.positive + a.votes.negative)
-            );
-        } else if (category === "bullish") {
-            filteredNews = filteredNews.filter(item =>
-                item.votes.positive > item.votes.negative * 2
-            );
-        } else if (category === "bearish") {
-            filteredNews = filteredNews.filter(item =>
-                item.votes.negative > item.votes.positive
-            );
-        }
+// Helper to update order book data for simulating real-time changes
+function updateOrderBookData(currentData: OrderBookData): OrderBookData {
+    const updatedAsks = [...currentData.asks];
+    const updatedBids = [...currentData.bids];
 
-        // Create mock response structure
-        const mockResponse: CryptoPanicResponse = {
-            count: filteredNews.length,
-            next: null,
-            previous: null,
-            results: filteredNews
-        };
-
-        return mockResponse;
-    } catch (error) {
-        console.error("Error fetching news and sentiment:", error);
-        throw error;
+    // Modify a few random asks
+    for (let i = 0; i < 3; i++) {
+        const randomIndex = Math.floor(Math.random() * updatedAsks.length);
+        const sizeDelta = (Math.random() * 20) - 10; // Random change between -10 and +10
+        updatedAsks[randomIndex].size = Math.max(1, updatedAsks[randomIndex].size + sizeDelta);
     }
-};
 
-// Mock implementation for sentiment analysis
-export const analyzeSentiment = async (text: string) => {
-    // In a real app, this would call an NLP API or sentiment analysis service
-    // Simulate processing delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    // Generate a sentiment score based on keywords in the text
-    let score = 0.5; // Neutral default
-
-    const positiveKeywords = ["bullish", "buy", "up", "growth", "increase", "positive", "good", "great", "excellent", "gain"];
-    const negativeKeywords = ["bearish", "sell", "down", "decline", "decrease", "negative", "bad", "poor", "loss", "crash"];
-
-    const lowerText = text.toLowerCase();
-
-    // Simple keyword-based analysis
-    positiveKeywords.forEach(keyword => {
-        if (lowerText.includes(keyword)) score += 0.1;
-    });
-
-    negativeKeywords.forEach(keyword => {
-        if (lowerText.includes(keyword)) score -= 0.1;
-    });
-
-    // Clamp score between 0 and 1
-    score = Math.max(0, Math.min(1, score));
+    // Modify a few random bids
+    for (let i = 0; i < 3; i++) {
+        const randomIndex = Math.floor(Math.random() * updatedBids.length);
+        const sizeDelta = (Math.random() * 20) - 10;
+        updatedBids[randomIndex].size = Math.max(1, updatedBids[randomIndex].size + sizeDelta);
+    }
 
     return {
-        score,
-        confidence: 0.7 + Math.random() * 0.2, // 70-90% confidence
-        sentiment: score > 0.6 ? "positive" : score < 0.4 ? "negative" : "neutral",
-        entities: [
-            { name: "SOL", sentiment: score > 0.5 ? "positive" : "negative", confidence: 0.8 }
-        ]
+        asks: updatedAsks,
+        bids: updatedBids
     };
-};
-
-// Mock implementation for token sentiment data
-export const getTokenSentimentData = async (tokensList: string[] = []) => {
-    // In a real app, this would call a sentiment analysis API
-
-    // Generate mock token sentiment data
-    const tokens: TokenSentiment[] = [
-        {
-            name: "SOL",
-            score: 78,
-            change: "+5.2%",
-            status: "bullish",
-            mentions: 1253,
-            chartData: [
-                { name: "Mon", value: 65 },
-                { name: "Tue", value: 68 },
-                { name: "Wed", value: 62 },
-                { name: "Thu", value: 70 },
-                { name: "Fri", value: 74 },
-                { name: "Sat", value: 75 },
-                { name: "Sun", value: 78 }
-            ]
-        },
-        {
-            name: "JUP",
-            score: 65,
-            change: "+2.1%",
-            status: "bullish",
-            mentions: 842,
-            chartData: [
-                { name: "Mon", value: 60 },
-                { name: "Tue", value: 58 },
-                { name: "Wed", value: 61 },
-                { name: "Thu", value: 63 },
-                { name: "Fri", value: 62 },
-                { name: "Sat", value: 64 },
-                { name: "Sun", value: 65 }
-            ]
-        },
-        {
-            name: "BONK",
-            score: 72,
-            change: "+8.7%",
-            status: "bullish",
-            mentions: 967,
-            chartData: [
-                { name: "Mon", value: 55 },
-                { name: "Tue", value: 58 },
-                { name: "Wed", value: 64 },
-                { name: "Thu", value: 68 },
-                { name: "Fri", value: 70 },
-                { name: "Sat", value: 71 },
-                { name: "Sun", value: 72 }
-            ]
-        },
-        {
-            name: "JTO",
-            score: 58,
-            change: "-1.3%",
-            status: "neutral",
-            mentions: 521,
-            chartData: [
-                { name: "Mon", value: 62 },
-                { name: "Tue", value: 63 },
-                { name: "Wed", value: 61 },
-                { name: "Thu", value: 60 },
-                { name: "Fri", value: 59 },
-                { name: "Sat", value: 57 },
-                { name: "Sun", value: 58 }
-            ]
-        },
-        {
-            name: "RAY",
-            score: 45,
-            change: "-3.8%",
-            status: "bearish",
-            mentions: 312,
-            chartData: [
-                { name: "Mon", value: 52 },
-                { name: "Tue", value: 50 },
-                { name: "Wed", value: 48 },
-                { name: "Thu", value: 46 },
-                { name: "Fri", value: 47 },
-                { name: "Sat", value: 44 },
-                { name: "Sun", value: 45 }
-            ]
-        }
-    ];
-
-    // Generate mock platform sentiment data
-    const platforms: PlatformSentiment[] = [
-        { name: "Twitter", positive: 56, neutral: 32, negative: 12 },
-        { name: "Reddit", positive: 48, neutral: 40, negative: 12 },
-        { name: "Discord", positive: 62, neutral: 28, negative: 10 },
-        { name: "Telegram", positive: 53, neutral: 35, negative: 12 },
-        { name: "YouTube", positive: 45, neutral: 42, negative: 13 }
-    ];
-
-    return { tokens, platforms };
-};
-
-// Mock implementation for market events
-export const detectEvents = async (query: string = ""): Promise<Event[]> => {
-    // In a real app, this would call an event detection API
-
-    // Generate mock events based on query
-    const events = [
-        {
-            title: "Solana Token 2025 Upgrade",
-            description: "Solana implementing Token 2025 program with enhanced token features",
-            impact: "Medium",
-            timestamp: new Date(Date.now() + 2 * 24 * 3600000).toISOString(), // 2 days in future
-            source: "Solana Foundation"
-        },
-        {
-            title: "Fed Interest Rate Decision",
-            description: "Federal Reserve expected to announce interest rate decision",
-            impact: "High",
-            timestamp: new Date(Date.now() + 5 * 24 * 3600000).toISOString(), // 5 days in future
-            source: "Federal Reserve"
-        },
-        {
-            title: "Jupiter DEX v7 Launch",
-            description: "Major upgrade to Jupiter DEX platform with new features",
-            impact: "Medium",
-            timestamp: new Date(Date.now() + 8 * 24 * 3600000).toISOString(), // 8 days in future
-            source: "Jupiter"
-        },
-        {
-            title: "Breakpoint 2025 Conference",
-            description: "Annual Solana conference featuring major ecosystem announcements",
-            impact: "High",
-            timestamp: new Date(Date.now() + 45 * 24 * 3600000).toISOString(), // 45 days in future
-            source: "Solana Foundation"
-        },
-        {
-            title: "Firedancer Client Launch",
-            description: "Release of the alternative Solana client implementation by Jump Crypto",
-            impact: "High",
-            timestamp: new Date(Date.now() + 14 * 24 * 3600000).toISOString(), // 14 days in future
-            source: "Jump Crypto"
-        },
-        {
-            title: "BONK Token Burn Event",
-            description: "Scheduled token burn to reduce BONK supply and potentially increase value",
-            impact: "Medium",
-            timestamp: new Date(Date.now() + 3 * 24 * 3600000).toISOString(), // 3 days in future
-            source: "BONK DAO"
-        },
-        {
-            title: "Helium Migration to Solana Completion",
-            description: "Final phase of Helium Network's migration to Solana blockchain",
-            impact: "Medium",
-            timestamp: new Date(Date.now() + 20 * 24 * 3600000).toISOString(), // 20 days in future
-            source: "Helium Foundation"
-        },
-        {
-            title: "Solana Hackathon Finals",
-            description: "Global hackathon showcasing new projects built on Solana",
-            impact: "Low",
-            timestamp: new Date(Date.now() + 30 * 24 * 3600000).toISOString(), // 30 days in future
-            source: "Solana Labs"
-        },
-        {
-            title: "Kamino Finance V3 Update",
-            description: "Major protocol update introducing new vaults and strategies",
-            impact: "Low",
-            timestamp: new Date(Date.now() + 6 * 24 * 3600000).toISOString(), // 6 days in future
-            source: "Kamino Finance"
-        }
-    ];
-
-    // Filter or prioritize events based on query
-    if (query) {
-        const lowerQuery = query.toLowerCase();
-
-        // If query contains specific tokens, filter for those
-        if (lowerQuery.includes('sol') || lowerQuery.includes('solana')) {
-            return events.filter(event =>
-                event.title.toLowerCase().includes('sol') ||
-                event.description.toLowerCase().includes('solana')
-            );
-        }
-
-        if (lowerQuery.includes('bonk')) {
-            return events.filter(event =>
-                event.title.toLowerCase().includes('bonk') ||
-                event.description.toLowerCase().includes('bonk')
-            );
-        }
-
-        if (lowerQuery.includes('jito')) {
-            return events.filter(event =>
-                event.title.toLowerCase().includes('jito') ||
-                event.description.toLowerCase().includes('jito')
-            );
-        }
-
-        // Default return all events sorted by time
-        return events.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-    }
-
-    // Return all events if no query specified
-    return events.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-};
+}
 
 // Export a default API service object
 export default {
+    // Core API functions
     getSolanaData,
+    getSolHistoricalData,
+    getTokenVolumeData,
+    
+    // Network and WebSocket functions
+    createNetworkStatsWebSocket,
+    createOrderBookWebSocket,
+    createAlertsWebSocket,
+    
+    // Data retrieval functions
+    getPersonalizedRecommendations,
+    getDefiOpportunities,
     getTopTraders,
+    getPortfolioData,
+    getPortfolioPerformanceHistory,
+    getNFTCollections,
+    
+    // Trading functions
     setupCopyTrading,
     stopCopyTrading,
+    
+    // Analysis functions
+    getNewsAndSentiment,
+    getTokenSentimentData,
     analyzeSentiment,
-    detectEvents,
-    getPersonalizedRecommendations,
-    getPortfolioData,
-    getNewsAndSentiment
-}; 
+    detectEvents
+};
