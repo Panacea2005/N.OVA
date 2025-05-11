@@ -21,9 +21,25 @@ import Footer from "@/components/footer";
 import dynamic from "next/dynamic";
 import { generateMusic, getMusicGenerationDetails } from "./musicService";
 
+// Dynamically import the 3D banner component with SSR disabled
 const NAuroraBanner = dynamic(() => import("@/components/3d/naurora-banner"), {
   ssr: false,
 });
+
+// Create a ClientOnly wrapper component
+const ClientOnly = ({ children }: { children: React.ReactNode }) => {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  if (!mounted) {
+    return null; // Return null on server-side
+  }
+  
+  return <>{children}</>;
+};
 
 // Pixel Art Cover component for generating pixel art covers
 const PixelArtCover = ({
@@ -39,14 +55,6 @@ const PixelArtCover = ({
     const seed = trackId
       .split("")
       .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-
-    // Generate color palette (primary, secondary, accent)
-    const generateColor = (base: number) => {
-      const r = (base * 1231) % 256;
-      const g = (base * 3571) % 256;
-      const b = (base * 5783) % 256;
-      return `rgb(${r}, ${g}, ${b})`;
-    };
 
     // Generate a more vibrant primary color
     const primaryHue = seed % 360;
@@ -215,6 +223,29 @@ const MinimalAudioSlider = ({
   );
 };
 
+// Safe localStorage utilities for SSR
+const localStorageUtils = {
+  getItem: (key: string, defaultValue: any = null) => {
+    if (typeof window === 'undefined') return defaultValue;
+    try {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : defaultValue;
+    } catch (error) {
+      console.error(`Error reading ${key} from localStorage:`, error);
+      return defaultValue;
+    }
+  },
+  
+  setItem: (key: string, value: any) => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.error(`Error writing ${key} to localStorage:`, error);
+    }
+  }
+};
+
 export default function MusicGenerator() {
   const [prompt, setPrompt] = useState("");
   const [title, setTitle] = useState("");
@@ -255,52 +286,40 @@ export default function MusicGenerator() {
   const [currentTime, setCurrentTime] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  const [isBrowser, setIsBrowser] = useState(false);
+  const [isClientSide, setIsClientSide] = useState(false);
 
-  // Set isBrowser to true when component mounts on client
+  // Set isClientSide to true when component mounts on client
   useEffect(() => {
-    setIsBrowser(true);
+    setIsClientSide(true);
     
     // Load saved tracks from localStorage if available
-    if (typeof window !== 'undefined') {
-      try {
-        const savedTracks = localStorage.getItem('generatedMusicTracks');
-        if (savedTracks) {
-          setGeneratedTracks(JSON.parse(savedTracks));
-        }
-        
-        const savedHistory = localStorage.getItem('musicGenerationHistory');
-        if (savedHistory) {
-          setGenerationHistory(JSON.parse(savedHistory));
-        }
-      } catch (error) {
-        console.error('Error loading saved data:', error);
-      }
+    const savedTracks = localStorageUtils.getItem('generatedMusicTracks', []);
+    if (savedTracks.length > 0) {
+      setGeneratedTracks(savedTracks);
+      setCurrentTrackIndex(0);
+    }
+    
+    const savedHistory = localStorageUtils.getItem('musicGenerationHistory', []);
+    if (savedHistory.length > 0) {
+      setGenerationHistory(savedHistory);
     }
   }, []);
 
   // Save tracks to localStorage when they change
   useEffect(() => {
-    if (isBrowser && generatedTracks.length > 0) {
-      try {
-        localStorage.setItem('generatedMusicTracks', JSON.stringify(generatedTracks));
-      } catch (error) {
-        console.error('Error saving tracks to localStorage:', error);
-      }
+    if (isClientSide && generatedTracks.length > 0) {
+      localStorageUtils.setItem('generatedMusicTracks', generatedTracks);
     }
-  }, [generatedTracks, isBrowser]);
+  }, [generatedTracks, isClientSide]);
 
   // Save history to localStorage when it changes
   useEffect(() => {
-    if (isBrowser && generationHistory.length > 0) {
-      try {
-        localStorage.setItem('musicGenerationHistory', JSON.stringify(generationHistory));
-      } catch (error) {
-        console.error('Error saving history to localStorage:', error);
-      }
+    if (isClientSide && generationHistory.length > 0) {
+      localStorageUtils.setItem('musicGenerationHistory', generationHistory);
     }
-  }, [generationHistory, isBrowser]);
+  }, [generationHistory, isClientSide]);
 
+  // Audio player time updates
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -323,12 +342,12 @@ export default function MusicGenerator() {
     };
   }, [currentTrack]);
 
+  // Update current track when index changes
   useEffect(() => {
-    // When adding a new track, set the current index to 0 (the newest track)
-    if (generatedTracks.length > 0) {
-      setCurrentTrackIndex(0);
+    if (generatedTracks.length > 0 && currentTrackIndex < generatedTracks.length) {
+      setCurrentTrack(generatedTracks[currentTrackIndex]);
     }
-  }, [generatedTracks.length]);
+  }, [currentTrackIndex, generatedTracks]);
 
   const handleGenerate = async () => {
     if (!prompt.trim() && !instrumental) return;
@@ -346,7 +365,9 @@ export default function MusicGenerator() {
         customMode,
         negativeTags: customMode ? negativeTags : undefined,
         model,
-        callBackUrl: "http://localhost:3000/api/webhook",
+        callBackUrl: typeof window !== 'undefined' 
+          ? `${window.location.origin}/api/webhook` 
+          : "http://localhost:3000/api/webhook",
       });
   
       const taskId = generationResponse.id;
@@ -420,7 +441,9 @@ export default function MusicGenerator() {
   
       // Create new track object
       const newTrack = {
-        id: crypto.randomUUID(),
+        id: typeof crypto !== 'undefined' && crypto.randomUUID ? 
+          crypto.randomUUID() : 
+          Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
         title: trackTitle,
         genre: customMode ? selectedGenre : "Generic",
         duration: duration,
@@ -825,6 +848,7 @@ export default function MusicGenerator() {
                           Track Title
                         </label>
                         <input
+                          type="text"
                           value={title}
                           onChange={(e) => setTitle(e.target.value)}
                           placeholder="Enter track title..."
@@ -842,6 +866,7 @@ export default function MusicGenerator() {
                           Negative Tags (Optional)
                         </label>
                         <input
+                          type="text"
                           value={negativeTags}
                           onChange={(e) => setNegativeTags(e.target.value)}
                           placeholder="Styles to avoid (e.g., Heavy Metal, Upbeat Drums)"
@@ -890,24 +915,26 @@ export default function MusicGenerator() {
                       <div className="flex items-center">
                         <input
                           type="checkbox"
+                          id="customMode"
                           checked={customMode}
                           onChange={(e) => setCustomMode(e.target.checked)}
                           className="mr-2"
                         />
-                        <span className="text-xs">
+                        <label htmlFor="customMode" className="text-xs cursor-pointer">
                           Custom Mode (Advanced Settings)
-                        </span>
+                        </label>
                       </div>
                       <div className="flex items-center">
                         <input
                           type="checkbox"
+                          id="instrumental"
                           checked={instrumental}
                           onChange={(e) => setInstrumental(e.target.checked)}
                           className="mr-2"
                         />
-                        <span className="text-xs">
+                        <label htmlFor="instrumental" className="text-xs cursor-pointer">
                           Instrumental (No Lyrics)
-                        </span>
+                        </label>
                       </div>
                       <div className="flex items-center">
                         <select
@@ -982,27 +1009,29 @@ export default function MusicGenerator() {
                         Recent Prompts
                       </label>
                     </div>
-                    <div className="max-h-40 overflow-y-auto">
-                      {generationHistory.length > 0 ? (
-                        <div className="space-y-2">
-                          {generationHistory.map((historyPrompt) => (
-                            <div
-                              key={historyPrompt}
-                              className="text-xs p-2 bg-black border border-white/10 hover:border-white/30 cursor-pointer transition-colors"
-                              onClick={() => setPrompt(historyPrompt)}
-                            >
-                              {historyPrompt.length > 60
-                                ? historyPrompt.substring(0, 60) + "..."
-                                : historyPrompt}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center text-white/40 text-xs py-4">
-                          No generation history yet
-                        </div>
-                      )}
-                    </div>
+                    <ClientOnly>
+                      <div className="max-h-40 overflow-y-auto">
+                        {generationHistory.length > 0 ? (
+                          <div className="space-y-2">
+                            {generationHistory.map((historyPrompt, index) => (
+                              <div
+                                key={index}
+                                className="text-xs p-2 bg-black border border-white/10 hover:border-white/30 cursor-pointer transition-colors"
+                                onClick={() => setPrompt(historyPrompt)}
+                              >
+                                {historyPrompt.length > 60
+                                  ? historyPrompt.substring(0, 60) + "..."
+                                  : historyPrompt}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center text-white/40 text-xs py-4">
+                            No generation history yet
+                          </div>
+                        )}
+                      </div>
+                    </ClientOnly>
                   </div>
                 </div>
 
@@ -1016,80 +1045,84 @@ export default function MusicGenerator() {
                         </span>
                       </div>
 
-                      <div className="flex items-center space-x-2">
-                        <div className="flex items-center space-x-1">
-                          {volume === 0 ? (
-                            <VolumeX className="w-4 h-4 text-white/60" />
-                          ) : volume < 50 ? (
-                            <Volume1 className="w-4 h-4 text-white/60" />
-                          ) : (
-                            <Volume2 className="w-4 h-4 text-white/60" />
-                          )}
-                          <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={volume}
-                            onChange={handleVolumeChange}
-                            className="w-20 appearance-none h-1 bg-white/20 rounded-lg"
-                          />
+                      <ClientOnly>
+                        <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-1">
+                            {volume === 0 ? (
+                              <VolumeX className="w-4 h-4 text-white/60" />
+                            ) : volume < 50 ? (
+                              <Volume1 className="w-4 h-4 text-white/60" />
+                            ) : (
+                              <Volume2 className="w-4 h-4 text-white/60" />
+                            )}
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={volume}
+                              onChange={handleVolumeChange}
+                              className="w-20 appearance-none h-1 bg-white/20 rounded-lg"
+                            />
+                          </div>
                         </div>
-                      </div>
+                      </ClientOnly>
                     </div>
 
                     <div className="flex-1 bg-black border border-white/10 relative overflow-hidden min-h-[550px] flex items-center justify-center">
-                      {isGenerating ? (
-                        <div className="flex items-center justify-center h-full w-full">
-                          <div className="text-center">
-                            <div className="w-16 h-16 border-t-2 border-b-2 border-white rounded-full animate-spin mb-4 mx-auto" />
-                            <div className="text-white/70 animate-pulse uppercase">
-                              Composing your music...
-                            </div>
-                            <div className="text-xs text-white/40 mt-2 uppercase">
-                              Creating neural audio patterns
+                      <ClientOnly>
+                        {isGenerating ? (
+                          <div className="flex items-center justify-center h-full w-full">
+                            <div className="text-center">
+                              <div className="w-16 h-16 border-t-2 border-b-2 border-white rounded-full animate-spin mb-4 mx-auto" />
+                              <div className="text-white/70 animate-pulse uppercase">
+                                Composing your music...
+                              </div>
+                              <div className="text-xs text-white/40 mt-2 uppercase">
+                                Creating neural audio patterns
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ) : generatedTracks.length > 0 ? (
-                        <div className="p-6 w-full h-full overflow-y-auto flex flex-col items-center"> 
-                          {/* Single centered track card */}
-                          {renderTrackCard(generatedTracks[currentTrackIndex])}
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center h-full w-full">
-                          <div className="text-center text-white/50 uppercase">
-                            <Music className="w-12 h-12 mb-4 mx-auto opacity-30" />
-                            <p>No tracks generated yet</p>
-                            <p className="text-xs mt-2">
-                              Enter a prompt and click generate
-                            </p>
+                        ) : generatedTracks.length > 0 ? (
+                          <div className="p-6 w-full h-full overflow-y-auto flex flex-col items-center"> 
+                            {/* Single centered track card */}
+                            {renderTrackCard(generatedTracks[currentTrackIndex])}
                           </div>
-                        </div>
-                      )}
+                        ) : (
+                          <div className="flex items-center justify-center h-full w-full">
+                            <div className="text-center text-white/50 uppercase">
+                              <Music className="w-12 h-12 mb-4 mx-auto opacity-30" />
+                              <p>No tracks generated yet</p>
+                              <p className="text-xs mt-2">
+                                Enter a prompt and click generate
+                              </p>
+                            </div>
+                          </div>
+                        )}
 
-                      <audio 
-                        ref={audioRef} 
-                        onError={(e) => {
-                          console.error('Audio error:', e);
-                          setIsPlaying(false);
-                          setErrorMessage("Error playing audio. Please try again.");
-                        }}
-                        onLoadedMetadata={() => {
-                          // Update duration if the metadata has been loaded
-                          if (audioRef.current && currentTrack) {
-                            // If the audio has a valid duration, update the track's duration
-                            if (audioRef.current.duration && !isNaN(audioRef.current.duration)) {
-                              setGeneratedTracks(tracks => 
-                                tracks.map(t => 
-                                  t.id === currentTrack.id 
-                                    ? {...t, duration: audioRef.current?.duration || t.duration} 
-                                    : t
-                                )
-                              );
+                        <audio 
+                          ref={audioRef} 
+                          onError={(e) => {
+                            console.error('Audio error:', e);
+                            setIsPlaying(false);
+                            setErrorMessage("Error playing audio. Please try again.");
+                          }}
+                          onLoadedMetadata={() => {
+                            // Update duration if the metadata has been loaded
+                            if (audioRef.current && currentTrack) {
+                              // If the audio has a valid duration, update the track's duration
+                              if (audioRef.current.duration && !isNaN(audioRef.current.duration)) {
+                                setGeneratedTracks(tracks => 
+                                  tracks.map(t => 
+                                    t.id === currentTrack.id 
+                                      ? {...t, duration: audioRef.current?.duration || t.duration} 
+                                      : t
+                                  )
+                                );
+                              }
                             }
-                          }
-                        }}
-                      />
+                          }}
+                        />
+                      </ClientOnly>
                     </div>
                   </div>
                 </div>

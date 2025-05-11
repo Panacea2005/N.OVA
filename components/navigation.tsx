@@ -7,6 +7,7 @@ import { Canvas } from "@react-three/fiber";
 import { Environment } from "@react-three/drei";
 import dynamic from "next/dynamic";
 import { ConnectWalletButton } from "@/components/ui/connect-wallet-button";
+import { AudioPlayer, AudioPlayerButton } from "@/components/audio-player";
 
 const HolographicSphere = dynamic(
   () => import("@/components/3d/holographic-sphere"),
@@ -20,8 +21,12 @@ export default function Navigation() {
   const [scrolled, setScrolled] = useState(false);
   const [activeGroup, setActiveGroup] = useState<number | null>(0);
   const [activeItem, setActiveItem] = useState<string | null>(null);
+  const [audioPlayerOpen, setAudioPlayerOpen] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const audioPlayerButtonRef = useRef<HTMLDivElement>(null);
+  const audioPlayerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,6 +34,7 @@ export default function Navigation() {
     };
 
     const handleClickOutside = (event: MouseEvent) => {
+      // Menu closing logic
       if (
         menuRef.current &&
         !menuRef.current.contains(event.target as Node) &&
@@ -36,6 +42,16 @@ export default function Navigation() {
         !menuButtonRef.current.contains(event.target as Node)
       ) {
         setMenuOpen(false);
+      }
+      
+      // Audio player closing logic
+      if (
+        audioPlayerRef.current &&
+        !audioPlayerRef.current.contains(event.target as Node) &&
+        audioPlayerButtonRef.current &&
+        !audioPlayerButtonRef.current.contains(event.target as Node)
+      ) {
+        setAudioPlayerOpen(false);
       }
     };
 
@@ -51,6 +67,15 @@ export default function Navigation() {
   const toggleMenu = () => {
     setMenuOpen((prevState) => !prevState);
   };
+  
+  const toggleAudioPlayer = () => {
+    setAudioPlayerOpen((prevState) => !prevState);
+  };
+  
+  // Function to handle audio play/pause state
+  const handleAudioPlayingState = (playing: boolean) => {
+    setIsPlaying(playing);
+  };
 
   // Grouped navigation items
   const navGroups = [
@@ -65,7 +90,7 @@ export default function Navigation() {
       name: "N.AI",
       items: [
         { name: "N.CHATBOT", href: "/ai" },
-        { name: "N.MUSIC", href: "/music" },
+        { name: "N.AURORA", href: "/music" },
         { name: "N.IDENTITY", href: "/nft" }
       ]
     },
@@ -113,6 +138,22 @@ export default function Navigation() {
           <div className="flex items-center gap-4">
             {/* Connect Wallet Button */}
             <ConnectWalletButton />
+            
+            {/* Audio Player Button */}
+            <div ref={audioPlayerButtonRef}>
+              <AudioPlayerButton
+                onClick={toggleAudioPlayer}
+                isPlaying={isPlaying}
+              />
+            </div>
+            
+            {/* Audio Player (will render conditionally) */}
+            <div ref={audioPlayerRef}>
+              <AudioPlayer
+                isOpen={audioPlayerOpen}
+                onClose={() => setAudioPlayerOpen(false)}
+              />
+            </div>
 
             {/* Menu Button */}
             <button

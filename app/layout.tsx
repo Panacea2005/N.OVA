@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ClientLayout } from "@/components/client-layout"
+import { ClientAudioProvider } from "@/components/client-audio-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -28,9 +29,11 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <ClientLayout>
-            {children}
-          </ClientLayout>
+          <ClientAudioProvider>
+            <ClientLayout>
+              {children}
+            </ClientLayout>
+          </ClientAudioProvider>
         </ThemeProvider>
       </body>
     </html>
