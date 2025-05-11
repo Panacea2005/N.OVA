@@ -21,55 +21,9 @@ import Footer from "@/components/footer";
 import dynamic from "next/dynamic";
 import { generateMusic, getMusicGenerationDetails } from "./musicService";
 
-// Dynamically import NAuroraBanner with SSR disabled
 const NAuroraBanner = dynamic(() => import("@/components/3d/naurora-banner"), {
   ssr: false,
 });
-
-// FIXED: Properly handle localStorage with SSR safety
-function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val: T) => T)) => void] {
-  // Use state to store our value
-  // Pass initial state function to useState so logic is only executed once
-  const [storedValue, setStoredValue] = useState<T>(initialValue);
-  
-  // FIXED: Use isMounted flag to ensure localStorage is only accessed after mounting
-  const [isMounted, setIsMounted] = useState(false);
-  
-  useEffect(() => {
-    setIsMounted(true);
-    
-    // Only attempt to get from localStorage after component is mounted
-    if (typeof window !== 'undefined') {
-      try {
-        const item = localStorage.getItem(key);
-        if (item) {
-          setStoredValue(JSON.parse(item));
-        }
-      } catch (error) {
-        console.error("Error loading from localStorage:", error);
-      }
-    }
-  }, [key]);
-  
-  // Return a wrapped version of useState's setter function that persists the new value to localStorage
-  const setValue = (value: T | ((val: T) => T)) => {
-    try {
-      // Allow value to be a function so we have same API as useState
-      const valueToStore = value instanceof Function ? value(storedValue) : value;
-      // Save state
-      setStoredValue(valueToStore);
-      
-      // Only save to localStorage if component is mounted and window is available
-      if (isMounted && typeof window !== 'undefined') {
-        localStorage.setItem(key, JSON.stringify(valueToStore));
-      }
-    } catch (error) {
-      console.error("Error saving to localStorage:", error);
-    }
-  };
-
-  return [storedValue, setValue];
-}
 
 // Pixel Art Cover component for generating pixel art covers
 const PixelArtCover = ({
@@ -201,55 +155,152 @@ const PixelArtCover = ({
   );
 };
 
-type Track = {
-  id: string;
-  title: string;
-  genre: string;
+// Custom minimal audio player slider component
+const MinimalAudioSlider = ({
+  currentTime,
+  duration,
+  onSeek,
+  isPlaying,
+}: {
+  currentTime: number;
   duration: number;
-  dateCreated: string;
-  complexity: string;
-  prompt: string;
-  audioUrl: string;
-  instrumental: boolean;
+  onSeek: (time: number) => void;
+  isPlaying: boolean;
+}) => {
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const percentage = offsetX / rect.width;
+    const seekTime = percentage * duration;
+    onSeek(seekTime);
+  };
+
+  return (
+    <div
+      className="relative h-1 bg-white/10 w-full cursor-pointer group"
+      onClick={handleSeek}
+    >
+      {/* Progress bar */}
+      <div
+        className="absolute h-full bg-white left-0 transition-all duration-300"
+        style={{
+          width: `${(currentTime / duration) * 100}%`,
+        }}
+      />
+
+      {/* Draggable handle */}
+      <div
+        className="absolute h-3 w-3 bg-white rounded-full -top-1 opacity-0 group-hover:opacity-100 transition-opacity"
+        style={{
+          left: `calc(${(currentTime / duration) * 100}% - 3px)`,
+        }}
+      />
+
+      {/* Audio wave animation for playing tracks */}
+      {isPlaying && (
+        <div className="absolute right-0 top-0 transform translate-x-full -translate-y-3 flex space-x-0.5">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="w-0.5 h-3 bg-white/80 animate-pulse"
+              style={{
+                animationDelay: `${i * 0.2}s`,
+                animationDuration: `${0.7 + i * 0.1}s`,
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };
 
-export default function MusicPageContent() {
-  // IMPORTANT: Use the custom hook instead of useState + direct localStorage access
+export default function MusicGenerator() {
   const [prompt, setPrompt] = useState("");
   const [title, setTitle] = useState("");
   const [negativeTags, setNegativeTags] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  
-  // Use our custom hook for localStorage data
-  const [generatedTracks, setGeneratedTracks] = useLocalStorage<Track[]>('generatedTracks', []);
-  const [generationHistory, setGenerationHistory] = useLocalStorage<string[]>('generationHistory', []);
-  
+  const [generatedTracks, setGeneratedTracks] = useState<
+    {
+      id: string;
+      title: string;
+      genre: string;
+      duration: number;
+      dateCreated: string;
+      complexity: string;
+      prompt: string;
+      audioUrl: string;
+      instrumental: boolean;
+    }[]
+  >([]);
   const [selectedGenre, setSelectedGenre] = useState("ambient");
   const [instrumental, setInstrumental] = useState(false);
   const [customMode, setCustomMode] = useState(false);
   const [model, setModel] = useState<"V3_5" | "V4">("V3_5");
+  const [generationHistory, setGenerationHistory] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
+  const [currentTrack, setCurrentTrack] = useState<{
+    id: string;
+    title: string;
+    genre: string;
+    duration: number;
+    dateCreated: string;
+    complexity: string;
+    prompt: string;
+    audioUrl: string;
+    instrumental: boolean;
+  } | null>(null);
   const [volume, setVolume] = useState(70);
   const [currentTime, setCurrentTime] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const [isBrowser, setIsBrowser] = useState(false);
 
-  // FIXED: Use isMounted pattern for client-side only code
-  const [isMounted, setIsMounted] = useState(false);
+  // Set isBrowser to true when component mounts on client
   useEffect(() => {
-    setIsMounted(true);
+    setIsBrowser(true);
+    
+    // Load saved tracks from localStorage if available
+    if (typeof window !== 'undefined') {
+      try {
+        const savedTracks = localStorage.getItem('generatedMusicTracks');
+        if (savedTracks) {
+          setGeneratedTracks(JSON.parse(savedTracks));
+        }
+        
+        const savedHistory = localStorage.getItem('musicGenerationHistory');
+        if (savedHistory) {
+          setGenerationHistory(JSON.parse(savedHistory));
+        }
+      } catch (error) {
+        console.error('Error loading saved data:', error);
+      }
+    }
   }, []);
 
-  // When adding a new track, set the current index to 0 (the newest track)
+  // Save tracks to localStorage when they change
   useEffect(() => {
-    if (generatedTracks.length > 0) {
-      setCurrentTrackIndex(0);
+    if (isBrowser && generatedTracks.length > 0) {
+      try {
+        localStorage.setItem('generatedMusicTracks', JSON.stringify(generatedTracks));
+      } catch (error) {
+        console.error('Error saving tracks to localStorage:', error);
+      }
     }
-  }, [generatedTracks.length]);
+  }, [generatedTracks, isBrowser]);
 
-  // Handle audio element events
+  // Save history to localStorage when it changes
+  useEffect(() => {
+    if (isBrowser && generationHistory.length > 0) {
+      try {
+        localStorage.setItem('musicGenerationHistory', JSON.stringify(generationHistory));
+      } catch (error) {
+        console.error('Error saving history to localStorage:', error);
+      }
+    }
+  }, [generationHistory, isBrowser]);
+
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -272,6 +323,13 @@ export default function MusicPageContent() {
     };
   }, [currentTrack]);
 
+  useEffect(() => {
+    // When adding a new track, set the current index to 0 (the newest track)
+    if (generatedTracks.length > 0) {
+      setCurrentTrackIndex(0);
+    }
+  }, [generatedTracks.length]);
+
   const handleGenerate = async () => {
     if (!prompt.trim() && !instrumental) return;
     if (customMode && (!title.trim() || !selectedGenre)) return;
@@ -288,7 +346,7 @@ export default function MusicPageContent() {
         customMode,
         negativeTags: customMode ? negativeTags : undefined,
         model,
-        callBackUrl: typeof window !== 'undefined' ? `${window.location.origin}/api/webhook` : "http://localhost:3000/api/webhook",
+        callBackUrl: "http://localhost:3000/api/webhook",
       });
   
       const taskId = generationResponse.id;
@@ -374,9 +432,9 @@ export default function MusicPageContent() {
       };
   
       // Add the new track and update state
-      setGeneratedTracks([newTrack, ...generatedTracks]);
+      setGeneratedTracks((prev) => [newTrack, ...prev]);
       setCurrentTrackIndex(0); // Show the new track
-      setGenerationHistory([prompt, ...generationHistory].slice(0, 10));
+      setGenerationHistory((prev) => [prompt, ...prev].slice(0, 10));
       
       // Reset inputs if needed
       if (!customMode) {
@@ -401,7 +459,19 @@ export default function MusicPageContent() {
     }
   };
 
-  const togglePlayback = (track: Track | null) => {
+  const togglePlayback = (
+    track: {
+      id: string;
+      title: string;
+      genre: string;
+      duration: number;
+      dateCreated: string;
+      complexity: string;
+      prompt: string;
+      audioUrl: string;
+      instrumental: boolean;
+    } | null
+  ) => {
     if (!track) return;
   
     if (currentTrack && currentTrack.id === track.id) {
@@ -473,30 +543,32 @@ export default function MusicPageContent() {
     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
-  // FIXED: Use isMounted check for localStorage operations
-  const saveTrack = (track: Track) => {
-    try {
-      if (!isMounted || typeof window === 'undefined') return;
-      
-      // Get current saved tracks or initialize empty array
-      const savedTracksJson = localStorage.getItem('savedTracks');
-      const savedTracks = savedTracksJson ? JSON.parse(savedTracksJson) : [];
-      
-      // Add the new track
-      savedTracks.push(track);
-      
-      // Save back to localStorage
-      localStorage.setItem('savedTracks', JSON.stringify(savedTracks));
-      
-      alert(`Track "${track.title}" saved to your collection`);
-    } catch (error) {
-      console.error('Error saving track:', error);
-      alert('Failed to save track. Please try again.');
-    }
+  const saveTrack = (track: {
+    id?: string;
+    title: any;
+    genre?: string;
+    duration?: number;
+    dateCreated?: string;
+    complexity?: string;
+    prompt?: string;
+    audioUrl?: string;
+    instrumental?: boolean;
+  }) => {
+    alert(`Track "${track.title}" saved to your collection`);
   };
 
   // Enhanced download function to save MP3 to device
-  const downloadTrack = (track: Track) => {
+  const downloadTrack = (track: {
+    id?: string;
+    title: any;
+    genre?: string;
+    duration?: number;
+    dateCreated?: string;
+    complexity?: string;
+    prompt?: string;
+    audioUrl?: string;
+    instrumental?: boolean;
+  }) => {
     if (track.audioUrl) {
       const link = document.createElement("a");
       link.href = track.audioUrl;
@@ -521,7 +593,19 @@ export default function MusicPageContent() {
   ];
 
   // Render function for track cards
-  const renderTrackCard = (track: Track | null) => {
+  const renderTrackCard = (
+    track: {
+      id: string;
+      title: string;
+      genre: string;
+      duration: number;
+      dateCreated: string;
+      complexity: string;
+      prompt: string;
+      audioUrl: string;
+      instrumental: boolean;
+    } | null
+  ) => {
     if (!track) return null;
   
     const isCurrentTrack = currentTrack && currentTrack.id === track.id;
@@ -646,7 +730,7 @@ export default function MusicPageContent() {
       </div>
     );
   };
-  
+
   return (
     <main className="relative min-h-screen bg-black text-white font-mono">
       <div className="fixed inset-0 bg-black z-0" />
@@ -658,6 +742,7 @@ export default function MusicPageContent() {
           backgroundSize: "40px 40px",
         }}
       />
+
       <Navigation />
 
       <div className="container mx-auto px-2 pt-24 pb-16 relative z-10">
@@ -985,7 +1070,7 @@ export default function MusicPageContent() {
                       <audio 
                         ref={audioRef} 
                         onError={(e) => {
-                          console.error('Error playing audio:', e);
+                          console.error('Audio error:', e);
                           setIsPlaying(false);
                           setErrorMessage("Error playing audio. Please try again.");
                         }}
