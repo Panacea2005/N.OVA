@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { 
-  Wallet, ChartBar, Clock, Coins, ArrowUpRight, ArrowDownLeft, 
-  CheckCircle, Clipboard, CheckIcon, Network, Zap, Box, 
-  AlertTriangle, ChevronDown, ChevronUp, Sparkles, Gift
+  Wallet, ChevronDown, ChevronUp, Coins, ArrowUpRight, ArrowDownLeft, 
+  Clipboard, CheckIcon, AlertCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -34,190 +33,77 @@ const WalletSummaryDisplay: React.FC<WalletSummaryDisplayProps> = ({
   };
 
   if (!summary) return null;
-
-  // Calculate activity level color and gradient
-  const getActivityLevel = (transactionCount: number) => {
-    if (transactionCount === 0)
-      return {
-        color: "text-blue-500",
-        gradient: "from-blue-700 to-blue-500",
-        width: "10%",
-        label: "Inactive",
-        glow: "0 0 20px rgba(59, 130, 246, 0.5)"
-      };
-    if (transactionCount < 5)
-      return {
-        color: "text-green-500",
-        gradient: "from-green-700 to-green-500",
-        width: "30%",
-        label: "Low",
-        glow: "0 0 20px rgba(16, 185, 129, 0.5)"
-      };
-    if (transactionCount < 15)
-      return {
-        color: "text-yellow-500",
-        gradient: "from-yellow-700 to-yellow-500",
-        width: "60%",
-        label: "Medium",
-        glow: "0 0 20px rgba(234, 179, 8, 0.5)"
-      };
-    if (transactionCount < 30)
-      return {
-        color: "text-orange-500",
-        gradient: "from-orange-700 to-orange-500",
-        width: "80%",
-        label: "High",
-        glow: "0 0 20px rgba(249, 115, 22, 0.5)"
-      };
-    return {
-      color: "text-purple-500",
-      gradient: "from-purple-700 to-purple-500",
-      width: "100%",
-      label: "Very High",
-      glow: "0 0 20px rgba(168, 85, 247, 0.5)"
-    };
-  };
-
-  const activityStyle = getActivityLevel(summary.transactionCount);
   
-  // Calculate net flow color
-  const getNetFlowColor = (netFlow: number) => {
-    if (netFlow > 0) return {
-      text: "text-green-500",
-      bg: "bg-green-500/20",
-      border: "border-green-500/30",
-      icon: <ArrowDownLeft className="w-4 h-4 text-green-500" />,
-      sign: "+"
-    };
-    if (netFlow < 0) return {
-      text: "text-red-500",
-      bg: "bg-red-500/20",
-      border: "border-red-500/30",
-      icon: <ArrowUpRight className="w-4 h-4 text-red-500" />,
-      sign: ""
-    };
-    return {
-      text: "text-blue-500",
-      bg: "bg-blue-500/20",
-      border: "border-blue-500/30",
-      icon: <Zap className="w-4 h-4 text-blue-500" />,
-      sign: ""
-    };
-  };
-  
+  // Calculate net flow
   const netFlow = summary.totalSolReceived - summary.totalSolSent;
-  const netFlowStyle = getNetFlowColor(netFlow);
-
-  // Build network identifier with visual elements
-  const getNetworkDetails = (network: string) => {
-    switch(network.toLowerCase()) {
+  
+  // Get net flow styling
+  const getNetFlowStyle = () => {
+    if (netFlow > 0) return "text-green-400";
+    if (netFlow < 0) return "text-red-400";
+    return "text-blue-400";
+  }
+  
+  // Determine network display and color
+  const getNetworkLabel = (network: string) => {
+    return network ? network.toUpperCase() : "UNKNOWN";
+  };
+  
+  const getNetworkStyle = (network: string) => {
+    switch (network?.toLowerCase()) {
       case 'mainnet-beta':
-        return {
-          color: "text-purple-500",
-          bg: "bg-purple-500/20",
-          border: "border-purple-500/30",
-          label: "MAINNET"
-        };
+        return "border-purple-500/30 text-purple-400";
       case 'devnet':
-        return {
-          color: "text-blue-500",
-          bg: "bg-blue-500/20",
-          border: "border-blue-500/30",
-          label: "DEVNET"
-        };
+        return "border-blue-500/30 text-blue-400";
       case 'testnet':
-        return {
-          color: "text-green-500",
-          bg: "bg-green-500/20",
-          border: "border-green-500/30",
-          label: "TESTNET"
-        };
+        return "border-green-500/30 text-green-400";
       default:
-        return {
-          color: "text-gray-500",
-          bg: "bg-gray-500/20",
-          border: "border-gray-500/30",
-          label: network.toUpperCase()
-        };
+        return "border-gray-500/30 text-gray-400";
     }
   };
 
-  const networkDetails = getNetworkDetails(summary.network || "unknown");
+  // Activity level styling
+  const getActivityLevelStyle = (count: number) => {
+    if (count === 0) return { color: "text-blue-400", width: "0%" };
+    if (count < 5) return { color: "text-green-400", width: "30%" };
+    if (count < 15) return { color: "text-yellow-400", width: "60%" };
+    if (count < 30) return { color: "text-orange-400", width: "80%" };
+    return { color: "text-purple-400", width: "100%" };
+  };
+  
+  const activityStyle = getActivityLevelStyle(summary.transactionCount);
+  const netFlowColorClass = getNetFlowStyle();
 
   return (
     <div className="w-full flex flex-col space-y-6">
       {/* Main Wallet Summary Card */}
-      <div className="relative border border-white/10 rounded-md overflow-hidden">
-        {/* Glowing accent line at the top */}
-        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500/0 via-emerald-500/80 to-emerald-500/0"></div>
-        
-        {/* Animated dot background */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 opacity-20" 
-               style={{
-                 backgroundImage: "radial-gradient(rgba(16, 185, 129, 0.2) 1px, transparent 1px)",
-                 backgroundSize: "10px 10px",
-               }}>
-            <motion.div 
-              className="w-full h-full"
-              initial={{ backgroundPosition: "0 0" }}
-              animate={{ backgroundPosition: "100px 100px" }}
-              transition={{ duration: 120, ease: "linear", repeat: Infinity }}
-            />
-          </div>
-        </div>
-
-        {/* Circuit-like pattern overlays */}
-        <div className="absolute inset-0 z-0 opacity-10">
-          <svg width="100%" height="100%" className="absolute inset-0">
-            <pattern id="circuitPattern" patternUnits="userSpaceOnUse" width="100" height="100" patternTransform="rotate(45)">
-              <line x1="0" y1="50" x2="100" y2="50" stroke="currentColor" strokeWidth="0.5" className="text-emerald-500" />
-              <line x1="50" y1="0" x2="50" y2="100" stroke="currentColor" strokeWidth="0.5" className="text-emerald-500" />
-              <circle cx="50" cy="50" r="2" fill="currentColor" className="text-emerald-600" />
-            </pattern>
-            <rect width="100%" height="100%" fill="url(#circuitPattern)" />
-          </svg>
-        </div>
-
-        <div className="relative z-10 p-5 backdrop-blur-sm bg-gradient-to-b from-black/80 via-black/70 to-black/90">
-          {/* Header with glowing badge */}
+      <div className="border border-white/30 p-0.5">
+        <div className="border border-white/10 p-5">
+          {/* Header */}
           <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-6 gap-3">
             <div className="flex items-start gap-3">
-              <div className="relative shrink-0">
-                <div className="w-12 h-12 rounded-lg border border-emerald-500/30 bg-emerald-500/10 flex items-center justify-center">
-                  <Wallet className="w-6 h-6 text-emerald-400" />
-                </div>
-                <motion.div 
-                  className="absolute inset-0 rounded-lg"
-                  initial={{ boxShadow: "0 0 0px rgba(16, 185, 129, 0.1)" }}
-                  animate={{ boxShadow: "0 0 10px rgba(16, 185, 129, 0.4)" }}
-                  transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
-                />
+              <div className="w-10 h-10 border border-emerald-500/30 flex items-center justify-center">
+                <Wallet className="w-5 h-5 text-emerald-400" />
               </div>
               
               <div>
-                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <h3 className="text-xl font-light text-white flex items-center gap-2 uppercase">
                   Wallet Analysis
-                  <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${networkDetails.bg} ${networkDetails.border} ${networkDetails.color}`}>
-                    {networkDetails.label}
+                  <span className={`ml-2 text-xs px-2 border ${getNetworkStyle(summary.network)}`}>
+                    {getNetworkLabel(summary.network)}
                   </span>
                 </h3>
-                <p className="text-white/60 text-sm mt-1">
+                <p className="text-white/70 text-sm mt-1 uppercase">
                   {summary.period ? `Activity from ${summary.period}` : "Recent wallet activity and token balances"}
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-col items-end gap-1 ml-auto md:ml-0 mt-2 md:mt-0">
-              <div className={`px-3 py-1.5 rounded-lg ${netFlowStyle.bg} ${netFlowStyle.border} flex items-center gap-2`}>
-                <div className="flex items-center">
-                  {netFlowStyle.icon}
-                </div>
-                <div>
-                  <div className="text-xs text-white/60">NET FLOW</div>
-                  <div className={`font-bold font-mono ${netFlowStyle.text}`}>
-                    {netFlowStyle.sign}{Math.abs(netFlow).toFixed(4)} SOL
-                  </div>
+            <div className="border border-emerald-500/30 p-2 flex items-center gap-3">
+              <div>
+                <div className="text-xs text-white/60 uppercase">Net Flow</div>
+                <div className={`font-light font-mono ${netFlowColorClass}`}>
+                  {netFlow > 0 ? "+" : ""}{netFlow.toFixed(4)} SOL
                 </div>
               </div>
             </div>
@@ -225,213 +111,132 @@ const WalletSummaryDisplay: React.FC<WalletSummaryDisplayProps> = ({
 
           {/* Display any RPC errors if they exist */}
           {summary.rpcErrors && summary.rpcErrors.length > 0 && (
-            <div className="mb-6 p-3 border border-amber-500/30 bg-amber-900/20 rounded-lg flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+            <div className="mb-6 p-3 border border-amber-500/30 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
               <div>
-                <p className="text-amber-400 text-sm font-medium mb-1">API Limitation Notice</p>
-                <p className="text-amber-300/80 text-xs">
+                <p className="text-amber-400 text-sm font-light mb-1 uppercase">API Limitation Notice</p>
+                <p className="text-white/80 text-xs">
                   {summary.rpcErrors.join('. ')}
                 </p>
               </div>
             </div>
           )}
 
-          {/* Activity Score with pulsing animation */}
+          {/* Activity Level */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-3">
-              <h4 className="text-base font-medium text-white flex items-center gap-2">
-                <Zap className="w-4 h-4 text-emerald-400" />
+              <h4 className="text-base font-light text-white uppercase">
                 Activity Level
               </h4>
-              <div className="flex items-center gap-2">
-                <span
-                  className={`text-sm font-bold ${activityStyle.color} px-2 py-0.5 rounded-full bg-black/30 border border-white/5`}
-                >
-                  {activityStyle.label}
-                </span>
-                <motion.div 
-                  className={`w-2 h-2 rounded-full ${activityStyle.color.replace('text-', 'bg-')}`}
-                  animate={{ 
-                    scale: [1, 1.5, 1],
-                    boxShadow: [
-                      `0 0 0px rgba(0, 0, 0, 0)`,
-                      activityStyle.glow,
-                      `0 0 0px rgba(0, 0, 0, 0)`
-                    ]
-                  }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                />
+              <div className={`text-sm px-2 py-0.5 border-${
+                summary.transactionCount > 30 ? "purple" : 
+                summary.transactionCount > 15 ? "orange" : 
+                summary.transactionCount > 5 ? "yellow" : 
+                summary.transactionCount > 0 ? "green" : "blue"
+              }-500/30 border ${activityStyle.color} uppercase`}>
+                {summary.transactionCount > 30 ? "VERY HIGH" : 
+                 summary.transactionCount > 15 ? "HIGH" : 
+                 summary.transactionCount > 5 ? "MEDIUM" : 
+                 summary.transactionCount > 0 ? "LOW" : "INACTIVE"}
               </div>
             </div>
             
-            <div className="h-2 w-full bg-black/50 rounded-full overflow-hidden border border-white/5">
+            <div className="h-0.5 w-full bg-white/10">
               <motion.div
                 initial={{ width: "0%" }}
-                animate={{ 
-                  width: activityStyle.width,
-                  boxShadow: activityStyle.glow
-                }}
-                transition={{ duration: 1.5, ease: "easeOut" }}
-                className={`h-full bg-gradient-to-r ${activityStyle.gradient} rounded-full`}
+                animate={{ width: activityStyle.width }}
+                transition={{ duration: 1, ease: "easeOut" }}
+                className={`h-full ${
+                  summary.transactionCount > 30 ? "bg-gradient-to-r from-purple-500 to-indigo-500" : 
+                  summary.transactionCount > 15 ? "bg-gradient-to-r from-orange-500 to-amber-500" : 
+                  summary.transactionCount > 5 ? "bg-gradient-to-r from-yellow-500 to-amber-500" : 
+                  summary.transactionCount > 0 ? "bg-gradient-to-r from-green-500 to-emerald-500" : 
+                  "bg-gradient-to-r from-blue-500 to-cyan-500"
+                }`}
               />
             </div>
           </div>
 
-          {/* Transaction Stats Overview - Animated Hexagon Grid */}
+          {/* Transaction Stats Overview */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
             {/* Transactions */}
-            <motion.div 
-              className="relative overflow-hidden border border-teal-500/30 bg-gradient-to-br from-teal-900/20 to-teal-900/5 p-3 rounded-lg backdrop-blur-sm"
-              whileHover={{ 
-                boxShadow: "0 0 15px rgba(20, 184, 166, 0.3)",
-                borderColor: "rgba(20, 184, 166, 0.5)"
-              }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="absolute top-0 right-0 w-1 h-1 bg-teal-500 rounded-full">
-                <motion.div 
-                  className="absolute inset-0 rounded-full"
-                  animate={{ 
-                    scale: [1, 2, 1],
-                    opacity: [1, 0, 1],
-                  }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  style={{ backgroundColor: "#14b8a6" }}
-                />
-              </div>
-              
-              <div className="flex justify-between items-start mb-1">
-                <Box className="w-4 h-4 text-teal-400 mt-0.5" />
-                <span className="text-xs text-white/50">24h</span>
-              </div>
-              
-              <p className="text-teal-400 text-2xl font-bold font-mono">
+            <div className="border border-cyan-500/30 p-3">
+              <div className="text-cyan-400 text-2xl font-light">
                 {summary.transactionCount}
-              </p>
-              <p className="text-xs text-white/60">Transactions</p>
-            </motion.div>
+              </div>
+              <p className="text-xs text-white/60 uppercase">Transactions</p>
+            </div>
 
             {/* Unique Wallets */}
-            <motion.div 
-              className="relative overflow-hidden border border-blue-500/30 bg-gradient-to-br from-blue-900/20 to-blue-900/5 p-3 rounded-lg backdrop-blur-sm"
-              whileHover={{ 
-                boxShadow: "0 0 15px rgba(59, 130, 246, 0.3)",
-                borderColor: "rgba(59, 130, 246, 0.5)"
-              }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="flex justify-between items-start mb-1">
-                <Network className="w-4 h-4 text-blue-400 mt-0.5" />
-                <span className="text-xs text-white/50">UNIQUE</span>
-              </div>
-              
-              <p className="text-blue-400 text-2xl font-bold font-mono">
+            <div className="border border-blue-500/30 p-3">
+              <div className="text-blue-400 text-2xl font-light">
                 {summary.uniqueWalletsInteracted}
-              </p>
-              <p className="text-xs text-white/60">Connected Wallets</p>
-            </motion.div>
+              </div>
+              <p className="text-xs text-white/60 uppercase">Connected Wallets</p>
+            </div>
 
             {/* Programs */}
-            <motion.div 
-              className="relative overflow-hidden border border-purple-500/30 bg-gradient-to-br from-purple-900/20 to-purple-900/5 p-3 rounded-lg backdrop-blur-sm"
-              whileHover={{ 
-                boxShadow: "0 0 15px rgba(168, 85, 247, 0.3)",
-                borderColor: "rgba(168, 85, 247, 0.5)"
-              }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="flex justify-between items-start mb-1">
-                <Zap className="w-4 h-4 text-purple-400 mt-0.5" />
-                <span className="text-xs text-white/50">PROGRAMS</span>
-              </div>
-              
-              <p className="text-purple-400 text-2xl font-bold font-mono">
+            <div className="border border-purple-500/30 p-3">
+              <div className="text-purple-400 text-2xl font-light">
                 {summary.uniqueProgramsInteracted?.length || 0}
-              </p>
-              <p className="text-xs text-white/60">Dapps Used</p>
-            </motion.div>
+              </div>
+              <p className="text-xs text-white/60 uppercase">Dapps Used</p>
+            </div>
 
             {/* Fees */}
-            <motion.div 
-              className="relative overflow-hidden border border-amber-500/30 bg-gradient-to-br from-amber-900/20 to-amber-900/5 p-3 rounded-lg backdrop-blur-sm"
-              whileHover={{ 
-                boxShadow: "0 0 15px rgba(245, 158, 11, 0.3)",
-                borderColor: "rgba(245, 158, 11, 0.5)"
-              }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="flex justify-between items-start mb-1">
-                <Coins className="w-4 h-4 text-amber-400 mt-0.5" />
-                <span className="text-xs text-white/50">FEES</span>
-              </div>
-              
-              <p className="text-amber-400 text-2xl font-bold font-mono">
+            <div className="border border-amber-500/30 p-3">
+              <div className="text-amber-400 text-2xl font-light">
                 {summary.totalFees?.toFixed(6) || 0}
-              </p>
-              <p className="text-xs text-white/60">SOL Spent</p>
-            </motion.div>
+              </div>
+              <p className="text-xs text-white/60 uppercase">SOL Spent</p>
+            </div>
           </div>
 
           {/* SOL Transfers Section */}
           <div className="mb-6">
-            <h4 className="text-base font-medium text-white flex items-center gap-2 mb-3 pb-2 border-b border-white/5">
-              <div className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
-                <Coins className="w-3 h-3 text-white" />
-              </div>
+            <h4 className="text-base font-light text-white mb-3 pb-2 border-b border-white/10 uppercase">
               SOL Transfers
             </h4>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {/* Received */}
-              <motion.div 
-                className="border border-green-500/20 bg-green-500/5 rounded-lg p-3 flex items-center gap-3"
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="p-2 rounded-md bg-green-500/20 border border-green-500/30">
-                  <ArrowDownLeft className="w-5 h-5 text-green-500" />
+              <div className="border border-green-500/30 p-3 flex items-center gap-3">
+                <div className="p-2 border border-green-500/30">
+                  <ArrowDownLeft className="w-5 h-5 text-green-400" />
                 </div>
                 <div>
-                  <div className="text-xs text-white/60">Received</div>
-                  <div className="text-green-500 font-mono font-medium text-lg">
+                  <div className="text-xs text-white/60 uppercase">Received</div>
+                  <div className="text-green-400 font-mono font-light text-lg">
                     {summary.totalSolReceived?.toFixed(4) || 0} <span className="text-xs">SOL</span>
                   </div>
                 </div>
-              </motion.div>
+              </div>
               
               {/* Sent */}
-              <motion.div 
-                className="border border-red-500/20 bg-red-500/5 rounded-lg p-3 flex items-center gap-3"
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="p-2 rounded-md bg-red-500/20 border border-red-500/30">
-                  <ArrowUpRight className="w-5 h-5 text-red-500" />
+              <div className="border border-red-500/30 p-3 flex items-center gap-3">
+                <div className="p-2 border border-red-500/30">
+                  <ArrowUpRight className="w-5 h-5 text-red-400" />
                 </div>
                 <div>
-                  <div className="text-xs text-white/60">Sent</div>
-                  <div className="text-red-500 font-mono font-medium text-lg">
+                  <div className="text-xs text-white/60 uppercase">Sent</div>
+                  <div className="text-red-400 font-mono font-light text-lg">
                     {summary.totalSolSent?.toFixed(4) || 0} <span className="text-xs">SOL</span>
                   </div>
                 </div>
-              </motion.div>
+              </div>
               
-              {/* Net Flow with animation */}
-              <motion.div 
-                className={`border ${netFlowStyle.border} ${netFlowStyle.bg} rounded-lg p-3 flex items-center gap-3`}
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className={`p-2 rounded-md bg-white/5 border ${netFlowStyle.border}`}>
-                  <ChartBar className={`w-5 h-5 ${netFlowStyle.text}`} />
+              {/* Net Flow */}
+              <div className="border border-blue-500/30 p-3 flex items-center gap-3">
+                <div className="p-2 border border-blue-500/30">
+                  <Coins className="w-5 h-5 text-blue-400" />
                 </div>
                 <div>
-                  <div className="text-xs text-white/60">Net Flow</div>
-                  <div className={`${netFlowStyle.text} font-mono font-medium text-lg`}>
-                    {netFlowStyle.sign}{Math.abs(netFlow).toFixed(4)} <span className="text-xs">SOL</span>
+                  <div className="text-xs text-white/60 uppercase">Net Flow</div>
+                  <div className={`${netFlowColorClass} font-mono font-light text-lg`}>
+                    {netFlow > 0 ? "+" : ""}{netFlow.toFixed(4)} <span className="text-xs">SOL</span>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </div>
           </div>
 
@@ -440,17 +245,12 @@ const WalletSummaryDisplay: React.FC<WalletSummaryDisplayProps> = ({
             <div className="mb-6">
               <button 
                 onClick={() => toggleSection('tokens')}
-                className="w-full flex items-center justify-between text-base font-medium text-white gap-2 mb-3 pb-2 border-b border-white/5"
+                className="w-full flex items-center justify-between text-base font-light text-white gap-2 mb-3 pb-2 border-b border-white/10"
               >
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center">
-                    <Sparkles className="w-3 h-3 text-white" />
-                  </div>
-                  <span>Token Portfolio</span>
-                </div>
+                <span className="uppercase">Token Portfolio</span>
                 {expandedSections.tokens ? 
-                  <ChevronUp className="w-4 h-4 text-white/70" /> : 
-                  <ChevronDown className="w-4 h-4 text-white/70" />
+                  <ChevronUp className="w-4 h-4 text-purple-400" /> : 
+                  <ChevronDown className="w-4 h-4 text-purple-400" />
                 }
               </button>
               
@@ -470,28 +270,21 @@ const WalletSummaryDisplay: React.FC<WalletSummaryDisplayProps> = ({
                         .map((token: any, idx: number) => (
                           <motion.div 
                             key={`token-${idx}`} 
-                            className="flex items-center gap-3 p-2 rounded-lg border border-indigo-500/20 bg-indigo-500/5"
+                            className="flex items-center gap-3 p-2 border border-purple-500/30"
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.3, delay: idx * 0.05 }}
-                            whileHover={{ 
-                              backgroundColor: "rgba(99, 102, 241, 0.1)",
-                              borderColor: "rgba(99, 102, 241, 0.3)"
-                            }}
                           >
-                            <div className="w-10 h-10 rounded-lg relative flex-shrink-0 bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-base font-bold text-white">
+                            <div className="w-10 h-10 border border-purple-500/30 flex items-center justify-center text-base font-light text-purple-400 uppercase">
                               {token.tokenSymbol?.slice(0, 1) || token.mint.slice(0, 1)}
-                              <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-black/40 border border-black flex items-center justify-center">
-                                <div className="w-2 h-2 rounded-full bg-indigo-400"></div>
-                              </div>
                             </div>
                             
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between">
-                                <p className="text-white/90 text-sm font-medium truncate">
+                                <p className="text-purple-400 text-sm font-light uppercase">
                                   {token.tokenSymbol || token.mint.slice(0, 6)}
                                 </p>
-                                <p className="text-indigo-400 font-mono font-medium">
+                                <p className="text-purple-300 font-mono font-light">
                                   {token.amount.toFixed(4)}
                                 </p>
                               </div>
@@ -513,30 +306,30 @@ const WalletSummaryDisplay: React.FC<WalletSummaryDisplayProps> = ({
               </AnimatePresence>
               
               {!expandedSections.tokens && summary.tokenBalances.length > 0 && (
-                <div className="text-center py-2 text-white/50 text-xs">
+                <div className="text-center py-2 text-purple-400 text-xs uppercase">
                   <span>{summary.tokenBalances.length} tokens in portfolio • Click to expand</span>
                 </div>
               )}
             </div>
           )}
 
-          {/* NFTs if any - With compact display */}
+          {/* NFTs if any */}
           {summary.nfts && summary.nfts.length > 0 && (
-            <div className="mb-6 p-3 border border-pink-500/30 bg-pink-500/5 rounded-lg">
+            <div className="mb-6 p-3 border border-pink-500/30">
               <div className="flex items-start gap-3">
-                <div className="p-2 rounded-md bg-pink-500/20 border border-pink-500/30 flex-shrink-0">
-                  <Gift className="w-5 h-5 text-pink-500" />
+                <div className="w-10 h-10 border border-pink-500/30 flex items-center justify-center">
+                  <AlertCircle className="w-5 h-5 text-pink-400" />
                 </div>
                 
                 <div>
-                  <h4 className="text-base font-medium text-white mb-1">NFT Collection</h4>
+                  <h4 className="text-base font-light text-pink-400 mb-1 uppercase">NFT Collection</h4>
                   <p className="text-white/80 text-sm">
-                    Your wallet holds <span className="text-pink-400 font-medium">{summary.nfts.length} NFTs</span>
+                    Your wallet holds <span className="text-pink-400 font-light">{summary.nfts.length} NFTs</span>
                     {summary.nfts[0].collection && (
                       <>
-                        , including items from <span className="text-pink-400 font-medium">{summary.nfts[0].collection}</span>
+                        , including items from <span className="text-pink-400 font-light">{summary.nfts[0].collection}</span>
                         {summary.nfts.length > 1 && summary.nfts[1].collection && summary.nfts[1].collection !== summary.nfts[0].collection && (
-                          <> and <span className="text-pink-400 font-medium">{summary.nfts[1].collection}</span></>
+                          <> and <span className="text-pink-400 font-light">{summary.nfts[1].collection}</span></>
                         )}
                       </>
                     )}
@@ -551,17 +344,12 @@ const WalletSummaryDisplay: React.FC<WalletSummaryDisplayProps> = ({
             <div className="mb-6">
               <button 
                 onClick={() => toggleSection('transactions')}
-                className="w-full flex items-center justify-between text-base font-medium text-white gap-2 mb-3 pb-2 border-b border-white/5"
+                className="w-full flex items-center justify-between text-base font-light text-white gap-2 mb-3 pb-2 border-b border-white/10"
               >
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 flex items-center justify-center">
-                    <Clock className="w-3 h-3 text-white" />
-                  </div>
-                  <span>Recent Transactions</span>
-                </div>
+                <span className="uppercase">Recent Transactions</span>
                 {expandedSections.transactions ? 
-                  <ChevronUp className="w-4 h-4 text-white/70" /> : 
-                  <ChevronDown className="w-4 h-4 text-white/70" />
+                  <ChevronUp className="w-4 h-4 text-emerald-400" /> : 
+                  <ChevronDown className="w-4 h-4 text-emerald-400" />
                 }
               </button>
               
@@ -581,47 +369,28 @@ const WalletSummaryDisplay: React.FC<WalletSummaryDisplayProps> = ({
                         const formattedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                         const txType = tx.type?.replace(/([A-Z])/g, ' $1').trim() || 'Transaction';
                         
-                        // Determine transaction icon and color based on type
-                        let txIcon;
-                        let txColor;
-                        
-                        if (tx.type === 'tokenTransfer') {
-                          txIcon = <Coins className="w-4 h-4" />;
-                          txColor = 'text-purple-500 border-purple-500/30 bg-purple-500/10';
-                        } else if (tx.type === 'systemTransfer') {
-                          txIcon = <ArrowUpRight className="w-4 h-4" />;
-                          txColor = 'text-blue-500 border-blue-500/30 bg-blue-500/10';
-                        } else if (tx.type === 'swap') {
-                          txIcon = <ArrowUpRight className="w-4 h-4" />;
-                          txColor = 'text-amber-500 border-amber-500/30 bg-amber-500/10';
-                        } else if (tx.type === 'nftMint' || tx.type === 'nftSale') {
-                          txIcon = <Gift className="w-4 h-4" />;
-                          txColor = 'text-pink-500 border-pink-500/30 bg-pink-500/10';
-                        } else {
-                          txIcon = <Box className="w-4 h-4" />;
-                          txColor = 'text-emerald-500 border-emerald-500/30 bg-emerald-500/10';
-                        }
+                        // Determine transaction color based on type
+                        let txColor = "text-emerald-400 border-emerald-500/30";
+                        if (tx.type === 'tokenTransfer') txColor = "text-purple-400 border-purple-500/30";
+                        else if (tx.type === 'systemTransfer') txColor = "text-blue-400 border-blue-500/30";
+                        else if (tx.type === 'swap') txColor = "text-amber-400 border-amber-500/30";
+                        else if (tx.type === 'nftMint' || tx.type === 'nftSale') txColor = "text-pink-400 border-pink-500/30";
                         
                         return (
                           <motion.div 
                             key={`tx-${idx}`} 
-                            className="p-3 border border-emerald-500/20 bg-emerald-500/5 rounded-lg flex items-center gap-3"
+                            className={`p-3 border ${txColor.split(' ')[1]} flex items-center gap-3`}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.3, delay: idx * 0.05 }}
-                            whileHover={{ 
-                              backgroundColor: "rgba(16, 185, 129, 0.1)",
-                              borderColor: "rgba(16, 185, 129, 0.3)",
-                              y: -2
-                            }}
                           >
-                            <div className={`p-2 rounded-md ${txColor}`}>
-                              {txIcon}
+                            <div className={`p-2 border ${txColor.split(' ')[1]}`}>
+                              <AlertCircle className={`w-4 h-4 ${txColor.split(' ')[0]}`} />
                             </div>
                             
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between">
-                                <p className="text-emerald-400 text-sm font-medium capitalize">
+                                <p className={`${txColor.split(' ')[0]} text-sm font-light uppercase`}>
                                   {txType}
                                 </p>
                                 <p className="text-white/60 text-xs">
@@ -641,7 +410,7 @@ const WalletSummaryDisplay: React.FC<WalletSummaryDisplayProps> = ({
               </AnimatePresence>
               
               {!expandedSections.transactions && summary.recentTransactions.length > 0 && (
-                <div className="text-center py-2 text-white/50 text-xs">
+                <div className="text-center py-2 text-emerald-400 text-xs uppercase">
                   <span>{summary.recentTransactions.length} recent transactions • Click to expand</span>
                 </div>
               )}
@@ -653,17 +422,12 @@ const WalletSummaryDisplay: React.FC<WalletSummaryDisplayProps> = ({
             <div className="mb-6">
               <button 
                 onClick={() => toggleSection('actions')}
-                className="w-full flex items-center justify-between text-base font-medium text-white gap-2 mb-3 pb-2 border-b border-white/5"
+                className="w-full flex items-center justify-between text-base font-light text-white gap-2 mb-3 pb-2 border-b border-white/10"
               >
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-gradient-to-r from-green-600 to-blue-600 flex items-center justify-center">
-                    <CheckCircle className="w-3 h-3 text-white" />
-                  </div>
-                  <span>Recommended Actions</span>
-                </div>
+                <span className="uppercase">Recommended Actions</span>
                 {expandedSections.actions ? 
-                  <ChevronUp className="w-4 h-4 text-white/70" /> : 
-                  <ChevronDown className="w-4 h-4 text-white/70" />
+                  <ChevronUp className="w-4 h-4 text-cyan-400" /> : 
+                  <ChevronDown className="w-4 h-4 text-cyan-400" />
                 }
               </button>
               
@@ -680,22 +444,16 @@ const WalletSummaryDisplay: React.FC<WalletSummaryDisplayProps> = ({
                       {summary.suggestedActions.map((action: string, idx: number) => (
                         <motion.div 
                           key={`action-${idx}`} 
-                          className="flex items-start gap-3 p-3 border border-blue-500/20 bg-blue-500/5 rounded-lg"
+                          className="flex items-start gap-3 p-3 border border-cyan-500/30"
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.3, delay: idx * 0.05 }}
-                          whileHover={{ 
-                            backgroundColor: "rgba(59, 130, 246, 0.1)",
-                            borderColor: "rgba(59, 130, 246, 0.3)",
-                            x: 2
-                          }}
                         >
-                          <div className="p-1.5 rounded-md bg-blue-500/20 border border-blue-500/30 flex-shrink-0 mt-0.5">
-                            <div className="w-3 h-3 rounded-full border-2 border-blue-400 flex items-center justify-center">
-                              <div className="w-1 h-1 rounded-full bg-blue-400"></div>
+                          <div className="p-1.5 border border-cyan-500/30 flex-shrink-0 mt-0.5">
+                            <div className="w-3 h-3 border-2 border-cyan-400 flex items-center justify-center">
                             </div>
                           </div>
-                          <p className="text-sm text-white/90">{action}</p>
+                          <p className="text-sm text-cyan-300">{action}</p>
                         </motion.div>
                       ))}
                     </div>
@@ -704,7 +462,7 @@ const WalletSummaryDisplay: React.FC<WalletSummaryDisplayProps> = ({
               </AnimatePresence>
               
               {!expandedSections.actions && summary.suggestedActions.length > 0 && (
-                <div className="text-center py-2 text-white/50 text-xs">
+                <div className="text-center py-2 text-cyan-400 text-xs uppercase">
                   <span>{summary.suggestedActions.length} suggested actions • Click to expand</span>
                 </div>
               )}
@@ -713,24 +471,22 @@ const WalletSummaryDisplay: React.FC<WalletSummaryDisplayProps> = ({
 
           {/* Copy button */}
           <div className="mt-6 flex justify-end">
-            <motion.button
-              className="px-3 py-2 bg-black/40 hover:bg-black/60 text-xs text-white/80 hover:text-white border border-white/10 hover:border-white/30 transition-colors flex items-center gap-2 rounded-lg"
+            <button
+              className="px-3 py-2 bg-black text-xs text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 hover:border-cyan-500/50 transition-colors flex items-center gap-2"
               onClick={() => onCopy(JSON.stringify(summary, null, 2), "full")}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
             >
               {copiedState.full ? (
                 <>
-                  <CheckIcon className="w-4 h-4 text-green-500" />
-                  <span className="text-green-500">Copied to Clipboard</span>
+                  <CheckIcon className="w-4 h-4" />
+                  <span className="uppercase">Copied to Clipboard</span>
                 </>
               ) : (
                 <>
                   <Clipboard className="w-4 h-4" />
-                  <span>Copy Full Report</span>
+                  <span className="uppercase">Copy Full Report</span>
                 </>
               )}
-            </motion.button>
+            </button>
           </div>
         </div>
       </div>

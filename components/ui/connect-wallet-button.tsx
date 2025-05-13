@@ -1,8 +1,10 @@
+// File: components/connect-wallet-button.tsx - Fixed wallet connection with preserved CSS
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Wallet, CheckIcon, LogOut, Copy, Check, Zap, Key, Shield } from "lucide-react";
+import { Wallet, CheckIcon, LogOut, Copy, Check, Zap, Key, Shield, Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 // Import both wallet adapter hooks and your custom hooks
@@ -19,6 +21,9 @@ export function ConnectWalletButton() {
   const [showWalletOptions, setShowWalletOptions] = useState(false);
   const [passkeyCreated, setPasskeyCreated] = useState<boolean | null>(null);
   const [checkingPasskey, setCheckingPasskey] = useState(false);
+  const [connectAttempt, setConnectAttempt] = useState(0); // Track attempts
+  const [retryTimeout, setRetryTimeout] = useState<NodeJS.Timeout | null>(null);
+  
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const optionsRef = useRef<HTMLDivElement>(null);
@@ -33,6 +38,8 @@ export function ConnectWalletButton() {
     createPasskey,
     verifyPasskey,
     error,
+    isConnecting,
+    hasPendingOperation,
   } = useWallet();
 
   // Get the Solana wallet adapter state to detect connections
@@ -44,22 +51,46 @@ export function ConnectWalletButton() {
     
   // When the Solana wallet adapter connects a wallet, we should update our activeProvider state
   useEffect(() => {
-    if (solanaWallet.connected && solanaWallet.publicKey && (!activeProvider || activeProvider !== 'phantom')) {
+    if (solanaWallet.connected && solanaWallet.publicKey && (!activeProvider || activeProvider !== 'phantom') && !isConnecting) {
       // This will update our wallet address from Solana adapter when it connects
-      console.log("Standard wallet connected through wallet adapter");
+      console.log("Standard wallet connected through wallet adapter, updating state");
       
       // Since our connectWallet doesn't accept an address parameter directly, we'll just
-      // call it to set the phantom provider active, and the useWallet hook's internal logic
-      // will detect the connected phantom wallet
-      connectWallet("phantom");
+      // call it to set the phantom provider active
+      connectWallet("phantom").catch(err => {
+        console.error("Error in wallet connection sync:", err);
+      });
     }
-  }, [solanaWallet.connected, solanaWallet.publicKey, activeProvider, connectWallet]);
+  }, [solanaWallet.connected, solanaWallet.publicKey, activeProvider, connectWallet, isConnecting]);
+
+  // Clear pending retry timeouts when component unmounts
+  useEffect(() => {
+    return () => {
+      if (retryTimeout) {
+        clearTimeout(retryTimeout);
+      }
+    };
+  }, [retryTimeout]);
+  
+  // Reset connect attempt counter when successfully connected
+  useEffect(() => {
+    if (isConnected && walletAddress) {
+      console.log("Connection successful, resetting attempt counter");
+      setConnectAttempt(0);
+      
+      // Clear any pending retry timeouts
+      if (retryTimeout) {
+        clearTimeout(retryTimeout);
+        setRetryTimeout(null);
+      }
+    }
+  }, [isConnected, walletAddress, retryTimeout]);
 
   const truncatedAddress = walletAddress
     ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
     : "Not connected";
 
-  // Apply custom styling to wallet modal
+  // Apply custom styling to wallet modal - PRESERVING YOUR ORIGINAL CSS STYLING
   useEffect(() => {
     // Function to apply our custom styles directly
     const applyCustomStyles = () => {
@@ -370,31 +401,6 @@ export function ConnectWalletButton() {
     };
   }, [walletModalVisible]);
 
-  // Check for existing passkey when using LazorKit
-  useEffect(() => {
-    const checkForPasskey = async () => {
-      if (isConnected && activeProvider === 'lazorkit') {
-        setCheckingPasskey(true);
-        try {
-          // Use the verifyPasskey function from your hook
-          const hasPasskey = await verifyPasskey();
-          console.log("Passkey verification result:", hasPasskey);
-          setPasskeyCreated(hasPasskey);
-        } catch (error) {
-          console.error("Error checking passkey:", error);
-          setPasskeyCreated(false);
-        } finally {
-          setCheckingPasskey(false);
-        }
-      } else if (activeProvider !== 'lazorkit') {
-        // Clear passkey state when using other providers
-        setPasskeyCreated(null);
-      }
-    };
-
-    checkForPasskey();
-  }, [isConnected, activeProvider, verifyPasskey]);
-
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -423,7 +429,38 @@ export function ConnectWalletButton() {
     };
   }, [showDetails, showWalletOptions]);
 
+  // Check for existing passkey when using LazorKit
+  useEffect(() => {
+    const checkForPasskey = async () => {
+      if (isConnected && activeProvider === 'lazorkit') {
+        setCheckingPasskey(true);
+        try {
+          // Use the verifyPasskey function from your hook
+          const hasPasskey = await verifyPasskey();
+          console.log("Passkey verification result:", hasPasskey);
+          setPasskeyCreated(hasPasskey);
+        } catch (error) {
+          console.error("Error checking passkey:", error);
+          setPasskeyCreated(false);
+        } finally {
+          setCheckingPasskey(false);
+        }
+      } else if (activeProvider !== 'lazorkit') {
+        // Clear passkey state when using other providers
+        setPasskeyCreated(null);
+      }
+    };
+
+    checkForPasskey();
+  }, [isConnected, activeProvider, verifyPasskey]);
+
   const handleWalletAction = () => {
+    // Don't allow action if there's a pending operation
+    if (hasPendingOperation && hasPendingOperation()) {
+      console.log("Skipping wallet action during pending operation");
+      return;
+    }
+  
     if (isConnected) {
       setShowDetails(!showDetails);
       setShowWalletOptions(false);
@@ -433,8 +470,18 @@ export function ConnectWalletButton() {
     }
   };
 
+  // Improved handler with retry logic
   const handleConnectPhantom = async () => {
+    // Don't attempt if already connecting or operation pending
+    if (isConnecting || (hasPendingOperation && hasPendingOperation())) {
+      console.log("Skipping connect attempt during pending operation");
+      return;
+    }
+    
     setShowWalletOptions(false);
+    setConnectAttempt(prev => prev + 1);
+    
+    console.log(`Connecting to Phantom (attempt: ${connectAttempt + 1})`);
     
     try {
       // First ensure all wallets are disconnected
@@ -447,11 +494,30 @@ export function ConnectWalletButton() {
       // and our useEffect hook that detects changes in solanaWallet.connected
     } catch (error) {
       console.error("Error preparing for Phantom connection:", error);
+      
+      // Auto-retry logic for up to 3 attempts
+      if (connectAttempt < 3) {
+        console.log(`Connection failed, scheduling retry ${connectAttempt + 1}/3`);
+        const timeout = setTimeout(() => {
+          handleConnectPhantom();
+        }, 1000);
+        setRetryTimeout(timeout);
+      }
     }
   };
 
+  // Improved LazorKit connection with retry logic
   const handleConnectLazorKit = async () => {
+    // Don't attempt if already connecting or operation pending
+    if (isConnecting || (hasPendingOperation && hasPendingOperation())) {
+      console.log("Skipping connect attempt during pending operation");
+      return;
+    }
+    
     setShowWalletOptions(false);
+    setConnectAttempt(prev => prev + 1);
+    
+    console.log(`Connecting to LazorKit (attempt: ${connectAttempt + 1})`);
     
     try {
       // First ensure all wallets are disconnected
@@ -461,6 +527,15 @@ export function ConnectWalletButton() {
       await connectWallet("lazorkit");
     } catch (error) {
       console.error("Error connecting to LazorKit:", error);
+      
+      // Auto-retry logic for up to 3 attempts
+      if (connectAttempt < 3) {
+        console.log(`Connection failed, scheduling retry ${connectAttempt + 1}/3`);
+        const timeout = setTimeout(() => {
+          handleConnectLazorKit();
+        }, 1000);
+        setRetryTimeout(timeout);
+      }
     }
   };
 
@@ -474,11 +549,6 @@ export function ConnectWalletButton() {
       
       if (success) {
         setPasskeyCreated(true);
-        
-        // Display a success message
-        const successTimeout = setTimeout(() => {
-          clearTimeout(successTimeout);
-        }, 2000);
       }
     } catch (error) {
       console.error("Error creating passkey:", error);
@@ -488,6 +558,12 @@ export function ConnectWalletButton() {
   };
 
   const handleDisconnect = async () => {
+    // Don't attempt if already connecting or operation pending
+    if (isConnecting || (hasPendingOperation && hasPendingOperation())) {
+      console.log("Skipping disconnect during pending operation");
+      return;
+    }
+    
     setShowDetails(false);
     await disconnectWallet();
   };
@@ -509,6 +585,7 @@ export function ConnectWalletButton() {
           onClick={handleWalletAction}
           className="border border-white/30 p-0.5"
           aria-label={`Connected wallet: ${truncatedAddress}`}
+          disabled={isConnecting || (hasPendingOperation && hasPendingOperation())}
         >
           <div className="border border-white/10 px-4 py-2 flex items-center gap-2 hover:bg-white/5 transition-colors">
             {activeProvider === 'lazorkit' ? (
@@ -524,20 +601,30 @@ export function ConnectWalletButton() {
         <button
           onClick={handleWalletAction}
           className="border border-white/30 p-0.5"
-          aria-label="Connect wallet"
+          aria-label={isConnecting ? "Connecting wallet..." : "Connect wallet"}
+          disabled={isConnecting || (hasPendingOperation && hasPendingOperation())}
         >
           <div className="border border-white/10 px-4 py-2 flex items-center gap-2 hover:bg-white/5 transition-colors">
-            <Wallet size={16} className="text-white/70" />
-            <div className="font-mono text-xs text-white/80">
-              CONNECT WALLET
-            </div>
+            {isConnecting ? (
+              <>
+                <Loader size={16} className="text-white/70 animate-spin" />
+                <div className="font-mono text-xs text-white/80">CONNECTING...</div>
+              </>
+            ) : (
+              <>
+                <Wallet size={16} className="text-white/70" />
+                <div className="font-mono text-xs text-white/80">
+                  CONNECT WALLET
+                </div>
+              </>
+            )}
           </div>
         </button>
       )}
 
       {/* Wallet options dropdown - Two options before entering wallet interface */}
       <AnimatePresence>
-        {showWalletOptions && (
+        {showWalletOptions && !isConnecting && (
           <motion.div
             key="wallet-options-dropdown"
             ref={optionsRef}
@@ -559,6 +646,7 @@ export function ConnectWalletButton() {
                   onClick={handleConnectPhantom}
                   className="w-full flex items-center p-3 text-white/70 hover:text-white hover:bg-white/5 transition-colors border border-white/20 hover:border-white/30"
                   aria-label="Connect with Phantom wallet"
+                  disabled={isConnecting}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 flex items-center justify-center">
@@ -573,6 +661,7 @@ export function ConnectWalletButton() {
                   onClick={handleConnectLazorKit}
                   className="w-full flex items-center p-3 text-white/70 hover:text-white hover:bg-white/5 transition-colors border border-white/20 hover:border-white/30"
                   aria-label="Connect with LazorKit passkey"
+                  disabled={isConnecting}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 flex items-center justify-center">
@@ -585,6 +674,15 @@ export function ConnectWalletButton() {
                   </div>
                 </button>
               </div>
+              
+              {/* Show retry info if applicable */}
+              {connectAttempt > 1 && (
+                <div className="p-2 border-t border-white/10">
+                  <p className="text-xs text-white/50 text-center">
+                    {`Connection attempt ${connectAttempt}/3...`}
+                  </p>
+                </div>
+              )}
             </div>
           </motion.div>
         )}
@@ -688,6 +786,7 @@ export function ConnectWalletButton() {
                     onClick={handleConnectLazorKit}
                     className="w-full flex items-center justify-between p-3 text-white/70 hover:text-white hover:bg-white/5 transition-colors border border-white/20 hover:border-white/30"
                     aria-label="Switch to LazorKit passkey wallet"
+                    disabled={isConnecting}
                   >
                     <span className="text-sm font-mono">Switch to Passkey</span>
                     <Key size={14} />
@@ -697,6 +796,7 @@ export function ConnectWalletButton() {
                     onClick={handleConnectPhantom}
                     className="w-full flex items-center justify-between p-3 text-white/70 hover:text-white hover:bg-white/5 transition-colors border border-white/20 hover:border-white/30"
                     aria-label="Switch to standard wallet"
+                    disabled={isConnecting}
                   >
                     <span className="text-sm font-mono">Switch to Standard</span>
                     <Wallet size={14} />
@@ -708,6 +808,7 @@ export function ConnectWalletButton() {
                   onClick={handleDisconnect}
                   className="w-full flex items-center justify-between p-3 text-white/70 hover:text-white hover:bg-white/5 transition-colors border border-white/20 hover:border-white/30"
                   aria-label="Disconnect wallet"
+                  disabled={isConnecting}
                 >
                   <span className="text-sm font-mono">Disconnect Wallet</span>
                   <LogOut size={14} />

@@ -1,5 +1,8 @@
+// File: app/wallet-provider.tsx - An improved Wallet Context Provider
+
 "use client";
 
+import { useEffect } from 'react';
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import { 
   ConnectionProvider, 
@@ -14,6 +17,7 @@ import {
   LedgerWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
 import { LazorKitWalletAdapter } from './lazorkit-wallet-adapter';
+import { initializeLazorKitBridge } from './lazorkit-bridge';
 import { clusterApiUrl } from '@solana/web3.js';
 import { useMemo, ReactNode } from 'react';
 
@@ -39,11 +43,32 @@ export function WalletContextProvider({
     new CoinbaseWalletAdapter(),
     new TorusWalletAdapter(),
     new LedgerWalletAdapter(),
+    new LazorKitWalletAdapter(), // Add LazorKit adapter
   ], []);
+
+  // Initialize the LazorKit bridge when component mounts
+  useEffect(() => {
+    // Initialize the LazorKit bridge to connect our custom implementation
+    initializeLazorKitBridge();
+    
+    // Additional error handling
+    window.addEventListener('unhandledrejection', (event) => {
+      // Log any wallet-related promise rejections for debugging
+      if (event.reason && (
+          String(event.reason).includes('wallet') || 
+          String(event.reason).includes('Wallet'))) {
+        console.error('Unhandled wallet promise rejection:', event.reason);
+      }
+    });
+    
+    return () => {
+      window.removeEventListener('unhandledrejection', () => {});
+    };
+  }, []);
 
   return (
     <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} autoConnect>
+      <WalletProvider wallets={wallets} autoConnect={false}>
         <WalletModalProvider>
           {children}
         </WalletModalProvider>

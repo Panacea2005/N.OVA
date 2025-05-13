@@ -1,20 +1,12 @@
 import React, { useState } from "react";
 import {
   Coins,
-  AlertTriangle,
-  RefreshCw,
   ChevronDown,
   ChevronUp,
   ExternalLink,
   Clipboard,
   CheckIcon,
   AlertCircle,
-  BarChart,
-  Users,
-  Wallet,
-  Shield,
-  Globe,
-  FileSearch,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TokenInsights } from "@/lib/services/ai/tokenInsights";
@@ -50,81 +42,38 @@ const TokenInsightsDisplay: React.FC<TokenInsightsDisplayProps> = ({
     );
   };
 
-  // Network badge styling
-  const getNetworkBadge = (network?: string) => {
-    const networkMap: Record<string, { color: string; borderColor: string; bgColor: string }> = {
-      "mainnet-beta": {
-        color: "text-purple-400",
-        borderColor: "border-purple-700/50",
-        bgColor: "bg-purple-900/30",
-      },
-      devnet: {
-        color: "text-blue-400",
-        borderColor: "border-blue-700/50",
-        bgColor: "bg-blue-900/30",
-      },
-      testnet: {
-        color: "text-green-400",
-        borderColor: "border-green-700/50",
-        bgColor: "bg-green-900/30",
-      },
-    };
-
-    const networkStyle =
-      networkMap[network?.toLowerCase() ?? ""] || {
-        color: "text-gray-400",
-        borderColor: "border-gray-700/50",
-        bgColor: "bg-gray-900/30",
-      };
-
-    return (
-      <span
-        className={`${networkStyle.color} ${networkStyle.borderColor} ${networkStyle.bgColor} text-xs px-2 py-0.5 rounded border`}
-      >
-        {network?.toUpperCase() || "UNKNOWN"}
-      </span>
-    );
-  };
-
   // Risk score styling
   const getRiskStyle = (score?: number) => {
-    if (!score || score < 30)
-      return {
-        color: "text-green-500",
-        gradient: "from-green-700 to-green-500",
-        width: `${score || 0}%`,
-      };
-    if (score < 70)
-      return {
-        color: "text-yellow-500",
-        gradient: "from-yellow-700 to-yellow-500",
-        width: `${score}%`,
-      };
-    return {
-      color: "text-red-500",
-      gradient: "from-red-700 to-red-500",
-      width: `${score}%`,
-    };
+    if (!score || score < 30) return { color: "text-green-400", width: `${score || 0}%` };
+    if (score < 70) return { color: "text-yellow-400", width: `${score}%` };
+    return { color: "text-red-400", width: `${score}%` };
   };
 
   const riskStyle = getRiskStyle(insights?.riskScore?.score);
 
+  // Network badge styling
+  const getNetworkBadge = (network?: string) => {
+    switch (network?.toLowerCase()) {
+      case 'mainnet-beta':
+        return "border-purple-500/30 text-purple-400";
+      case 'devnet':
+        return "border-blue-500/30 text-blue-400";
+      case 'testnet':
+        return "border-green-500/30 text-green-400";
+      default:
+        return "border-gray-500/30 text-gray-400";
+    }
+  };
+
   // Loading state
   if (isLoading) {
     return (
-      <div className="relative border border-white/10 rounded-md overflow-hidden">
-        <div
-          className="absolute inset-0 z-0 opacity-20"
-          style={{
-            backgroundImage: "radial-gradient(rgba(138, 75, 255, 0.2) 1px, transparent 1px)",
-            backgroundSize: "10px 10px",
-          }}
-        ></div>
-        <div className="relative z-10 p-4 backdrop-blur-sm bg-gradient-to-b from-black/60 to-black/80">
+      <div className="border border-white/30 p-0.5">
+        <div className="border border-white/10 p-5">
           <div className="flex items-center justify-center min-h-[240px]">
             <div className="flex flex-col items-center">
-              <RefreshCw className="w-8 h-8 text-white/40 animate-spin mb-4" />
-              <p className="text-white/60 text-sm">ANALYZING TOKEN DATA...</p>
+              <div className="w-16 h-16 border-t-2 border-b-2 border-purple-400 rounded-full animate-spin mb-4"></div>
+              <p className="text-purple-400 text-sm uppercase">Analyzing Token Data</p>
             </div>
           </div>
         </div>
@@ -135,38 +84,33 @@ const TokenInsightsDisplay: React.FC<TokenInsightsDisplayProps> = ({
   return (
     <div className="w-full flex flex-col space-y-6">
       {/* Main Token Insights Card */}
-      <div className="relative border border-white/10 rounded-md overflow-hidden">
-        <div
-          className="absolute inset-0 z-0 opacity-20"
-          style={{
-            backgroundImage: "radial-gradient(rgba(138, 75, 255, 0.2) 1px, transparent 1px)",
-            backgroundSize: "10px 10px",
-          }}
-        ></div>
-        <div className="relative z-10 p-4 backdrop-blur-sm bg-gradient-to-b from-black/60 to-black/80">
+      <div className="border border-white/30 p-0.5">
+        <div className="border border-white/10 p-5">
           <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-4 gap-2">
             <div>
-              <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-2">
-                <div className="w-5 h-5 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 flex items-center justify-center">
-                  <Coins className="w-3 h-3 text-white" />
+              <h3 className="text-lg font-light text-white flex items-center gap-2 mb-2 uppercase">
+                <div className="w-5 h-5 border border-purple-500/50 flex items-center justify-center">
+                  <Coins className="w-3 h-3 text-purple-400" />
                 </div>
                 Token Insights
               </h3>
-              <p className="text-white/60 text-sm max-w-lg">
+              <p className="text-white/70 text-sm max-w-lg uppercase">
                 {insights?.metadata.description ||
                   `Analysis of ${getTokenName()} on the Solana blockchain.`}
               </p>
             </div>
             <div className="flex flex-row md:flex-col items-start md:items-end gap-4 md:gap-1">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-white/60">NETWORK</span>
-                {getNetworkBadge(insights?.network)}
+                <span className="text-xs text-white/60 uppercase">Network</span>
+                <span className={`text-sm border px-2 uppercase ${getNetworkBadge(insights?.network)}`}>
+                  {insights?.network || "Unknown"}
+                </span>
               </div>
               {insights?.isVerified && (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-white/60">STATUS</span>
-                  <span className="text-sm font-mono text-green-400 border border-green-700/50 bg-green-900/30 px-2 py-0.5 rounded">
-                    VERIFIED
+                  <span className="text-xs text-white/60 uppercase">Status</span>
+                  <span className="text-sm border border-green-500/30 text-green-400 px-2 uppercase">
+                    Verified
                   </span>
                 </div>
               )}
@@ -174,82 +118,93 @@ const TokenInsightsDisplay: React.FC<TokenInsightsDisplayProps> = ({
           </div>
 
           {/* Token Address */}
-          <div className="mb-4">
+          <div className="mb-6">
             <div className="flex justify-between items-center mb-2">
-              <h4 className="text-sm font-medium text-white">Token Address</h4>
+              <h4 className="text-sm font-light text-white uppercase">Token Address</h4>
               <button
-                className="text-xs text-white/50 hover:text-white border border-white/10 hover:border-white/30 px-2 py-1 transition-colors flex items-center"
+                className="text-xs text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 hover:border-cyan-500/50 px-2 py-1 transition-colors flex items-center uppercase"
                 onClick={() => insights && onCopy(insights.address, "full")}
               >
                 <Clipboard className="w-3 h-3 mr-1" />
                 Copy
               </button>
             </div>
-            <div className="text-sm font-mono text-white/80 break-all">{insights?.address || "N/A"}</div>
+            <div className="text-sm font-mono text-amber-300/80 break-all">{insights?.address || "N/A"}</div>
           </div>
 
           {/* Risk Score with Animation */}
-          <div className="mb-4">
+          <div className="mb-6">
             <div className="flex justify-between items-center mb-2">
-              <h4 className="text-sm font-medium text-white">Risk Score</h4>
-              <span className={`text-xl font-bold font-mono ${riskStyle.color}`}>
+              <h4 className="text-sm font-light text-white uppercase">Risk Score</h4>
+              <span className={`text-xl font-light font-mono ${riskStyle.color}`}>
                 {insights?.riskScore?.score ?? 0}/100
               </span>
             </div>
-            <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+            <div className="h-0.5 w-full bg-white/10">
               <motion.div
                 initial={{ width: "0%" }}
                 animate={{ width: riskStyle.width }}
                 transition={{ duration: 1, ease: "easeOut" }}
-                className={`h-full bg-gradient-to-r ${riskStyle.gradient} rounded-full`}
+                className={`h-full ${
+                  (insights?.riskScore?.score || 0) < 30 
+                    ? "bg-gradient-to-r from-green-500 to-emerald-500" 
+                    : (insights?.riskScore?.score || 0) < 70 
+                    ? "bg-gradient-to-r from-yellow-500 to-amber-500" 
+                    : "bg-gradient-to-r from-red-500 to-orange-500"
+                }`}
               />
             </div>
           </div>
 
           {/* Key Metrics Grid */}
-          <div className="grid grid-cols-3 gap-2 mb-3">
-          <div className="relative overflow-hidden border border-white/10 bg-black/30 p-2 rounded-md backdrop-blur-sm">
-            <p className="text-white text-base font-bold">{insights?.supply.total.toLocaleString() ?? "N/A"}</p>
-            <p className="text-xs text-white/60">Total Supply</p>
-          </div>
-          {(insights?.supply?.circulatingPercent ?? 0) < 100 && (
-            <div className="relative overflow-hidden border border-white/10 bg-black/30 p-2 rounded-md backdrop-blur-sm">
-              <p className="text-white text-base font-bold">{(insights?.supply?.circulatingPercent ?? 0).toFixed(2)}%</p>
-              <p className="text-xs text-white/60">Circulating</p>
+          <div className="grid grid-cols-3 gap-2 mb-6">
+            <div className="border border-indigo-500/30 p-2">
+              <p className="text-indigo-400 text-base font-light">{insights?.supply.total.toLocaleString() ?? "N/A"}</p>
+              <p className="text-xs text-white/60 uppercase">Total Supply</p>
+            </div>
+            
+            {(insights?.supply?.circulatingPercent ?? 0) < 100 && (
+              <div className="border border-blue-500/30 p-2">
+                <p className="text-blue-400 text-base font-light">{(insights?.supply?.circulatingPercent ?? 0).toFixed(2)}%</p>
+                <p className="text-xs text-white/60 uppercase">Circulating</p>
               </div>
             )}
+            
             {insights?.price.price && (
-              <div className="relative overflow-hidden border border-white/10 bg-black/30 p-2 rounded-md backdrop-blur-sm">
-                <p className="text-white text-base font-bold">${insights.price.price.toFixed(6)}</p>
-                <p className="text-xs text-white/60">Price</p>
+              <div className="border border-green-500/30 p-2">
+                <p className="text-green-400 text-base font-light">${insights.price.price.toFixed(6)}</p>
+                <p className="text-xs text-white/60 uppercase">Price</p>
               </div>
             )}
+            
             {insights?.price.marketCap && (
-              <div className="relative overflow-hidden border border-white/10 bg-black/30 p-2 rounded-md backdrop-blur-sm">
-                <p className="text-white text-base font-bold">${insights.price.marketCap.toLocaleString()}</p>
-                <p className="text-xs text-white/60">Market Cap</p>
+              <div className="border border-purple-500/30 p-2">
+                <p className="text-purple-400 text-base font-light">${insights.price.marketCap.toLocaleString()}</p>
+                <p className="text-xs text-white/60 uppercase">Market Cap</p>
               </div>
             )}
+            
             {(insights?.recentActivity.transferCount24h ?? 0) > 0 && (
-              <div className="relative overflow-hidden border border-white/10 bg-black/30 p-2 rounded-md backdrop-blur-sm">
-                <p className="text-white text-base font-bold">{insights?.recentActivity?.transferCount24h ?? "N/A"}</p>
-                <p className="text-xs text-white/60">24h Transfers</p>
+              <div className="border border-cyan-500/30 p-2">
+                <p className="text-cyan-400 text-base font-light">{insights?.recentActivity?.transferCount24h ?? "N/A"}</p>
+                <p className="text-xs text-white/60 uppercase">24h Transfers</p>
               </div>
             )}
+            
             {(insights?.topHolders?.length ?? 0) > 0 && (
-              <div className="relative overflow-hidden border border-white/10 bg-black/30 p-2 rounded-md backdrop-blur-sm">
-                <p className="text-white text-base font-bold">{insights?.topHolders?.length ?? "N/A"}</p>
-                <p className="text-xs text-white/60">Top Holders</p>
+              <div className="border border-amber-500/30 p-2">
+                <p className="text-amber-400 text-base font-light">{insights?.topHolders?.length ?? "N/A"}</p>
+                <p className="text-xs text-white/60 uppercase">Top Holders</p>
               </div>
             )}
           </div>
 
           {/* Network Warning */}
           {(insights?.network === "devnet" || insights?.network === "testnet") && (
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xs text-white/60">NETWORK STATUS:</span>
-              <span className="text-xs font-medium px-2 py-0.5 rounded bg-amber-900/30 text-amber-400">
-                {insights.network.toUpperCase()} - NO REAL VALUE
+            <div className="flex items-center gap-2 mb-3 border border-amber-500/30 p-2">
+              <span className="text-xs text-white uppercase">Network Status:</span>
+              <span className="text-xs text-amber-400 uppercase">
+                {insights.network} - NO REAL VALUE
               </span>
             </div>
           )}
@@ -258,24 +213,22 @@ const TokenInsightsDisplay: React.FC<TokenInsightsDisplayProps> = ({
 
       {/* Top Holders Section - Collapsible */}
       {(insights?.topHolders?.length ?? 0) > 0 && (
-        <div className="w-full relative overflow-hidden border border-white/10 rounded-md bg-gradient-to-b from-black/60 to-black/80 backdrop-blur-sm">
-          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-70"></div>
-          <div className="p-4">
+        <div className="border border-white/30 p-0.5">
+          <div className="border border-white/10 p-5">
             <button
               onClick={() => toggleSection("holders")}
-              className="w-full flex items-center justify-between text-base font-medium text-white mb-3"
+              className="w-full flex items-center justify-between text-base font-light text-white mb-3 uppercase"
             >
               <div className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-6
-00 to-green-600 flex items-center justify-center">
-                  <Users className="w-3 h-3 text-white" />
+                <div className="w-5 h-5 border border-amber-500/50 flex items-center justify-center">
+                  <Coins className="w-3 h-3 text-amber-400" />
                 </div>
                 Top Holders
               </div>
               {expandedSection === "holders" ? (
-                <ChevronUp className="w-5 h-5 text-white/70" />
+                <ChevronUp className="w-5 h-5 text-amber-400" />
               ) : (
-                <ChevronDown className="w-5 h-5 text-white/70" />
+                <ChevronDown className="w-5 h-5 text-amber-400" />
               )}
             </button>
             <AnimatePresence>
@@ -288,11 +241,11 @@ const TokenInsightsDisplay: React.FC<TokenInsightsDisplayProps> = ({
                   className="space-y-4 max-h-64 overflow-y-auto pr-1"
                 >
                   {insights?.topHolders?.slice(0, 2).map((holder, idx) => (
-                    <div key={`holder-${idx}`} className="border-l-2 border-purple-500/50 pl-3">
-                      <h4 className="text-purple-400 font-medium text-sm">
+                    <div key={`holder-${idx}`} className="border-l-2 border-amber-500/50 pl-3">
+                      <h4 className="text-amber-400 font-light text-sm uppercase">
                         Holder {idx + 1}
                       </h4>
-                      <p className="text-white/80 text-xs mb-1 font-mono">{holder.address}</p>
+                      <p className="text-amber-300/80 text-xs mb-1 font-mono">{holder.address}</p>
                       <div className="text-xs mb-1">
                         <span className="text-white/50">Percentage: </span>
                         <span className="text-white/80">{holder.percentage.toFixed(2)}%</span>
@@ -313,23 +266,22 @@ const TokenInsightsDisplay: React.FC<TokenInsightsDisplayProps> = ({
 
       {/* Recent Activity Section - Collapsible */}
       {(insights?.recentActivity?.transferCount24h ?? 0) > 0 && (
-        <div className="w-full relative overflow-hidden border border-white/10 rounded-md bg-gradient-to-b from-black/60 to-black/80 backdrop-blur-sm">
-          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-70"></div>
-          <div className="p-4">
+        <div className="border border-white/30 p-0.5">
+          <div className="border border-white/10 p-5">
             <button
               onClick={() => toggleSection("activity")}
-              className="w-full flex items-center justify-between text-base font-medium text-white mb-3"
+              className="w-full flex items-center justify-between text-base font-light text-white mb-3 uppercase"
             >
               <div className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-600 to-green-600 flex items-center justify-center">
-                  <RefreshCw className="w-3 h-3 text-white" />
+                <div className="w-5 h-5 border border-blue-500/50 flex items-center justify-center">
+                  <AlertCircle className="w-3 h-3 text-blue-400" />
                 </div>
                 Recent Activity (24h)
               </div>
               {expandedSection === "activity" ? (
-                <ChevronUp className="w-5 h-5 text-white/70" />
+                <ChevronUp className="w-5 h-5 text-blue-400" />
               ) : (
-                <ChevronDown className="w-5 h-5 text-white/70" />
+                <ChevronDown className="w-5 h-5 text-blue-400" />
               )}
             </button>
             <AnimatePresence>
@@ -342,15 +294,15 @@ const TokenInsightsDisplay: React.FC<TokenInsightsDisplayProps> = ({
                   className="space-y-4 max-h-64 overflow-y-auto pr-1"
                 >
                   <div className="border-l-2 border-blue-500/50 pl-3">
-                    <h4 className="text-blue-400 font-medium text-sm">Transfers</h4>
+                    <h4 className="text-blue-400 font-light text-sm uppercase">Transfers</h4>
                     <p className="text-white/80 text-xs mb-1">{insights?.recentActivity?.transferCount24h ?? "N/A"}</p>
                   </div>
                   <div className="border-l-2 border-blue-500/50 pl-3">
-                    <h4 className="text-blue-400 font-medium text-sm">Unique Wallets</h4>
+                    <h4 className="text-blue-400 font-light text-sm uppercase">Unique Wallets</h4>
                     <p className="text-white/80 text-xs mb-1">{insights?.recentActivity.uniqueWallets24h}</p>
                   </div>
                   <div className="border-l-2 border-blue-500/50 pl-3">
-                    <h4 className="text-blue-400 font-medium text-sm">Large Transactions</h4>
+                    <h4 className="text-blue-400 font-light text-sm uppercase">Large Transactions</h4>
                     <p className="text-white/80 text-xs mb-1">{insights?.recentActivity.largeTransactions24h}</p>
                   </div>
                 </motion.div>
@@ -362,12 +314,11 @@ const TokenInsightsDisplay: React.FC<TokenInsightsDisplayProps> = ({
 
       {/* External Links Section */}
       {(insights?.metadata.website || insights?.metadata.twitter || insights?.address) && (
-        <div className="w-full relative overflow-hidden border border-white/10 rounded-md bg-gradient-to-b from-black/60 to-black/80 backdrop-blur-sm">
-          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-70"></div>
-          <div className="p-4">
-            <h3 className="text-base font-medium text-white flex items-center gap-2 mb-3">
-              <div className="w-5 h-5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-center">
-                <ExternalLink className="w-3 h-3 text-white" />
+        <div className="border border-white/30 p-0.5">
+          <div className="border border-white/10 p-5">
+            <h3 className="text-base font-light text-white flex items-center gap-2 mb-3 uppercase">
+              <div className="w-5 h-5 border border-indigo-500/50 flex items-center justify-center">
+                <ExternalLink className="w-3 h-3 text-indigo-400" />
               </div>
               External Links
             </h3>
@@ -377,10 +328,10 @@ const TokenInsightsDisplay: React.FC<TokenInsightsDisplayProps> = ({
                   href={`https://${insights.network === "mainnet-beta" ? "" : insights.network + "."}solscan.io/token/${insights.address}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="relative overflow-hidden border border-indigo-700/50 bg-black/30 p-2 rounded-md backdrop-blur-sm hover:bg-indigo-900/30 transition-colors"
+                  className="border border-indigo-500/30 p-2 hover:border-indigo-500/70 transition-colors"
                 >
-                  <p className="text-indigo-400 text-base font-bold">Solscan</p>
-                  <p className="text-xs text-white/60">Explorer</p>
+                  <p className="text-indigo-400 text-base font-light uppercase">Solscan</p>
+                  <p className="text-xs text-white/60 uppercase">Explorer</p>
                 </a>
               )}
               {insights?.metadata.website && (
@@ -388,10 +339,10 @@ const TokenInsightsDisplay: React.FC<TokenInsightsDisplayProps> = ({
                   href={insights.metadata.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="relative overflow-hidden border border-indigo-700/50 bg-black/30 p-2 rounded-md backdrop-blur-sm hover:bg-indigo-900/30 transition-colors"
+                  className="border border-cyan-500/30 p-2 hover:border-cyan-500/70 transition-colors"
                 >
-                  <p className="text-indigo-400 text-base font-bold">Website</p>
-                  <p className="text-xs text-white/60">Official Site</p>
+                  <p className="text-cyan-400 text-base font-light uppercase">Website</p>
+                  <p className="text-xs text-white/60 uppercase">Official Site</p>
                 </a>
               )}
               {insights?.metadata.twitter && (
@@ -399,10 +350,10 @@ const TokenInsightsDisplay: React.FC<TokenInsightsDisplayProps> = ({
                   href={insights.metadata.twitter}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="relative overflow-hidden border border-indigo-700/50 bg-black/30 p-2 rounded-md backdrop-blur-sm hover:bg-indigo-900/30 transition-colors"
+                  className="border border-blue-500/30 p-2 hover:border-blue-500/70 transition-colors"
                 >
-                  <p className="text-indigo-400 text-base font-bold">Twitter</p>
-                  <p className="text-xs text-white/60">Social Media</p>
+                  <p className="text-blue-400 text-base font-light uppercase">Twitter</p>
+                  <p className="text-xs text-white/60 uppercase">Social Media</p>
                 </a>
               )}
             </div>
@@ -411,11 +362,11 @@ const TokenInsightsDisplay: React.FC<TokenInsightsDisplayProps> = ({
       )}
 
       {/* Disclaimer */}
-      <div className="w-full relative overflow-hidden border border-white/10 rounded-md bg-gradient-to-b from-black/60 to-black/80 backdrop-blur-sm">
-        <div className="p-4">
+      <div className="border border-white/30 p-0.5">
+        <div className="border border-white/10 p-5">
           <div className="flex items-start gap-2">
-            <div className="w-5 h-5 rounded-full bg-gradient-to-r from-gray-600 to-gray-600 flex items-center justify-center">
-              <AlertCircle className="w-3 h-3 text-white" />
+            <div className="w-5 h-5 border border-amber-500/50 flex items-center justify-center">
+              <AlertCircle className="w-3 h-3 text-amber-400" />
             </div>
             <p className="text-white/60 text-xs">
               Disclaimer: This analysis is provided for informational purposes only and should not be considered financial advice. Always do your own research before interacting with any token.

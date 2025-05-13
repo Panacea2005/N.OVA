@@ -10,6 +10,7 @@ export interface ReputationScore {
   score: number; // 0-100
   activityLevel: {
     transactionsLast90Days: number;
+    transactionsLast30Days?: number;
     score: number; // 0-33
   };
   diversity: {

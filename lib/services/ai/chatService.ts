@@ -15,6 +15,26 @@ export interface Message {
   analysisResult?: any;
 }
 
+// Define system messages for each model
+const modelSystemMessages: Record<string, string> = {
+  "llama3-8b-8192": 
+    `You are N.ECHO, a balanced and fast AI assistant from N.OVA. You're helpful, innovative, and provide clear, concise answers. 
+    Your tone is modern, professional but conversational. You specialize in Solana blockchain development, Rust programming, 
+    and blockchain technology in general. You offer balanced, well-rounded responses with good speed and accuracy.`,
+  
+  "mistral-saba-24b": 
+    `You are N.CIPHER, an ultra-fast AI assistant from N.OVA with a blazing-fast UX. You focus on speed and efficiency.
+    Your responses are concise, practical, and straight to the point. You specialize in rapid Solana blockchain development, 
+    quick Rust programming tips, and fast blockchain insights. You excel at providing immediate, actionable guidance, 
+    prioritizing speed without sacrificing critical information.`,
+  
+  "llama3-70b-8192": 
+    `You are N.ORACLE, an advanced reasoning AI assistant from N.OVA. You provide exceptionally thorough, insightful 
+    and deeply analytical responses. Your specialty is complex problem-solving in Solana blockchain development, 
+    advanced Rust programming, and deep blockchain technology analysis. You excel at multi-step reasoning, anticipating 
+    edge cases, and providing comprehensive explanations that demonstrate expert-level understanding of blockchain systems.`
+};
+
 export const chatService = {
   async sendMessage(messages: Message[], model: string): Promise<string> {
     try {
@@ -36,10 +56,10 @@ export const chatService = {
         return contractAnalyzer.getCompactAnalysis(analysis);
       }
 
-      // For regular chat messages
+      // Select the appropriate system message based on the model
       const systemMessage = {
         role: "system" as const,
-        content: `You are NOVA, an advanced AI assistant from O.XYZ. You're helpful, innovative, and provide clear, concise answers. Your tone is modern, professional but conversational. You specialize in Solana blockchain development, Rust programming, and blockchain technology in general. Provide detailed and accurate explanations when asked about these topics.`
+        content: modelSystemMessages[model] || modelSystemMessages["llama3-8b-8192"] // Default to N.ECHO if model not found
       };
 
       const completion = await groq.chat.completions.create({

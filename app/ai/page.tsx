@@ -13,14 +13,9 @@ import {
   Search,
   Clock,
   Pin,
-  MoreVertical,
-  Bot,
-  User,
-  Paperclip,
   X,
   CheckIcon,
   Menu,
-  AlertCircle,
   ChevronLeft,
   ChevronRight,
   Cpu,
@@ -28,6 +23,8 @@ import {
   Wallet,
   Coins,
   BarChart,
+  Paperclip,
+  AlertCircle,
 } from "lucide-react";
 import { Canvas } from "@react-three/fiber";
 import {
@@ -39,7 +36,7 @@ import {
   chatStore,
   Message as BaseMessage,
   ChatHistory,
-} from "@/lib/services/ai/chatStore"; // Import the new chatStore
+} from "@/lib/services/ai/chatStore";
 import AnalysisResultDisplay from "./components/analysis-result-display";
 import TokenInsightsDisplay from "./components/token-insights-display";
 import ReputationScoreDisplay from "./components/reputation-score-display";
@@ -963,15 +960,16 @@ export default function AIPage() {
 
   return (
     <main className="relative min-h-screen bg-black text-white font-mono">
-      {/* Background with dot pattern */}
+      {/* Background with grid pattern - Matches N.IDENTITY style */}
+      <div className="fixed inset-0 bg-black z-0" />
       <div
-        className="fixed inset-0 z-0 opacity-20"
+        className="fixed inset-0 z-0 opacity-10"
         style={{
           backgroundImage:
-            "radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px)",
-          backgroundSize: "20px 20px",
+            "linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
         }}
-      ></div>
+      />
 
       {/* Navigation */}
       <Navigation />
@@ -979,27 +977,24 @@ export default function AIPage() {
       {/* Mobile Sidebar Toggle */}
       <button
         onClick={toggleSidebar}
-        className="fixed z-30 top-20 left-4 md:hidden bg-black/50 p-2 rounded-md border border-white/10"
+        className="fixed z-30 top-20 left-4 md:hidden bg-black/50 p-2 border border-white/10"
       >
         <Menu className="w-5 h-5 text-white/70" />
       </button>
 
-      {/* Collapsible Sidebar - Chat History with Updated UI */}
+      {/* Sidebar - Redesigned to match N.IDENTITY style */}
       <div
-        className={`fixed left-0 top-0 bottom-0 w-64 bg-black/80 backdrop-blur-sm z-20 border-r border-white/10 pt-16 transform transition-transform duration-300 ${
+        className={`fixed left-0 top-0 bottom-0 w-64 bg-black z-20 border-r border-white/10 pt-16 transform transition-transform duration-300 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
-        style={{
-          boxShadow: sidebarOpen ? "0 0 15px rgba(0, 0, 0, 0.5)" : "none",
-        }}
       >
         <div className="p-4">
           <button
             onClick={handleNewChat}
-            className="w-full py-2 px-3 text-sm flex items-center gap-2 border border-white/10 hover:border-white/30 transition-colors"
+            className="w-full py-2 px-3 text-sm flex items-center justify-between border border-white/30 hover:border-white transition-colors"
           >
+            <span className="uppercase">New Chat</span>
             <Plus className="w-4 h-4" />
-            New Chat
           </button>
         </div>
 
@@ -1007,10 +1002,10 @@ export default function AIPage() {
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-white/30" />
             <input
-              placeholder="Search chats..."
+              placeholder="SEARCH CHATS..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-transparent border border-white/10 py-2 pl-8 pr-2 text-sm focus:outline-none focus:border-purple-500/50 transition-colors"
+              className="w-full bg-black border border-white/30 py-2 pl-8 pr-2 text-sm focus:outline-none focus:border-white transition-colors uppercase"
             />
           </div>
         </div>
@@ -1018,13 +1013,11 @@ export default function AIPage() {
         <div className="px-4 overflow-y-auto h-[calc(100vh-400px)]">
           {isLoadingChats ? (
             <div className="flex justify-center py-8">
-              <div className="futuristic-loading">
-                <div className="loading-bar"></div>
-              </div>
+              <div className="w-16 h-16 border-t-2 border-b-2 border-white rounded-full animate-spin" />
             </div>
           ) : filteredHistory.length === 0 ? (
-            <div className="text-center py-8 text-white/40 text-sm">
-              No chats yet. Start a new conversation!
+            <div className="text-center py-8 text-white/40 text-sm uppercase">
+              No chats yet
             </div>
           ) : (
             <div className="space-y-2">
@@ -1036,20 +1029,20 @@ export default function AIPage() {
                   onMouseLeave={() => setActiveChat(null)}
                 >
                   <button
-                    className={`w-full text-left py-2 px-2 text-sm hover:bg-white/5 flex items-center gap-2 transition-colors rounded-sm ${
+                    className={`w-full text-left py-2 px-2 text-sm hover:bg-white/5 flex items-center gap-2 transition-colors ${
                       currentChatId === chat.id
-                        ? "bg-white/10 border-l-2 border-purple-500"
+                        ? "bg-white/10 border-l border-white"
                         : ""
                     }`}
                     onClick={() => handleLoadChat(chat.id)}
                   >
                     {chat.pinned ? (
-                      <Pin className="w-3 h-3 text-purple-400" />
+                      <Pin className="w-3 h-3 text-white" />
                     ) : (
                       <Clock className="w-3 h-3 text-white/50" />
                     )}
                     <div className="flex-1 truncate pr-4">
-                      <div className="text-white/80 truncate">{chat.title}</div>
+                      <div className="text-white/80 truncate uppercase">{chat.title}</div>
                       <div className="text-xs text-white/30">{chat.date}</div>
                     </div>
                   </button>
@@ -1069,14 +1062,14 @@ export default function AIPage() {
                     >
                       <Pin
                         className={`w-3 h-3 ${
-                          chat.pinned ? "text-purple-400" : ""
+                          chat.pinned ? "text-white" : ""
                         }`}
                       />
                     </button>
 
                     <button
                       onClick={(e) => handleDeleteChat(chat.id, e)}
-                      className="p-1 text-white/30 hover:text-red-400"
+                      className="p-1 text-white/30 hover:text-white"
                       title="Delete chat"
                     >
                       <Trash className="w-3 h-3" />
@@ -1089,8 +1082,8 @@ export default function AIPage() {
         </div>
 
         {/* Models Selector in Sidebar */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 bg-black/80">
-          <h3 className="text-xs text-white/50 mb-2">MODEL</h3>
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/20 bg-black">
+          <h3 className="text-xs text-white/50 mb-2 uppercase">Model</h3>
           <div className="space-y-2">
             {Object.entries(modelOptions).map(([modelKey, modelData]) => (
               <button
@@ -1098,19 +1091,17 @@ export default function AIPage() {
                 onClick={() =>
                   setSelectedModel(modelKey as keyof typeof modelOptions)
                 }
-                className={`w-full text-left py-1 px-2 text-sm border ${
+                className={`w-full text-left py-2 px-2 text-sm border ${
                   selectedModel === modelKey
-                    ? "border-purple-500/50 bg-purple-900/20"
-                    : "border-white/5 hover:border-white/20"
-                } transition-colors rounded-sm`}
+                    ? "border-white bg-white/5"
+                    : "border-white/20 hover:border-white/40"
+                } transition-colors`}
               >
                 <div className="flex flex-col">
-                  <span className="text-white/80 text-xs">
+                  <span className="text-white/80 text-xs uppercase">
                     {modelData.name}
                   </span>
-                  <span
-                    className={`text-transparent bg-clip-text text-xs ${modelData.gradient}`}
-                  >
+                  <span className="text-white/50 text-xs">
                     {modelData.tag}
                   </span>
                 </div>
@@ -1120,18 +1111,18 @@ export default function AIPage() {
         </div>
       </div>
 
-      {/* Sidebar Toggle Button - Integrated into sidebar border */}
+      {/* Sidebar Toggle Button */}
       <button
         onClick={toggleSidebar}
         className={`fixed z-30 transition-all duration-300 ${
           sidebarOpen
-            ? "left-64 top-1/2 -translate-y-1/2 h-16 w-6 rounded-r-md"
-            : "left-0 top-1/2 -translate-y-1/2 h-16 w-6 rounded-r-md"
-        } hidden md:flex items-center justify-center bg-black/80 border-r border-t border-b border-white/10 backdrop-blur-sm`}
+            ? "left-64 top-1/2 -translate-y-1/2 h-16 w-6"
+            : "left-0 top-1/2 -translate-y-1/2 h-16 w-6"
+        } hidden md:flex items-center justify-center bg-black border-r border-t border-b border-white/30`}
         style={{
           borderLeft: sidebarOpen
             ? "none"
-            : "1px solid rgba(255, 255, 255, 0.1)",
+            : "1px solid rgba(255, 255, 255, 0.3)",
         }}
       >
         {sidebarOpen ? (
@@ -1155,7 +1146,7 @@ export default function AIPage() {
           sidebarOpen ? "md:pl-64" : "md:pl-0"
         } transition-all duration-300`}
       >
-        {/* Welcome Visualization State (before first message) */}
+        {/* Welcome Visualization State */}
         {showInitialMessage && (
           <motion.div
             className="flex-1 flex items-center justify-center fixed inset-0 z-10 overflow-hidden"
@@ -1164,15 +1155,13 @@ export default function AIPage() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6 }}
             style={{
-              // This positions the visualization in the chat area, not the full screen
-              left: sidebarOpen ? "264px" : 0, // 264px = sidebar width (256px) + 8px for good measure
+              left: sidebarOpen ? "264px" : 0,
               right: 0,
-              top: "65px", // Account for the navigation bar height
-              bottom: "75px", // Account for the input area height
+              top: "65px",
+              bottom: "75px",
               margin: "auto",
             }}
           >
-            {/* Canvas now sized to fit the chat area */}
             <div className="w-[80%] h-[80%] mx-auto relative">
               <Canvas
                 camera={{ position: [0, 0, 10], fov: 45 }}
@@ -1190,11 +1179,11 @@ export default function AIPage() {
                   greeting="//Hi, I'm N.OVA AI."
                   dotSize={0.02}
                   dotOpacity={0.8}
-                  dotColor="#FFFFFF" // Pure white dots
+                  dotColor="#FFFFFF"
                   arcWidth={10}
                   arcHeight={5}
                   arcDepth={2}
-                  rows={40} // More dots for a denser look
+                  rows={40}
                   dotsPerRow={80}
                   animated={true}
                 />
@@ -1203,7 +1192,7 @@ export default function AIPage() {
           </motion.div>
         )}
 
-        {/* Chat Interface (after first message or always visible but transparent initially) */}
+        {/* Chat Interface */}
         <AnimatePresence>
           {(!showInitialMessage || messages.length > 0) && (
             <motion.div
@@ -1217,7 +1206,7 @@ export default function AIPage() {
               {/* Chat Messages Container */}
               <div
                 ref={chatContainerRef}
-                className="flex-1 overflow-y-auto px-4 py-4 pb-28 scrollbar-none"
+                className="flex-1 overflow-y-auto px-4 py-4 pb-28"
               >
                 <div className="max-w-3xl mx-auto">
                   <AnimatePresence>
@@ -1233,12 +1222,12 @@ export default function AIPage() {
                         style={{ maxWidth: "95%" }}
                       >
                         {message.role === "user" ? (
-                          /* User message - right aligned with user avatar */
+                          /* User message - right aligned */
                           <div className="flex items-start gap-3 justify-end ml-auto">
-                            <div className="bg-black/80 border border-white/10 p-3 rounded-sm break-words">
+                            <div className="bg-black border border-white/30 p-3 break-words">
                               {message.content}
                             </div>
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border border-white/10 overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600">
+                            <div className="w-8 h-8 flex items-center justify-center shrink-0 border border-white/30 overflow-hidden">
                               <Image
                                 src="/images/user.png"
                                 alt="User"
@@ -1249,9 +1238,9 @@ export default function AIPage() {
                             </div>
                           </div>
                         ) : (
-                          /* Assistant message - left aligned with bot avatar */
+                          /* Assistant message - left aligned */
                           <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 border border-white/10 overflow-hidden bg-gradient-to-r from-indigo-600 to-violet-600">
+                            <div className="w-8 h-8 flex items-center justify-center shrink-0 border border-white/30 overflow-hidden">
                               <Image
                                 src="/images/logo.png"
                                 alt="NOVA"
@@ -1262,7 +1251,7 @@ export default function AIPage() {
                             </div>
 
                             <div className="flex-1 overflow-hidden">
-                              {/* Performance metrics - only show token count */}
+                              {/* Performance metrics */}
                               {message.tokens && (
                                 <div className="flex items-center text-xs text-white/50 mb-1">
                                   <span className="flex items-center">
@@ -1284,28 +1273,26 @@ export default function AIPage() {
                               ) : (
                                 <div className="text-white break-words overflow-wrap-anywhere">
                                   {message.content === "..." ? (
-                                    <div className="futuristic-loading">
-                                      <div className="loading-bar"></div>
-                                    </div>
+                                    <div className="w-16 h-16 border-t-2 border-b-2 border-white rounded-full animate-spin mb-4"></div>
                                   ) : (
                                     <div className="markdown-content">
                                       <ReactMarkdown
                                         components={{
                                           h1: ({ node, ...props }) => (
                                             <h1
-                                              className="text-xl font-bold my-3"
+                                              className="text-xl font-light my-3 uppercase"
                                               {...props}
                                             />
                                           ),
                                           h2: ({ node, ...props }) => (
                                             <h2
-                                              className="text-lg font-bold my-2"
+                                              className="text-lg font-light my-2 uppercase"
                                               {...props}
                                             />
                                           ),
                                           h3: ({ node, ...props }) => (
                                             <h3
-                                              className="text-md font-semibold my-2"
+                                              className="text-md font-light my-2 uppercase"
                                               {...props}
                                             />
                                           ),
@@ -1329,7 +1316,7 @@ export default function AIPage() {
                                           ),
                                           a: ({ node, ...props }) => (
                                             <a
-                                              className="text-blue-400 hover:underline flex items-center"
+                                              className="text-white hover:underline flex items-center"
                                               target="_blank"
                                               rel="noopener noreferrer"
                                               {...props}
@@ -1340,7 +1327,7 @@ export default function AIPage() {
                                           ),
                                           strong: ({ node, ...props }) => (
                                             <strong
-                                              className="font-bold"
+                                              className="font-medium"
                                               {...props}
                                             />
                                           ),
@@ -1349,7 +1336,7 @@ export default function AIPage() {
                                           ),
                                           blockquote: ({ node, ...props }) => (
                                             <blockquote
-                                              className="border-l-4 border-purple-500 pl-4 italic my-3 text-white/80"
+                                              className="border-l-2 border-white pl-4 italic my-3 text-white/80"
                                               {...props}
                                             />
                                           ),
@@ -1366,17 +1353,15 @@ export default function AIPage() {
                               {message.content !== "..." && (
                                 <div className="flex space-x-2 mt-3">
                                   <button
-                                    className="text-xs text-white/50 hover:text-white border border-white/10 hover:border-white/30 px-2 py-1 transition-colors flex items-center"
+                                    className="text-xs text-white/50 hover:text-white border border-white/30 hover:border-white px-2 py-1 transition-colors flex items-center uppercase"
                                     onClick={() =>
                                       handleCopyText(message.content)
                                     }
                                   >
                                     {copied ? (
                                       <>
-                                        <CheckIcon className="w-3 h-3 text-green-500 mr-1" />
-                                        <span className="text-green-500">
-                                          Copied
-                                        </span>
+                                        <CheckIcon className="w-3 h-3 mr-1" />
+                                        <span>Copied</span>
                                       </>
                                     ) : (
                                       <>
@@ -1401,21 +1386,21 @@ export default function AIPage() {
 
         {/* Input Area - Always at bottom */}
         <div
-          className={`fixed bottom-0 left-0 right-0 z-20 border-t border-white/10 bg-gradient-to-t from-black via-black to-black/80 ${
+          className={`fixed bottom-0 left-0 right-0 z-20 border-t border-white/30 bg-black ${
             sidebarOpen ? "md:pl-64" : "md:pl-0"
           } transition-all duration-300`}
         >
           <div className="max-w-4xl mx-auto relative">
-            {/* Uploaded file display - More compact */}
+            {/* Uploaded file display */}
             {uploadedFile && (
               <div className="px-6 pt-2 pb-0">
-                <div className="flex items-center gap-2 p-2 border border-white/10 rounded-sm bg-black/30 text-white/80 text-sm relative overflow-hidden">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 border border-white/10 overflow-hidden bg-gradient-to-r from-indigo-600 to-violet-600">
+                <div className="flex items-center gap-2 p-2 border border-white/30 bg-black text-white/80 text-sm relative overflow-hidden">
+                  <div className="w-6 h-6 flex items-center justify-center shrink-0 border border-white/30 overflow-hidden">
                     <Paperclip className="w-3 h-3 text-white" />
                   </div>
 
                   <div className="flex-1 truncate">
-                    <div className="font-medium truncate">
+                    <div className="font-light truncate uppercase">
                       {uploadedFile.name}
                     </div>
                     <div className="text-xs text-white/50">
@@ -1427,7 +1412,7 @@ export default function AIPage() {
 
                   <button
                     onClick={() => setUploadedFile(null)}
-                    className="text-white/50 hover:text-white/90 w-6 h-6 rounded-full flex items-center justify-center border border-white/10 hover:border-white/30 transition-colors"
+                    className="text-white/50 hover:text-white w-6 h-6 flex items-center justify-center border border-white/30 hover:border-white transition-colors"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -1435,545 +1420,69 @@ export default function AIPage() {
               </div>
             )}
 
-            {/* Action Buttons Row - Wallet-style */}
-            <div className="px-6 py-2">
+            {/* Action Buttons Row */}
+            <div className="px-6 py-2 border-b border-white/30">
               <div className="grid grid-cols-4 gap-1 w-full">
                 {/* Analyze Button */}
-                <motion.button
-                  className="relative overflow-hidden rounded-md bg-black/50 backdrop-blur-sm"
-                  onMouseEnter={() => setHoveredButton("analyze")}
-                  onMouseLeave={() => setHoveredButton(null)}
+                <button
+                  className="p-0.5 border border-white/30 transition-colors hover:border-white"
                   onClick={handleAnalyzeContract}
-                  whileTap={{ scale: 0.98 }}
                   disabled={isLoading}
                 >
-                  {/* Animated border */}
-                  <div className="absolute inset-0 rounded-md overflow-hidden">
-                    {/* Top border */}
-                    <motion.div
-                      className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-600 to-transparent"
-                      animate={{
-                        backgroundPosition:
-                          hoveredButton === "analyze"
-                            ? ["0% center", "100% center"]
-                            : "0% center",
-                        opacity: hoveredButton === "analyze" ? 0.9 : 0.5,
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: hoveredButton === "analyze" ? Infinity : 0,
-                      }}
-                    />
-
-                    {/* Bottom border */}
-                    <motion.div
-                      className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent"
-                      animate={{
-                        backgroundPosition:
-                          hoveredButton === "analyze"
-                            ? ["100% center", "0% center"]
-                            : "100% center",
-                        opacity: hoveredButton === "analyze" ? 0.9 : 0.5,
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: hoveredButton === "analyze" ? Infinity : 0,
-                      }}
-                    />
-                  </div>
-
-                  {/* Button content */}
-                  <div className="relative z-10 py-2 flex flex-col items-center gap-1 px-1">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center bg-purple-900/50">
-                      <AlertCircle className="w-3.5 h-3.5 text-purple-400" />
+                  <div className="py-2 flex flex-col items-center">
+                    <div className="w-6 h-6 flex items-center justify-center border border-white/30 mb-1">
+                      <AlertCircle className="w-3.5 h-3.5 text-white" />
                     </div>
-                    <span className="text-[10px] font-light text-purple-300">
+                    <span className="text-[10px] text-white uppercase">
                       Analyze
                     </span>
-
-                    {/* Status indicator dot */}
-                    <motion.div
-                      className="absolute top-1 right-1 w-1 h-1 rounded-full bg-purple-500"
-                      animate={{
-                        scale: hoveredButton === "analyze" ? [1, 1.5, 1] : 1,
-                        boxShadow:
-                          hoveredButton === "analyze"
-                            ? [
-                                "0 0 0px rgba(168, 85, 247, 0.2)",
-                                "0 0 4px rgba(168, 85, 247, 0.7)",
-                                "0 0 0px rgba(168, 85, 247, 0.2)",
-                              ]
-                            : "0 0 0px rgba(168, 85, 247, 0.2)",
-                      }}
-                      transition={{
-                        duration: 1.5,
-                        repeat: hoveredButton === "analyze" ? Infinity : 0,
-                        ease: "easeInOut",
-                      }}
-                    />
                   </div>
-
-                  {/* Background glow effect on hover */}
-                  <motion.div
-                    className="absolute inset-0 pointer-events-none rounded-md opacity-0"
-                    animate={{
-                      opacity: hoveredButton === "analyze" ? 0.15 : 0,
-                      background:
-                        "linear-gradient(90deg, rgba(124, 58, 237, 0.7) 0%, rgba(139, 92, 246, 0.7) 100%)",
-                    }}
-                    transition={{ duration: 0.3 }}
-                  />
-
-                  {/* Circuit pattern */}
-                  <div className="absolute inset-0 overflow-hidden rounded-md opacity-20 pointer-events-none">
-                    <svg
-                      width="100%"
-                      height="100%"
-                      className="absolute inset-0"
-                    >
-                      <pattern
-                        id="circuitPattern1"
-                        patternUnits="userSpaceOnUse"
-                        width="30"
-                        height="30"
-                        patternTransform="rotate(45)"
-                      >
-                        <line
-                          x1="0"
-                          y1="15"
-                          x2="30"
-                          y2="15"
-                          stroke="currentColor"
-                          strokeWidth="0.5"
-                          className="text-purple-500"
-                        />
-                        <line
-                          x1="15"
-                          y1="0"
-                          x2="15"
-                          y2="30"
-                          stroke="currentColor"
-                          strokeWidth="0.5"
-                          className="text-purple-500"
-                        />
-                        <circle
-                          cx="15"
-                          cy="15"
-                          r="2"
-                          fill="currentColor"
-                          className="text-purple-600"
-                        />
-                      </pattern>
-                      <rect
-                        width="100%"
-                        height="100%"
-                        fill="url(#circuitPattern1)"
-                      />
-                    </svg>
-                  </div>
-                </motion.button>
+                </button>
 
                 {/* Token Button */}
-                <motion.button
-                  className="relative overflow-hidden rounded-md bg-black/50 backdrop-blur-sm"
-                  onMouseEnter={() => setHoveredButton("tokenInsights")}
-                  onMouseLeave={() => setHoveredButton(null)}
+                <button
+                  className="p-0.5 border border-white/30 transition-colors hover:border-white"
                   onClick={handleTokenInsights}
-                  whileTap={{ scale: 0.98 }}
                 >
-                  {/* Animated border */}
-                  <div className="absolute inset-0 rounded-md overflow-hidden">
-                    {/* Top border */}
-                    <motion.div
-                      className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-600 to-transparent"
-                      animate={{
-                        backgroundPosition:
-                          hoveredButton === "tokenInsights"
-                            ? ["0% center", "100% center"]
-                            : "0% center",
-                        opacity: hoveredButton === "tokenInsights" ? 0.9 : 0.5,
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat:
-                          hoveredButton === "tokenInsights" ? Infinity : 0,
-                      }}
-                    />
-                    {/* Bottom border */}
-                    <motion.div
-                      className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500 to-transparent"
-                      animate={{
-                        backgroundPosition:
-                          hoveredButton === "tokenInsights"
-                            ? ["100% center", "0% center"]
-                            : "100% center",
-                        opacity: hoveredButton === "tokenInsights" ? 0.9 : 0.5,
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat:
-                          hoveredButton === "tokenInsights" ? Infinity : 0,
-                      }}
-                    />
-                  </div>
-
-                  {/* Button content */}
-                  <div className="relative z-10 py-2 flex flex-col items-center gap-1 px-1">
-                    <div className="w-6 h-6 rounded-full Горький items-center justify-center bg-blue-900/50">
-                      <Coins className="w-3.5 h-3.5 text-blue-400" />
+                  <div className="py-2 flex flex-col items-center">
+                    <div className="w-6 h-6 flex items-center justify-center border border-white/30 mb-1">
+                      <Coins className="w-3.5 h-3.5 text-white" />
                     </div>
-                    <span className="text-[10px] font-light text-blue-300">
+                    <span className="text-[10px] text-white uppercase">
                       Insights
                     </span>
-
-                    {/* Status indicator dot */}
-                    <motion.div
-                      className="absolute top-1 right-1 w-1 h-1 rounded-full bg-blue-500"
-                      animate={{
-                        scale:
-                          hoveredButton === "tokenInsights" ? [1, 1.5, 1] : 1,
-                        boxShadow:
-                          hoveredButton === "tokenInsights"
-                            ? [
-                                "0 0 0px rgba(59, 130, 246, 0.2)",
-                                "0 0 4px rgba(59, 130, 246, 0.7)",
-                                "0 0 0px rgba(59, 130, 246, 0.2)",
-                              ]
-                            : "0 0 0px rgba(59, 130, 246, 0.2)",
-                      }}
-                      transition={{
-                        duration: 1.5,
-                        repeat:
-                          hoveredButton === "tokenInsights" ? Infinity : 0,
-                        ease: "easeInOut",
-                      }}
-                    />
                   </div>
-
-                  {/* Background glow effect on hover */}
-                  <motion.div
-                    className="absolute inset-0 pointer-events-none rounded-md opacity-0"
-                    animate={{
-                      opacity: hoveredButton === "tokenInsights" ? 0.15 : 0,
-                      background:
-                        "linear-gradient(90deg, rgba(37, 99, 235, 0.7) 0%, rgba(59, 130, 246, 0.7) 100%)",
-                    }}
-                    transition={{ duration: 0.3 }}
-                  />
-
-                  {/* Circuit pattern */}
-                  <div className="absolute inset-0 overflow-hidden rounded-md opacity-20 pointer-events-none">
-                    <svg
-                      width="100%"
-                      height="100%"
-                      className="absolute inset-0"
-                    >
-                      <pattern
-                        id="circuitPattern2"
-                        patternUnits="userSpaceOnUse"
-                        width="30"
-                        height="30"
-                        patternTransform="rotate(45)"
-                      >
-                        <line
-                          x1="0"
-                          y1="15"
-                          x2="30"
-                          y2="15"
-                          stroke="currentColor"
-                          strokeWidth="0.5"
-                          className="text-blue-500"
-                        />
-                        <line
-                          x1="15"
-                          y1="0"
-                          x2="15"
-                          y2="30"
-                          stroke="currentColor"
-                          strokeWidth="0.5"
-                          className="text-blue-500"
-                        />
-                        <circle
-                          cx="15"
-                          cy="15"
-                          r="2"
-                          fill="currentColor"
-                          className="text-blue-600"
-                        />
-                      </pattern>
-                      <rect
-                        width="100%"
-                        height="100%"
-                        fill="url(#circuitPattern2)"
-                      />
-                    </svg>
-                  </div>
-                </motion.button>
+                </button>
 
                 {/* Reputation Button */}
-                <motion.button
-                  className="relative overflow-hidden rounded-md bg-black/50 backdrop-blur-sm"
-                  onMouseEnter={() => setHoveredButton("reputation")}
-                  onMouseLeave={() => setHoveredButton(null)}
+                <button
+                  className="p-0.5 border border-white/30 transition-colors hover:border-white"
                   onClick={handleReputationScore}
-                  whileTap={{ scale: 0.98 }}
                 >
-                  {/* Animated border */}
-                  <div className="absolute inset-0 rounded-md overflow-hidden">
-                    <motion.div
-                      className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-600 to-transparent"
-                      animate={{
-                        backgroundPosition:
-                          hoveredButton === "reputation"
-                            ? ["0% center", "100% center"]
-                            : "0% center",
-                        opacity: hoveredButton === "reputation" ? 0.9 : 0.5,
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: hoveredButton === "reputation" ? Infinity : 0,
-                      }}
-                    />
-                    <motion.div
-                      className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500 to-transparent"
-                      animate={{
-                        backgroundPosition:
-                          hoveredButton === "reputation"
-                            ? ["100% center", "0% center"]
-                            : "100% center",
-                        opacity: hoveredButton === "reputation" ? 0.9 : 0.5,
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: hoveredButton === "reputation" ? Infinity : 0,
-                      }}
-                    />
-                  </div>
-
-                  {/* Button content */}
-                  <div className="relative z-10 py-2 flex flex-col items-center gap-1 px-1">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center bg-red-900/50">
-                      <BarChart className="w-3.5 h-3.5 text-red-400" />
+                  <div className="py-2 flex flex-col items-center">
+                    <div className="w-6 h-6 flex items-center justify-center border border-white/30 mb-1">
+                      <BarChart className="w-3.5 h-3.5 text-white" />
                     </div>
-                    <span className="text-[10px] font-light text-red-300">
+                    <span className="text-[10px] text-white uppercase">
                       Reputation
                     </span>
-
-                    {/* Status indicator dot */}
-                    <motion.div
-                      className="absolute top-1 right-1 w-1 h-1 rounded-full bg-red-500"
-                      animate={{
-                        scale: hoveredButton === "reputation" ? [1, 1.5, 1] : 1,
-                        boxShadow:
-                          hoveredButton === "reputation"
-                            ? [
-                                "0 0 0px rgba(239, 68, 68, 0.2)",
-                                "0 0 4px rgba(239, 68, 68, 0.7)",
-                                "0 0 0px rgba(239, 68, 68, 0.2)",
-                              ]
-                            : "0 0 0px rgba(239, 68, 68, 0.2)",
-                      }}
-                      transition={{
-                        duration: 1.5,
-                        repeat: hoveredButton === "reputation" ? Infinity : 0,
-                        ease: "easeInOut",
-                      }}
-                    />
                   </div>
-
-                  {/* Background glow effect on hover */}
-                  <motion.div
-                    className="absolute inset-0 pointer-events-none rounded-md opacity-0"
-                    animate={{
-                      opacity: hoveredButton === "reputation" ? 0.15 : 0,
-                      background:
-                        "linear-gradient(90deg, rgba(153, 27, 27, 0.7) 0%, rgba(239, 68, 68, 0.7) 100%)",
-                    }}
-                    transition={{ duration: 0.3 }}
-                  />
-
-                  {/* Circuit pattern */}
-                  <div className="absolute inset-0 overflow-hidden rounded-md opacity-20 pointer-events-none">
-                    <svg
-                      width="100%"
-                      height="100%"
-                      className="absolute inset-0"
-                    >
-                      <pattern
-                        id="circuitPattern3"
-                        patternUnits="userSpaceOnUse"
-                        width="30"
-                        height="30"
-                        patternTransform="rotate(45)"
-                      >
-                        <line
-                          x1="0"
-                          y1="15"
-                          x2="30"
-                          y2="15"
-                          stroke="currentColor"
-                          strokeWidth="0.5"
-                          className="text-red-500"
-                        />
-                        <line
-                          x1="15"
-                          y1="0"
-                          x2="15"
-                          y2="30"
-                          stroke="currentColor"
-                          strokeWidth="0.5"
-                          className="text-red-500"
-                        />
-                        <circle
-                          cx="15"
-                          cy="15"
-                          r="2"
-                          fill="currentColor"
-                          className="text-red-600"
-                        />
-                      </pattern>
-                      <rect
-                        width="100%"
-                        height="100%"
-                        fill="url(#circuitPattern3)"
-                      />
-                    </svg>
-                  </div>
-                </motion.button>
+                </button>
 
                 {/* Summarize Button */}
-                <motion.button
-                  className="relative overflow-hidden rounded-md bg-black/50 backdrop-blur-sm"
-                  onMouseEnter={() => setHoveredButton("summarize")}
-                  onMouseLeave={() => setHoveredButton(null)}
+                <button
+                  className="p-0.5 border border-white/30 transition-colors hover:border-white"
                   onClick={handleSummarize}
-                  whileTap={{ scale: 0.98 }}
                 >
-                  {/* Animated border */}
-                  <div className="absolute inset-0 rounded-md overflow-hidden">
-                    {/* Top border */}
-                    <motion.div
-                      className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-600 to-transparent"
-                      animate={{
-                        backgroundPosition:
-                          hoveredButton === "summarize"
-                            ? ["0% center", "100% center"]
-                            : "0% center",
-                        opacity: hoveredButton === "summarize" ? 0.9 : 0.5,
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: hoveredButton === "summarize" ? Infinity : 0,
-                      }}
-                    />
-
-                    {/* Bottom border */}
-                    <motion.div
-                      className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500 to-transparent"
-                      animate={{
-                        backgroundPosition:
-                          hoveredButton === "summarize"
-                            ? ["100% center", "0% center"]
-                            : "100% center",
-                        opacity: hoveredButton === "summarize" ? 0.9 : 0.5,
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: hoveredButton === "summarize" ? Infinity : 0,
-                      }}
-                    />
-                  </div>
-
-                  {/* Button content */}
-                  <div className="relative z-10 py-2 flex flex-col items-center gap-1 px-1">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center bg-emerald-900/50">
-                      <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
+                  <div className="py-2 flex flex-col items-center">
+                    <div className="w-6 h-6 flex items-center justify-center border border-white/30 mb-1">
+                      <BookOpen className="w-3.5 h-3.5 text-white" />
                     </div>
-                    <span className="text-[10px] font-light text-emerald-300">
+                    <span className="text-[10px] text-white uppercase">
                       Summarize
                     </span>
-
-                    {/* Status indicator dot */}
-                    <motion.div
-                      className="absolute top-1 right-1 w-1 h-1 rounded-full bg-emerald-500"
-                      animate={{
-                        scale: hoveredButton === "summarize" ? [1, 1.5, 1] : 1,
-                        boxShadow:
-                          hoveredButton === "summarize"
-                            ? [
-                                "0 0 0px rgba(16, 185, 129, 0.2)",
-                                "0 0 4px rgba(16, 185, 129, 0.7)",
-                                "0 0 0px rgba(16, 185, 129, 0.2)",
-                              ]
-                            : "0 0 0px rgba(16, 185, 129, 0.2)",
-                      }}
-                      transition={{
-                        duration: 1.5,
-                        repeat: hoveredButton === "summarize" ? Infinity : 0,
-                        ease: "easeInOut",
-                      }}
-                    />
                   </div>
-
-                  {/* Background glow effect on hover */}
-                  <motion.div
-                    className="absolute inset-0 pointer-events-none rounded-md opacity-0"
-                    animate={{
-                      opacity: hoveredButton === "summarize" ? 0.15 : 0,
-                      background:
-                        "linear-gradient(90deg, rgba(16, 185, 129, 0.7) 0%, rgba(5, 150, 105, 0.7) 100%)",
-                    }}
-                    transition={{ duration: 0.3 }}
-                  />
-
-                  {/* Circuit pattern */}
-                  <div className="absolute inset-0 overflow-hidden rounded-md opacity-20 pointer-events-none">
-                    <svg
-                      width="100%"
-                      height="100%"
-                      className="absolute inset-0"
-                    >
-                      <pattern
-                        id="circuitPattern4"
-                        patternUnits="userSpaceOnUse"
-                        width="30"
-                        height="30"
-                        patternTransform="rotate(45)"
-                      >
-                        <line
-                          x1="0"
-                          y1="15"
-                          x2="30"
-                          y2="15"
-                          stroke="currentColor"
-                          strokeWidth="0.5"
-                          className="text-emerald-500"
-                        />
-                        <line
-                          x1="15"
-                          y1="0"
-                          x2="15"
-                          y2="30"
-                          stroke="currentColor"
-                          strokeWidth="0.5"
-                          className="text-emerald-500"
-                        />
-                        <circle
-                          cx="15"
-                          cy="15"
-                          r="2"
-                          fill="currentColor"
-                          className="text-emerald-600"
-                        />
-                      </pattern>
-                      <rect
-                        width="100%"
-                        height="100%"
-                        fill="url(#circuitPattern4)"
-                      />
-                    </svg>
-                  </div>
-                </motion.button>
+                </button>
               </div>
             </div>
 
@@ -1997,24 +1506,20 @@ export default function AIPage() {
                 onKeyDown={handleKeyDown}
               />
 
-              {/* Purple gradient effect when typing */}
+              {/* White line when typing */}
               {input && (
                 <div
-                  className="absolute bottom-0 left-0 right-0 h-[1px]"
-                  style={{
-                    background:
-                      "linear-gradient(to right, rgba(138, 75, 255, 0.2), rgba(214, 51, 255, 0.6), rgba(138, 75, 255, 0.2))",
-                  }}
+                  className="absolute bottom-0 left-0 right-0 h-[1px] bg-white/30"
                 ></div>
               )}
 
-              {/* Action buttons - aligned in a row */}
+              {/* Action buttons */}
               <div className="absolute right-6 top-1/2 transform -translate-y-1/2 flex items-center gap-3">
                 {/* File upload button */}
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="text-white/50 hover:text-white/80 transition-colors"
+                  className="text-white/50 hover:text-white transition-colors"
                 >
                   <Paperclip className="w-5 h-5" />
                 </button>
@@ -2026,13 +1531,13 @@ export default function AIPage() {
                   onChange={handleFileUpload}
                 />
 
-                {/* Simple Send Button - styled like paperclip */}
+                {/* Send Button */}
                 <button
                   type="submit"
                   disabled={isLoading || (!input.trim() && !uploadedFile)}
                   className={`${
                     !isLoading && (input.trim() || uploadedFile)
-                      ? "text-purple-400 hover:text-purple-300"
+                      ? "text-white"
                       : "text-white/30"
                   } transition-colors`}
                 >
@@ -2042,12 +1547,12 @@ export default function AIPage() {
             </form>
 
             {/* Footer control bar */}
-            <div className="px-6 py-2.5 flex justify-between items-center border-t border-white/5 text-xs text-white/40">
+            <div className="px-6 py-2.5 flex justify-between items-center border-t border-white/30 text-xs text-white/40">
               <div className="flex items-center space-x-8">
-                <span className="flex items-center">
+                <span className="flex items-center uppercase">
                   <span className="opacity-70 mr-1">Press</span>
-                  <span className="bg-white/10 px-1">Enter</span>
-                  <span className="ml-2">TO SEND</span>
+                  <span className="bg-black border border-white/30 px-1">Enter</span>
+                  <span className="ml-2">to send</span>
                 </span>
               </div>
             </div>
@@ -2055,79 +1560,49 @@ export default function AIPage() {
         </div>
       </div>
 
-      {/* CSS for loading animation and other styles */}
+      {/* CSS for styling */}
       <style jsx global>{`
-        .futuristic-loading {
-          width: 100%;
-          max-width: 150px;
-          height: 4px;
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 2px;
-          overflow: hidden;
-          position: relative;
-          margin: 10px 0;
-        }
-
-        .loading-bar {
-          width: 30%;
-          height: 100%;
-          background: linear-gradient(
-            90deg,
-            rgba(138, 75, 255, 0.2),
-            rgba(214, 51, 255, 1),
-            rgba(138, 75, 255, 0.2)
-          );
-          position: absolute;
-          animation: moveBar 1.5s infinite ease-in-out;
-          border-radius: 2px;
-          box-shadow: 0 0 10px rgba(214, 51, 255, 0.5);
-        }
-
-        @keyframes moveBar {
-          0% {
-            left: -30%;
-          }
-          100% {
-            left: 100%;
-          }
-        }
-
-        .scrollbar-none::-webkit-scrollbar {
-          display: none;
-        }
-
-        .scrollbar-none {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-
         .overflow-wrap-anywhere {
           overflow-wrap: anywhere;
           word-break: break-word;
         }
 
-        /* Ensure code blocks don't overflow */
+        /* Improve code blocks */
         pre {
           white-space: pre-wrap;
           word-break: break-word;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          padding: 1rem;
+          background-color: rgba(0, 0, 0, 0.5);
         }
 
-        /* Improve scrollbar for code blocks */
+        /* Styling for code blocks */
         .max-h-64 {
           max-height: 16rem;
         }
 
-        .max-h-64::-webkit-scrollbar {
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
           width: 6px;
+          height: 6px;
         }
 
-        .max-h-64::-webkit-scrollbar-thumb {
-          background-color: rgba(255, 255, 255, 0.2);
-          border-radius: 3px;
+        ::-webkit-scrollbar-track {
+          background: transparent;
         }
 
-        .max-h-64::-webkit-scrollbar-track {
-          background-color: rgba(0, 0, 0, 0.1);
+        ::-webkit-scrollbar-thumb {
+          background-color: rgba(255, 255, 255, 0.3);
+          border-radius: 0;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+          background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        * {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
         }
       `}</style>
     </main>

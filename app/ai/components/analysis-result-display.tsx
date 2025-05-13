@@ -22,31 +22,26 @@ const AnalysisResultDisplay: React.FC<AnalysisResultDisplayProps> = ({
   const getScoreColor = (score: number) => {
     if (score < 30)
       return {
-        color: "text-red-500",
-        gradient: "from-red-700 to-red-500",
+        color: "text-red-400",
         width: `${score}%`,
       };
     if (score < 50)
       return {
-        color: "text-orange-500",
-        gradient: "from-orange-700 to-orange-500",
+        color: "text-orange-400",
         width: `${score}%`,
       };
     if (score < 70)
       return {
-        color: "text-yellow-500",
-        gradient: "from-yellow-700 to-yellow-500",
+        color: "text-yellow-400",
         width: `${score}%`,
       };
     if (score < 90)
       return {
-        color: "text-green-500",
-        gradient: "from-green-700 to-green-500",
+        color: "text-green-400",
         width: `${score}%`,
       };
     return {
-      color: "text-emerald-500",
-      gradient: "from-emerald-700 to-emerald-500",
+      color: "text-emerald-400",
       width: `${score}%`,
     };
   };
@@ -64,26 +59,17 @@ const AnalysisResultDisplay: React.FC<AnalysisResultDisplayProps> = ({
   return (
     <div className="w-full flex flex-col space-y-6">
       {/* Main Analysis Card */}
-      <div className="relative border border-white/10 rounded-md overflow-hidden">
-        <div
-          className="absolute inset-0 z-0 opacity-20"
-          style={{
-            backgroundImage:
-              "radial-gradient(rgba(138, 75, 255, 0.2) 1px, transparent 1px)",
-            backgroundSize: "10px 10px",
-          }}
-        ></div>
-
-        <div className="relative z-10 p-4 backdrop-blur-sm bg-gradient-to-b from-black/60 to-black/80">
+      <div className="border border-white/30 p-0.5">
+        <div className="border border-white/10 p-5">
           <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-4 gap-2">
             <div>
-              <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-2">
-                <div className="w-5 h-5 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 flex items-center justify-center">
-                  <AlertCircle className="w-3 h-3 text-white" />
+              <h3 className="text-lg font-light text-white flex items-center gap-2 mb-2 uppercase">
+                <div className="w-5 h-5 border border-indigo-500/50 flex items-center justify-center">
+                  <AlertCircle className="w-3 h-3 text-indigo-400" />
                 </div>
                 Contract Security Analysis
               </h3>
-              <p className="text-white/60 text-sm max-w-lg">
+              <p className="text-white/70 text-sm max-w-lg uppercase">
                 {analysis.summary ||
                   "Analysis of potential security concerns and optimizations in your Solana program."}
               </p>
@@ -106,76 +92,72 @@ const AnalysisResultDisplay: React.FC<AnalysisResultDisplayProps> = ({
           </div>
 
           {/* Security Score with Animation */}
-          <div className="mb-4">
+          <div className="mb-6">
             <div className="flex justify-between items-center mb-2">
-              <h4 className="text-sm font-medium text-white">Security Score</h4>
-              <span
-                className={`text-xl font-bold font-mono ${scoreStyle.color}`}
-              >
+              <h4 className="text-sm uppercase text-white">Security Score</h4>
+              <span className={`text-xl font-light font-mono ${scoreStyle.color}`}>
                 {analysis.securityScore}/100
               </span>
             </div>
-            <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+            <div className="h-0.5 w-full bg-white/10">
               <motion.div
                 initial={{ width: "0%" }}
                 animate={{ width: scoreStyle.width }}
                 transition={{ duration: 1, ease: "easeOut" }}
-                className={`h-full bg-gradient-to-r ${scoreStyle.gradient} rounded-full`}
+                className={`h-full bg-gradient-to-r from-indigo-500 to-blue-500`}
               />
             </div>
           </div>
 
-          {/* Issues Summary - Compact Grid */}
-          <div className="grid grid-cols-3 gap-2 mb-3">
+          {/* Issues Summary - Grid */}
+          <div className="grid grid-cols-3 gap-2 mb-6">
             {criticalCount > 0 && (
-              <div className="relative overflow-hidden border border-red-700/50 bg-black/30 p-2 rounded-md backdrop-blur-sm">
-                <div className="absolute top-0 right-0 w-1 h-1 bg-red-500 rounded-full animate-pulse"></div>
-                <p className="text-red-500 text-base font-bold">
+              <div className="border border-red-500/30 p-2">
+                <p className="text-red-400 text-base font-light uppercase">
                   {criticalCount}
                 </p>
-                <p className="text-xs text-white/60">Critical</p>
+                <p className="text-xs text-white/60 uppercase">Critical</p>
               </div>
             )}
 
             {highCount > 0 && (
-              <div className="relative overflow-hidden border border-orange-700/50 bg-black/30 p-2 rounded-md backdrop-blur-sm">
-                <div className="absolute top-0 right-0 w-1 h-1 bg-orange-500 rounded-full animate-pulse"></div>
-                <p className="text-orange-500 text-base font-bold">
+              <div className="border border-orange-500/30 p-2">
+                <p className="text-orange-400 text-base font-light uppercase">
                   {highCount}
                 </p>
-                <p className="text-xs text-white/60">High</p>
+                <p className="text-xs text-white/60 uppercase">High</p>
               </div>
             )}
 
             {mediumCount > 0 && (
-              <div className="relative overflow-hidden border border-yellow-700/50 bg-black/30 p-2 rounded-md backdrop-blur-sm">
-                <p className="text-yellow-500 text-base font-bold">
+              <div className="border border-yellow-500/30 p-2">
+                <p className="text-yellow-400 text-base font-light uppercase">
                   {mediumCount}
                 </p>
-                <p className="text-xs text-white/60">Medium</p>
+                <p className="text-xs text-white/60 uppercase">Medium</p>
               </div>
             )}
 
             {lowCount > 0 && (
-              <div className="relative overflow-hidden border border-blue-700/50 bg-black/30 p-2 rounded-md backdrop-blur-sm">
-                <p className="text-blue-500 text-base font-bold">{lowCount}</p>
-                <p className="text-xs text-white/60">Low</p>
+              <div className="border border-blue-500/30 p-2">
+                <p className="text-blue-400 text-base font-light uppercase">{lowCount}</p>
+                <p className="text-xs text-white/60 uppercase">Low</p>
               </div>
             )}
 
             {infoCount > 0 && (
-              <div className="relative overflow-hidden border border-indigo-700/50 bg-black/30 p-2 rounded-md backdrop-blur-sm">
-                <p className="text-indigo-500 text-base font-bold">
+              <div className="border border-purple-500/30 p-2">
+                <p className="text-purple-400 text-base font-light uppercase">
                   {infoCount}
                 </p>
-                <p className="text-xs text-white/60">Info</p>
+                <p className="text-xs text-white/60 uppercase">Info</p>
               </div>
             )}
 
             {optCount > 0 && (
-              <div className="relative overflow-hidden border border-green-700/50 bg-black/30 p-2 rounded-md backdrop-blur-sm">
-                <p className="text-green-500 text-base font-bold">{optCount}</p>
-                <p className="text-xs text-white/60">Optimizations</p>
+              <div className="border border-green-500/30 p-2">
+                <p className="text-green-400 text-base font-light uppercase">{optCount}</p>
+                <p className="text-xs text-white/60 uppercase">Optimizations</p>
               </div>
             )}
           </div>
@@ -183,19 +165,13 @@ const AnalysisResultDisplay: React.FC<AnalysisResultDisplayProps> = ({
           {/* Risk Level Indicator */}
           {analysis.riskLevel && (
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-xs text-white/60">RISK LEVEL:</span>
-              <span
-                className={`text-xs font-medium px-2 py-0.5 rounded ${
-                  analysis.riskLevel === "critical"
-                    ? "bg-red-900/30 text-red-400"
-                    : analysis.riskLevel === "high"
-                    ? "bg-orange-900/30 text-orange-400"
-                    : analysis.riskLevel === "medium"
-                    ? "bg-yellow-900/30 text-yellow-400"
-                    : "bg-green-900/30 text-green-400"
-                }`}
-              >
-                {analysis.riskLevel.toUpperCase()}
+              <span className="text-xs text-white/60 uppercase">Risk Level:</span>
+              <span className={`text-xs px-2 py-0.5 border uppercase
+                ${analysis.riskLevel === "critical" ? "border-red-500/30 text-red-400" :
+                  analysis.riskLevel === "high" ? "border-orange-500/30 text-orange-400" :
+                  analysis.riskLevel === "medium" ? "border-yellow-500/30 text-yellow-400" :
+                  "border-green-500/30 text-green-400"}`}>
+                {analysis.riskLevel}
               </span>
             </div>
           )}
@@ -203,9 +179,9 @@ const AnalysisResultDisplay: React.FC<AnalysisResultDisplayProps> = ({
           {/* Complexity Indicator */}
           {analysis.contractComplexity && (
             <div className="flex items-center gap-2">
-              <span className="text-xs text-white/60">COMPLEXITY:</span>
-              <span className="text-xs font-medium px-2 py-0.5 rounded bg-indigo-900/30 text-indigo-400">
-                {analysis.contractComplexity.toUpperCase()}
+              <span className="text-xs text-white/60 uppercase">Complexity:</span>
+              <span className="text-xs px-2 py-0.5 border-indigo-500/30 border text-indigo-400 uppercase">
+                {analysis.contractComplexity}
               </span>
             </div>
           )}
@@ -214,41 +190,38 @@ const AnalysisResultDisplay: React.FC<AnalysisResultDisplayProps> = ({
 
       {/* Code Suggestions Section - Only show if available */}
       {analysis.modificationSuggestions && (
-        <div className="w-full relative overflow-hidden border border-white/10 rounded-md bg-gradient-to-b from-black/60 to-black/80 backdrop-blur-sm">
-          {/* Decorative elements */}
-          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-70"></div>
-
-          <div className="p-4">
+        <div className="border border-white/30 p-0.5">
+          <div className="border border-white/10 p-5">
             <div className="flex justify-between items-center mb-3">
-              <h3 className="text-base font-medium text-white flex items-center gap-2">
-                <div className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-600 to-green-600 flex items-center justify-center">
-                  <CheckIcon className="w-3 h-3 text-white" />
+              <h3 className="text-base font-light text-white flex items-center gap-2 uppercase">
+                <div className="w-5 h-5 border border-green-500/50 flex items-center justify-center">
+                  <CheckIcon className="w-3 h-3 text-green-400" />
                 </div>
                 Suggested Modifications
               </h3>
               <button
-                className="px-2 py-1 bg-white/5 hover:bg-white/10 text-xs text-white/80 hover:text-white border border-white/10 hover:border-white/30 transition-colors flex items-center gap-1 rounded-md"
+                className="px-2 py-1 bg-transparent text-xs text-green-400 hover:text-green-300 border border-green-500/30 hover:border-green-500/50 transition-colors flex items-center gap-1"
                 onClick={() =>
                   onCopy(analysis.modificationSuggestions, "suggestions")
                 }
               >
                 {copiedState.suggestions ? (
                   <>
-                    <CheckIcon className="w-3 h-3 text-green-500" />
-                    <span className="text-green-500">Copied</span>
+                    <CheckIcon className="w-3 h-3" />
+                    <span className="uppercase">Copied</span>
                   </>
                 ) : (
                   <>
                     <Clipboard className="w-3 h-3" />
-                    <span>Copy Code</span>
+                    <span className="uppercase">Copy Code</span>
                   </>
                 )}
               </button>
             </div>
 
             {/* Code Container with line numbers - scrollable horizontally */}
-            <div className="rounded-md overflow-hidden border border-white/10">
-              <div className="bg-black/50 text-white/90 overflow-x-auto text-sm font-mono leading-5 max-h-64">
+            <div className="border border-green-500/20">
+              <div className="bg-black text-white/90 overflow-x-auto text-sm font-mono leading-5 max-h-64">
                 <pre className="p-3 relative whitespace-pre-wrap break-all">
                   {/* Limit the code preview to first 20 lines */}
                   {analysis.modificationSuggestions
@@ -267,15 +240,13 @@ const AnalysisResultDisplay: React.FC<AnalysisResultDisplayProps> = ({
         </div>
       )}
 
-      {/* Critical & High Issues Section - Collapsible */}
+      {/* Critical & High Issues Section */}
       {(criticalCount > 0 || highCount > 0) && (
-        <div className="w-full relative overflow-hidden border border-white/10 rounded-md bg-gradient-to-b from-black/60 to-black/80 backdrop-blur-sm">
-          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-red-500 to-transparent opacity-70"></div>
-
-          <div className="p-4">
-            <h3 className="text-base font-medium text-white flex items-center gap-2 mb-3">
-              <div className="w-5 h-5 rounded-full bg-gradient-to-r from-red-600 to-orange-600 flex items-center justify-center">
-                <AlertCircle className="w-3 h-3 text-white" />
+        <div className="border border-white/30 p-0.5">
+          <div className="border border-white/10 p-5">
+            <h3 className="text-base font-light text-white flex items-center gap-2 mb-3 uppercase">
+              <div className="w-5 h-5 border border-red-500/50 flex items-center justify-center">
+                <AlertCircle className="w-3 h-3 text-red-400" />
               </div>
               Critical Issues
             </h3>
@@ -288,7 +259,7 @@ const AnalysisResultDisplay: React.FC<AnalysisResultDisplayProps> = ({
                     key={`critical-${idx}`}
                     className="border-l-2 border-red-500/50 pl-3"
                   >
-                    <h4 className="text-red-400 font-medium text-sm">
+                    <h4 className="text-red-400 font-light text-sm uppercase">
                       {issue.type}
                     </h4>
                     <p className="text-white/80 text-xs mb-1">
@@ -320,7 +291,7 @@ const AnalysisResultDisplay: React.FC<AnalysisResultDisplayProps> = ({
                     key={`high-${idx}`}
                     className="border-l-2 border-orange-500/50 pl-3"
                   >
-                    <h4 className="text-orange-400 font-medium text-sm">
+                    <h4 className="text-orange-400 font-light text-sm uppercase">
                       {issue.type}
                     </h4>
                     <p className="text-white/80 text-xs mb-1">

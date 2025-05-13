@@ -1,6 +1,8 @@
+// File: hooks/use-lazorkit.ts - Improved LazorKit implementation
+
 "use client"
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Connection, PublicKey, Transaction, clusterApiUrl, LAMPORTS_PER_SOL, TransactionInstruction, Keypair } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress, getAccount } from '@solana/spl-token';
 import * as bs58 from 'bs58';
@@ -17,44 +19,59 @@ function delay(seconds: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, seconds * 1000));
 }
 
-// Generate a valid Solana address from a hash
+// Generate a valid Solana address from a hash - improved for better entropy
 function generateDeterministicAddress(seed: string): string {
-  // Create a hash from the seed
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    hash = ((hash << 5) - hash) + seed.charCodeAt(i);
-    hash = hash & hash; // Convert to 32bit integer
+  try {
+    // Create a more robust hash from the seed
+    let hashStr = '';
+    for (let i = 0; i < seed.length; i++) {
+      const charCode = seed.charCodeAt(i);
+      hashStr += charCode.toString(16);
+    }
+    
+    // Add current timestamp for additional entropy
+    hashStr += Date.now().toString();
+    
+    // Use the hash as a seed for a keypair with proper entropy
+    const seedBytes = new Uint8Array(32);
+    
+    // Fill the array with pseudorandom values based on our hash
+    for (let i = 0; i < 32; i++) {
+      const hashPos = i % hashStr.length;
+      const nextPos = (i + 1) % hashStr.length;
+      // Create a value from pairs of hash characters
+      const hexPair = hashStr.substring(hashPos, hashPos + 1) + hashStr.substring(nextPos, nextPos + 1);
+      const value = parseInt(hexPair, 16) % 256;
+      seedBytes[i] = value;
+    }
+    
+    // Generate a keypair
+    const keypair = Keypair.fromSeed(seedBytes);
+    return keypair.publicKey.toString();
+  } catch (error) {
+    console.error("Error generating deterministic address:", error);
+    // Fallback to a random keypair in case of error
+    const randomKeypair = Keypair.generate();
+    return randomKeypair.publicKey.toString();
   }
-
-  // Use the hash as a seed for a keypair
-  // This ensures we get a valid Solana address
-  const seedBytes = new Uint8Array(32);
-  const seedString = hash.toString();
-  for (let i = 0; i < seedString.length && i < 32; i++) {
-    seedBytes[i] = parseInt(seedString[i]);
-  }
-  
-  // Ensure we have enough entropy in the seed
-  for (let i = seedString.length; i < 32; i++) {
-    seedBytes[i] = i;
-  }
-  
-  // Generate a keypair
-  const keypair = Keypair.fromSeed(seedBytes);
-  return keypair.publicKey.toString();
 }
 
 export const useLazorKit = () => {
   // State for wallet connection
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [publicKey, setPublicKey] = useState<PublicKey | null>(null);
-  const [credentialId, setCredentialId] = useState<string | null>(localStorage.getItem('LAZORKIT_CREDENTIAL_ID'));
+  const [credentialId, setCredentialId] = useState<string | null>(null);
   const [balance, setBalance] = useState<number>(0);
   const [novaBalance, setNovaBalance] = useState<number>(0);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [hasPasskey, setHasPasskey] = useState<boolean>(false);
+  const [connectionAttempts, setConnectionAttempts] = useState<number>(0);
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  
+  // Add a connected reference to avoid state update on unmounted component
+  const isConnectedRef = useRef<boolean>(false);
   const [connection] = useState<Connection>(new Connection(
     clusterApiUrl('devnet'), // Using Solana devnet for compatibility
     {
@@ -63,41 +80,53 @@ export const useLazorKit = () => {
     }
   ));
 
-  // Set up wallet connection when component mounts
+  // Initialize state from localStorage on mount
   useEffect(() => {
-    const checkConnection = async () => {
-      // Important: Use the correct storage keys for passkey-based wallets
-      const storedCredentialId = localStorage.getItem('LAZORKIT_CREDENTIAL_ID');
-      const storedWalletAddress = localStorage.getItem('LAZORKIT_WALLET_ADDRESS');
-      
-      if (storedCredentialId && storedWalletAddress) {
-        try {
-          // Verify if the stored wallet address is a valid PublicKey
-          const pubKey = new PublicKey(storedWalletAddress);
-          
-          setCredentialId(storedCredentialId);
-          setWalletAddress(storedWalletAddress);
-          setPublicKey(pubKey);
-          setIsConnected(true);
-          setHasPasskey(true);
-          
-          // Fetch balances for the wallet
-          await fetchBalances(pubKey);
-        } catch (error) {
-          console.error('Error restoring wallet connection:', error);
-          // Don't clear local storage on error - we'll try again on connect
-          
-          setCredentialId(null);
-          setWalletAddress(null);
-          setPublicKey(null);
-          setIsConnected(false);
-          setHasPasskey(false);
+    const initializeFromStorage = () => {
+      try {
+        // Check stored credentials
+        const storedCredentialId = localStorage.getItem('LAZORKIT_CREDENTIAL_ID');
+        const storedWalletAddress = localStorage.getItem('LAZORKIT_WALLET_ADDRESS');
+        
+        if (storedCredentialId && storedWalletAddress) {
+          try {
+            // Verify if the stored wallet address is a valid PublicKey
+            const pubKey = new PublicKey(storedWalletAddress);
+            
+            setCredentialId(storedCredentialId);
+            setWalletAddress(storedWalletAddress);
+            setPublicKey(pubKey);
+            setIsConnected(false); // Start disconnected but with saved credentials
+            setHasPasskey(true);
+          } catch (error) {
+            console.error('Error parsing stored wallet address:', error);
+            
+            // Clear invalid stored data
+            localStorage.removeItem('LAZORKIT_CREDENTIAL_ID');
+            localStorage.removeItem('LAZORKIT_WALLET_ADDRESS');
+            
+            setCredentialId(null);
+            setWalletAddress(null);
+            setPublicKey(null);
+            setIsConnected(false);
+            setHasPasskey(false);
+          }
         }
+        
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('Error initializing from storage:', error);
+        setIsInitialized(true);
       }
     };
     
-    checkConnection();
+    initializeFromStorage();
   }, []);
+
+  // Update connected ref when isConnected changes
+  useEffect(() => {
+    isConnectedRef.current = isConnected;
+  }, [isConnected]);
 
   // Fetch NOVA token balance
   const fetchNovaBalance = async (walletPublicKey: PublicKey) => {
@@ -128,6 +157,11 @@ export const useLazorKit = () => {
 
   // Fetch SOL and token balances
   const fetchBalances = async (walletPublicKey: PublicKey) => {
+    if (!isConnectedRef.current) {
+      console.log('Skipping balance fetch - not connected');
+      return;
+    }
+    
     try {
       setIsLoading(true);
       
@@ -146,8 +180,12 @@ export const useLazorKit = () => {
     }
   };
 
-  // Connect to wallet - with fixed implementation for consistent addresses
-  const connectWallet = async () => {
+  // Improved connect wallet with better error handling and WebAuthn simulation
+  const connectWallet = async (): Promise<string> => {
+    // Increment connection attempt counter
+    setConnectionAttempts(prev => prev + 1);
+    console.log(`LazorKit connection attempt #${connectionAttempts + 1}`);
+    
     setIsLoading(true);
     setError(null);
 
@@ -159,12 +197,18 @@ export const useLazorKit = () => {
       // If we already have stored credentials, use them
       if (storedCredentialId && storedWalletAddress) {
         try {
+          // Verify the stored wallet address
           const pubKey = new PublicKey(storedWalletAddress);
+          
+          // Simulate a small delay for authentication
+          await delay(0.5);
+          
           setCredentialId(storedCredentialId);
           setWalletAddress(storedWalletAddress);
           setPublicKey(pubKey);
           setIsConnected(true);
           setHasPasskey(true);
+          isConnectedRef.current = true;
           
           // Fetch balances
           await fetchBalances(pubKey);
@@ -172,43 +216,150 @@ export const useLazorKit = () => {
           return storedWalletAddress;
         } catch (error) {
           console.error('Error using stored wallet address:', error);
-          // Clear invalid stored data and continue with new connection
+          
+          // Clear invalid stored data and create a new connection
           localStorage.removeItem('LAZORKIT_CREDENTIAL_ID');
           localStorage.removeItem('LAZORKIT_WALLET_ADDRESS');
         }
       }
       
-      // FALLBACK FOR DEVELOPMENT/TESTING
-      // This creates a consistent wallet address instead of a random one each time
+      // IMPROVED DEVELOPMENT/TESTING IMPLEMENTATION
       
-      // Use a fixed address based on a hash of the device/browser info
-      // This simulates a deterministic address derived from a passkey
-      const deviceFingerprint = navigator.userAgent + window.screen.width + window.screen.height;
+      // Use browser fingerprint for more consistent address generation
+      const deviceFingerprint = 
+        navigator.userAgent + 
+        window.screen.width + 
+        window.screen.height + 
+        navigator.language +
+        ((navigator as any).deviceMemory || 4);
       
-      // Generate a valid Solana address
+      // Generate a valid Solana address with more entropy
       const validWalletAddress = generateDeterministicAddress(deviceFingerprint);
       
-      // Create the public key
-      const pubKey = new PublicKey(validWalletAddress);
+      // Wait a moment to simulate the authentication process
+      await delay(0.7); 
       
-      // Store the credential info for future use
-      const credentialId = 'lazorkit-credential-' + Date.now();
-      localStorage.setItem('LAZORKIT_CREDENTIAL_ID', credentialId);
-      localStorage.setItem('LAZORKIT_WALLET_ADDRESS', validWalletAddress);
-      
-      setCredentialId(credentialId);
-      setWalletAddress(validWalletAddress);
-      setPublicKey(pubKey);
-      setIsConnected(true);
-      setHasPasskey(true);
-      
-      // Simulate WebAuthn request for the first time
-      if (!localStorage.getItem('LAZORKIT_FIRST_CONNECT')) {
-        console.log("First time connecting with LazorKit - simulating WebAuthn request");
-        localStorage.setItem('LAZORKIT_FIRST_CONNECT', 'true');
+      try {
+        // Create the public key
+        const pubKey = new PublicKey(validWalletAddress);
         
-        // In a real implementation, this would trigger a WebAuthn ceremony
-        // For development, we'll just open a popup window to simulate it
+        // Store the credential info for future use
+        const credentialId = 'lazorkit-credential-' + Date.now();
+        localStorage.setItem('LAZORKIT_CREDENTIAL_ID', credentialId);
+        localStorage.setItem('LAZORKIT_WALLET_ADDRESS', validWalletAddress);
+        
+        setCredentialId(credentialId);
+        setWalletAddress(validWalletAddress);
+        setPublicKey(pubKey);
+        setIsConnected(true);
+        setHasPasskey(false); // Start without a passkey
+        isConnectedRef.current = true;
+        
+        // Simulate WebAuthn request for the first time
+        if (!localStorage.getItem('LAZORKIT_FIRST_CONNECT')) {
+          console.log("First time connecting with LazorKit - simulating WebAuthn request");
+          localStorage.setItem('LAZORKIT_FIRST_CONNECT', 'true');
+          
+          // In a real implementation, this would trigger a WebAuthn ceremony
+          // For development, we'll just open a popup window to simulate it
+          try {
+            const popup = window.open('', 'WebAuthn Request', 'width=400,height=300');
+            if (popup) {
+              popup.document.write(`
+                <html>
+                  <head>
+                    <title>WebAuthn Request</title>
+                    <style>
+                      body { font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px; }
+                      .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                      h2 { margin-top: 0; }
+                      button { background: #4CAF50; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
+                    </style>
+                  </head>
+                  <body>
+                    <div class="container">
+                      <h2>Create Passkey</h2>
+                      <p>Use your device authentication to create a passkey for NOVA.</p>
+                      <button onclick="window.close()">Authenticate</button>
+                    </div>
+                  </body>
+                </html>
+              `);
+              
+              // Auto-close after a delay
+              setTimeout(() => {
+                if (!popup.closed) popup.close();
+              }, 3000);
+            }
+          } catch (error) {
+            console.log("Unable to open popup window:", error);
+          }
+        }
+        
+        return validWalletAddress;
+      } catch (error: any) {
+        throw new Error(`Failed to create wallet: ${error.message || 'Unknown error'}`);
+      }
+    } catch (error: any) {
+      console.error('Error connecting to wallet:', error);
+      setError(error.message || 'Failed to connect wallet');
+      setIsLoading(false);
+      isConnectedRef.current = false;
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Improved disconnect wallet
+  const disconnectWallet = async () => {
+    try {
+      setIsLoading(true);
+      console.log("Disconnecting LazorKit wallet");
+      
+      // Reset state while preserving credential IDs for reconnect
+      setIsConnected(false);
+      isConnectedRef.current = false;
+      setBalance(0);
+      setNovaBalance(0);
+      
+      // Add a small delay to simulate disconnection process
+      await delay(0.2);
+      
+      return true;
+    } catch (error) {
+      console.error('Error disconnecting wallet:', error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Sign and send a transaction
+  const signAndSendTransaction = async (instruction: TransactionInstruction): Promise<string> => {
+    try {
+      if (!isConnected || !publicKey) {
+        throw new Error('Wallet not connected');
+      }
+      
+      // For development/testing only - simulate transaction signing
+      await delay(0.5); // Add delay to simulate signing
+      return 'simulated_txid_' + Date.now().toString();
+    } catch (error: any) {
+      console.error('Error signing transaction:', error);
+      throw error;
+    }
+  };
+
+  // Create a passkey with improved simulation
+  const createPasskey = async (): Promise<boolean> => {
+    try {
+      if (!isConnected) {
+        throw new Error('Wallet not connected');
+      }
+      
+      // Simulate WebAuthn request
+      try {
         const popup = window.open('', 'WebAuthn Request', 'width=400,height=300');
         if (popup) {
           popup.document.write(`
@@ -231,87 +382,23 @@ export const useLazorKit = () => {
               </body>
             </html>
           `);
+          
+          // Auto-close after a delay
+          setTimeout(() => {
+            if (!popup.closed) popup.close();
+          }, 3000);
         }
+      } catch (error) {
+        console.log("Unable to open popup window:", error);
       }
       
-      return validWalletAddress;
-    } catch (error: any) {
-      console.error('Error connecting to wallet:', error);
-      setError(error.message || 'Failed to connect wallet');
-      setIsLoading(false);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Disconnect wallet
-  const disconnectWallet = async () => {
-    try {
-      setIsLoading(true);
+      // Add delay to simulate WebAuthn registration
+      await delay(1);
       
-      // We Don't clear localStorage here to maintain the same wallet address
-      // Only reset session state
-      setIsConnected(false);
-      setBalance(0);
-      setNovaBalance(0);
-    } catch (error) {
-      console.error('Error disconnecting wallet:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Sign and send a transaction
-  const signAndSendTransaction = async (instruction: TransactionInstruction): Promise<string> => {
-    try {
-      if (!isConnected || !publicKey) {
-        throw new Error('Wallet not connected');
-      }
-      
-      // For development/testing only
-      return 'simulated_txid_' + Date.now().toString();
-    } catch (error: any) {
-      console.error('Error signing transaction:', error);
-      throw error;
-    }
-  };
-
-  // Create a passkey
-  const createPasskey = async (): Promise<boolean> => {
-    try {
-      if (!isConnected) {
-        throw new Error('Wallet not connected');
-      }
-      
-      // For development/testing only
-      console.log('Creating passkey simulation');
       setHasPasskey(true);
       
-      // Simulate WebAuthn request
-      const popup = window.open('', 'WebAuthn Request', 'width=400,height=300');
-      if (popup) {
-        popup.document.write(`
-          <html>
-            <head>
-              <title>WebAuthn Request</title>
-              <style>
-                body { font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px; }
-                .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-                h2 { margin-top: 0; }
-                button { background: #4CAF50; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
-              </style>
-            </head>
-            <body>
-              <div class="container">
-                <h2>Create Passkey</h2>
-                <p>Use your device authentication to create a passkey for NOVA.</p>
-                <button onclick="window.close()">Authenticate</button>
-              </div>
-            </body>
-          </html>
-        `);
-      }
+      // Update localStorage to remember passkey was created
+      localStorage.setItem('LAZORKIT_HAS_PASSKEY', 'true');
       
       return true;
     } catch (error: any) {
@@ -327,7 +414,13 @@ export const useLazorKit = () => {
         return false;
       }
       
-      // For development/testing only - return the current state
+      // Check localStorage for passkey status first
+      const storedPasskeyStatus = localStorage.getItem('LAZORKIT_HAS_PASSKEY');
+      if (storedPasskeyStatus === 'true') {
+        setHasPasskey(true);
+        return true;
+      }
+      
       return hasPasskey;
     } catch (error: any) {
       console.error('Error verifying passkey:', error);
@@ -337,7 +430,7 @@ export const useLazorKit = () => {
 
   // Refresh balances manually
   const refreshBalances = useCallback(async () => {
-    if (publicKey) {
+    if (publicKey && isConnectedRef.current) {
       await fetchBalances(publicKey);
     }
   }, [publicKey]);
@@ -353,13 +446,13 @@ export const useLazorKit = () => {
     publicKey,
     balance,
     novaBalance,
-    solBalance: balance, // Added for consistency
+    solBalance: balance,
     isConnected,
     isLoading,
     error,
     credentialId,
     hasPasskey,
-    smartWalletAuthorityPubkey: walletAddress, // For compatibility with LazorKit API
+    smartWalletAuthorityPubkey: walletAddress,
     connectWallet,
     disconnectWallet,
     signAndSendTransaction,
@@ -368,9 +461,10 @@ export const useLazorKit = () => {
     createPasskey,
     verifyPasskey,
     connection,
+    isInitialized,
     // Additional methods matching LazorKit's useWallet hook
     connect: connectWallet,
     disconnect: disconnectWallet,
-    signMessage: async (message: Uint8Array) => ({ signature: new Uint8Array(64) }) // Mock implementation
+    signMessage: async (message: Uint8Array) => ({ signature: new Uint8Array(64) })
   };
 };
