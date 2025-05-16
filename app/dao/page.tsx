@@ -1610,13 +1610,13 @@ const NovaDAO = () => {
                   {activeProposal.status === "Active" ? (
                     <>
                       <div className="flex gap-4 mb-4">
-                        <button className="flex-1 py-3 bg-white text-black uppercase font-medium hover:bg-white/90 transition-colors">
+                        <button className="flex-1 py-3 bg-green-500 text-white uppercase font-medium hover:bg-white/90 transition-colors">
                           VOTE FOR
                         </button>
-                        <button className="flex-1 py-3 bg-white text-black uppercase font-medium hover:bg-white/90 transition-colors">
+                        <button className="flex-1 py-3 bg-red-500 text-white uppercase font-medium hover:bg-white/90 transition-colors">
                           VOTE AGAINST
                         </button>
-                        <button className="flex-1 py-3 bg-white text-black uppercase font-medium hover:bg-white/90 transition-colors">
+                        <button className="flex-1 py-3 bg-blue-500 text-white uppercase font-medium hover:bg-white/90 transition-colors">
                           ABSTAIN
                         </button>
                       </div>

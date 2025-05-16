@@ -110,7 +110,7 @@ export default function Footer() {
               href="mailto:contact@n.ova" 
               className="text-xs text-white/70 hover:text-white transition-colors duration-300"
             >
-              contact@n.ova
+              n.ova.contact.003@gmail.com
             </Link>
           </div>
           
