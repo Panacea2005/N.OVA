@@ -36,7 +36,7 @@ Meanwhile, general-purpose LLMs such as ChatGPT, Claude, and Gemini, though powe
 
 ### Visual Identity Card
 
-- AI-generated image (via Replicate) unique to each user
+- AI-generated image (via Stable Diffusion) unique to each user
 - Badge system based on behavioral milestones
 - Rank progression: Echo → Pulse → Signal → Cipher → Nexus → Oracle → Sovereign
 
@@ -129,8 +129,8 @@ Demo video: [YouTube](https://www.youtube.com/watch?v=aQttf04cBU4)
 - LazorKit – passkey smart wallet abstraction  
 - Supabase – real-time DB for XP/memory  
 - Helius – Solana wallet analysis  
-- MusicGen – AI audio synthesis  
-- Replicate – hosted AI image generation
+- Suno AI – AI audio synthesis  
+- Stable Diffusion – hosted AI image generation
 
 ---
 
